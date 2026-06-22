@@ -53,6 +53,7 @@
    ```bash
    git clone https://github.com/satriairawan05/KitaPOS.git
    cd KitaPOS
+   
 Buka di browser
 
 Jalankan dengan Live Server (VSCode), atau
@@ -64,15 +65,19 @@ Gunakan XAMPP/Laragon di localhost/KitaPOS
 Aplikasi siap digunakan! 🎉
 
 📖 Cara Pakai
-Aksi	Langkah
-Tambah Menu	Klik tombol Tambah di navbar → isi form → Simpan
-Edit Menu	Klik ✏️ pada kartu menu → ubah data → Simpan Perubahan
-Transaksi	Klik ➕ pada menu → item masuk keranjang → Checkout → pilih metode → Konfirmasi & Selesai
-History	Klik History di navbar → lihat semua transaksi
-Kalkulator	Klik Kalkulator di navbar (desktop) atau floating button (mobile)
-Kembali ke Menu	Klik ikon 🏠 di navbar atau floating button
+
+| Aksi | Langkah |
+|------|---------|
+| 🍽️ **Tambah Menu** | Klik tombol **Tambah** di navbar → isi form → **Simpan** |
+| ✏️ **Edit Menu** | Klik ✏️ pada kartu menu → ubah data → **Simpan Perubahan** |
+| 🛒 **Transaksi** | Klik ➕ pada menu → item masuk keranjang → **Checkout** → pilih metode → **Konfirmasi & Selesai** |
+| 📜 **History** | Klik **History** di navbar → lihat semua transaksi |
+| 🧮 **Kalkulator** | Klik **Kalkulator** di navbar (desktop) atau floating button (mobile) |
+| 🏠 **Kembali ke Menu** | Klik ikon 🏠 di navbar atau floating button |
+
 📁 Struktur Proyek
-text
+
+
 KitaPOS/
 ├── index.html              # Halaman utama
 ├── assets/
@@ -84,6 +89,7 @@ KitaPOS/
 │       └── data.json      # Data menu contoh
 └── README.md              # Dokumentasi
 🤝 Kontribusi
+
 Fork repository ini
 
 Buat branch fitur (git checkout -b fitur-keren)
@@ -95,12 +101,16 @@ Push ke branch (git push origin fitur-keren)
 Buat Pull Request
 
 📄 Lisensi
+
 MIT License – Bebas digunakan, termasuk komersial.
 
 👨‍💻 Author & Kontributor
+
 Deuwi Satriya Irawan
+
 Pengembang utama dan penggagas proyek KitaPOS.
 
 <p align="center"> <a href="https://github.com/satriairawan05" target="_blank"> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"> </a> <a href="https://www.linkedin.com/in/satriai418" target="_blank"> <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"> </a> <a href="https://instagram.com/satriairawan05_" target="_blank"> <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"> </a> <a href="https://wa.me/6282253332802" target="_blank"> <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"> </a> </p>
+
 KitaPOS – Solusi POS Modern untuk Usaha Kuliner Anda.
 Dibangun dengan ❤️ oleh tim Kernel of Inventory Talent and Asset.
