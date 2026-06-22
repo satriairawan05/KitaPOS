@@ -42,9 +42,6 @@
                         <span class="cart-badge" id="desktopCartCount">0</span>
                     </div>
                     <div class="d-flex gap-1 w-100 w-md-auto justify-content-end">
-                        <button class="btn btn-sm btn-home-mobile d-md-none" id="goHomeMobile" title="Menu Utama">
-                            <i class="bi bi-house-fill"></i>
-                        </button>
                         <button class="btn btn-sm btn-nav-icon d-md-none" id="toggleCartMobile">
                             <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light" style="color:#7a1a1a;">0</span>
                         </button>
@@ -129,11 +126,9 @@
     </div>
 
     <!-- ===== FLOATING BUTTONS (Mobile) ===== -->
-    <!-- Calculator FAB (atas) -->
     <button class="calc-fab" id="openCalcMobile" title="Kalkulator">
         <i class="bi bi-calculator"></i>
     </button>
-    <!-- Home FAB (bawah) -->
     <button class="home-fab" id="goHomeFab" title="Menu Utama">
         <i class="bi bi-house-fill"></i>
     </button>
@@ -199,7 +194,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Harga (Rp) <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="manualPrice" placeholder="Contoh: 25000" min="0" required />
+                            <input type="text" class="form-control" id="manualPrice" placeholder="Contoh: 25.000" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Kategori</label>
@@ -268,8 +263,11 @@
                         <label class="form-label fw-600" id="paymentLabel">Bayar (Rp)</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input type="number" class="form-control" id="paymentAmount" placeholder="Masukkan nominal" min="0" />
+                            <input type="text" class="form-control" id="paymentAmount" placeholder="Masukkan nominal" />
                         </div>
+
+                        <div class="mt-2" id="quickPayButtons"></div>
+
                         <div class="mt-2 text-end" id="changeDisplay" style="font-weight:700;font-size:1.1rem;">
                             Kembalian: <span id="changeAmount" style="color:var(--pos-accent);">Rp 0</span>
                         </div>
@@ -321,6 +319,29 @@
             <div class="toast-body" id="toastMessage">Pesan notifikasi</div>
         </div>
     </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container-fluid px-3">
+            <div class="row g-0 justify-content-between align-items-center">
+                <div class="col-12 col-sm-auto text-center text-sm-start">
+                    <p class="mb-0 mt-2 mt-sm-0">
+                        Created by &copy;
+                        <a class="mx-1 text-danger fw-bold" href="https://www.linkedin.com/in/satriai418" target="_blank">
+                            Deuwi Satriya Irawan
+                        </a>
+                        <span>|</span>
+                        <span class="text-danger fw-bold">Kernel of Inventory Talent and Asset</span>
+                    </p>
+                </div>
+                <div class="col-12 col-sm-auto text-center text-sm-end">
+                    <p class="mb-0 text-body-tertiary text-opacity-85">
+                        <span id="footerYear">2026</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- ===== BOOTSTRAP JS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">

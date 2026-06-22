@@ -2,19 +2,61 @@
 // assets/js/script.js - KitaPOS
 // ================================================================
 
-// ===== DATA MENU =====
-let menuItems = [
-    { id: 1, name: 'Nasi Goreng', price: 25000, category: 'makanan', status: 'available', icon: '🍚', image: null },
-    { id: 2, name: 'Mie Goreng', price: 22000, category: 'makanan', status: 'available', icon: '🍜', image: null },
-    { id: 3, name: 'Ayam Geprek', price: 28000, category: 'makanan', status: 'low', icon: '🍗', image: null },
-    { id: 4, name: 'Es Teh Manis', price: 8000, category: 'minuman', status: 'available', icon: '🧋', image: null },
-    { id: 5, name: 'Es Jeruk', price: 10000, category: 'minuman', status: 'available', icon: '🍊', image: null },
-    { id: 6, name: 'Kopi Hitam', price: 12000, category: 'minuman', status: 'out', icon: '☕', image: null },
-    { id: 7, name: 'Pisang Goreng', price: 15000, category: 'cemilan', status: 'available', icon: '🍌', image: null },
-    { id: 8, name: 'Kentang Goreng', price: 18000, category: 'cemilan', status: 'available', icon: '🥔', image: null },
-    { id: 9, name: 'Roti Bakar', price: 14000, category: 'cemilan', status: 'low', icon: '🍞', image: null }
-];
-let nextId = 10;
+// ===== FORMAT RUPIAH =====
+function formatRupiah(angka) {
+    return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function formatRupiahInput(input) {
+    let value = input.value.replace(/\D/g, '');
+    if (value === '') {
+        input.value = '';
+        return;
+    }
+    let number = parseInt(value, 10);
+    if (isNaN(number)) {
+        input.value = '';
+        return;
+    }
+    input.value = formatRupiah(number);
+}
+
+// ===== DATA MENU (dari JSON) =====
+let menuItems = [];
+let nextId = 1;
+
+// ===== LOAD DATA DARI JSON =====
+async function loadMenuData() {
+    try {
+        const response = await fetch('assets/data/data.json');
+        const data = await response.json();
+        menuItems = data;
+        if (menuItems.length > 0) {
+            const maxId = Math.max(...menuItems.map(item => item.id));
+            nextId = maxId + 1;
+        }
+        renderMenu();
+        updateCartUI();
+        console.log('✅ Data menu loaded dari JSON:', menuItems.length, 'item');
+    } catch (error) {
+        console.error('❌ Gagal load data.json:', error);
+        menuItems = [
+            { id: 1, name: 'Nasi Goreng', price: 25000, category: 'makanan', status: 'available', icon: '🍚', image: null },
+            { id: 2, name: 'Mie Goreng', price: 22000, category: 'makanan', status: 'available', icon: '🍜', image: null },
+            { id: 3, name: 'Ayam Geprek', price: 28000, category: 'makanan', status: 'low', icon: '🍗', image: null },
+            { id: 4, name: 'Es Teh Manis', price: 8000, category: 'minuman', status: 'available', icon: '🧋', image: null },
+            { id: 5, name: 'Es Jeruk', price: 10000, category: 'minuman', status: 'available', icon: '🍊', image: null },
+            { id: 6, name: 'Kopi Hitam', price: 12000, category: 'minuman', status: 'out', icon: '☕', image: null },
+            { id: 7, name: 'Pisang Goreng', price: 15000, category: 'cemilan', status: 'available', icon: '🍌', image: null },
+            { id: 8, name: 'Kentang Goreng', price: 18000, category: 'cemilan', status: 'available', icon: '🥔', image: null },
+            { id: 9, name: 'Roti Bakar', price: 14000, category: 'cemilan', status: 'low', icon: '🍞', image: null }
+        ];
+        nextId = 10;
+        renderMenu();
+        updateCartUI();
+        showToast('⚠️ Menggunakan data default (data.json tidak ditemukan)');
+    }
+}
 
 // ===== CART =====
 let cart = [];
@@ -50,14 +92,54 @@ const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal
 const calcModal = new bootstrap.Modal(document.getElementById('calcModal'));
 const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
 
-// ===== FUNGSI FORMAT RUPIAH =====
-function formatRupiah(angka) {
-    // Ubah angka menjadi string dengan pemisah ribuan
-    return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
+// ===== GENERATE QUICK PAY BUTTONS =====
+function generateQuickPayButtons(total) {
+    const container = document.getElementById('quickPayButtons');
+    if (!container) return;
 
-function formatRupiahFull(angka) {
-    return `Rp ${formatRupiah(angka)}`;
+    if (total === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let recommendations = [];
+    let exact = total;
+
+    if (total <= 50000) {
+        recommendations = [50000, 60000, 100000];
+    } else if (total <= 100000) {
+        recommendations = [100000, 150000, 200000];
+    } else {
+        recommendations = [150000, 200000, 250000];
+    }
+
+    recommendations = recommendations.filter(val => val !== total);
+    while (recommendations.length < 3) {
+        let last = recommendations.length > 0 ? recommendations[recommendations.length - 1] : total;
+        recommendations.push(last + 50000);
+    }
+    recommendations = recommendations.slice(0, 3);
+
+    let html = '<div class="d-flex flex-wrap gap-2">';
+    html += `<button class="quick-pay-btn btn-exact" data-value="${exact}">Pas</button>`;
+    recommendations.forEach(val => {
+        html += `<button class="quick-pay-btn" data-value="${val}">Rp ${formatRupiah(val)}</button>`;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('.quick-pay-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const value = parseInt(this.dataset.value);
+            const paymentInput = document.getElementById('paymentAmount');
+            paymentInput.value = formatRupiah(value);
+            paymentInput.dispatchEvent(new Event('input'));
+
+            container.querySelectorAll('.quick-pay-btn').forEach(b => b.classList.remove('active-btn'));
+            this.classList.add('active-btn');
+        });
+    });
 }
 
 // ===== FUNGSI GO HOME =====
@@ -74,13 +156,13 @@ function goHome() {
 
 // ===== EVENT LISTENER =====
 document.getElementById('goHomeDesktop').addEventListener('click', goHome);
-document.getElementById('goHomeMobile').addEventListener('click', goHome);
 document.getElementById('goHomeFab').addEventListener('click', goHome);
-
 document.getElementById('openCalcDesktop').addEventListener('click', () => calcModal.show());
 document.getElementById('openCalcMobile').addEventListener('click', () => calcModal.show());
-document.getElementById('openHistoryDesktop').addEventListener('click', () => { renderHistory(); historyModal.show(); });
-document.getElementById('openHistoryMobile').addEventListener('click', () => { renderHistory(); historyModal.show(); });
+document.getElementById('openHistoryDesktop').addEventListener('click', () => { renderHistory();
+    historyModal.show(); });
+document.getElementById('openHistoryMobile').addEventListener('click', () => { renderHistory();
+    historyModal.show(); });
 
 const toastEl = document.getElementById('liveToast');
 const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
@@ -116,9 +198,9 @@ function renderMenu() {
         };
         const st = statusMap[item.status] || statusMap.out;
         const disabled = item.status === 'out' ? 'disabled' : '';
-        
-        const imageHtml = item.image ? 
-            `<img src="${item.image}" alt="${item.name}" />` : 
+
+        const imageHtml = item.image ?
+            `<img src="${item.image}" alt="${item.name}" />` :
             `<span class="no-image">${item.icon || '🍽️'}</span>`;
 
         html += `
@@ -275,21 +357,23 @@ function openCheckout() {
     `;
     summaryEl.innerHTML = html;
     document.getElementById('checkoutGrandTotal').textContent = `Rp ${formatRupiah(total)}`;
-    
+
     const $paymentMethod = $('#paymentMethod');
     $paymentMethod.val('cash').trigger('change');
-    
+
     document.getElementById('paymentAmount').value = '';
     document.getElementById('changeAmount').textContent = 'Rp 0';
     document.getElementById('paymentAmount').disabled = false;
     document.getElementById('paymentLabel').textContent = 'Bayar (Rp)';
     document.getElementById('qrisInfo').style.display = 'none';
     document.getElementById('changeDisplay').style.display = 'block';
-    
+
+    generateQuickPayButtons(total);
+
     checkoutModal.show();
 }
 
-// ===== Payment Method Handler =====
+// ===== PAYMENT METHOD HANDLER =====
 $(document).on('change', '#paymentMethod', function() {
     const method = this.value;
     const total = getCartTotal();
@@ -299,25 +383,38 @@ $(document).on('change', '#paymentMethod', function() {
     const paymentLabel = document.getElementById('paymentLabel');
 
     if (method === 'qris') {
-        paymentInput.value = total;
+        paymentInput.value = formatRupiah(total);
         paymentInput.disabled = true;
         paymentLabel.textContent = 'Total Dibayar (QRIS)';
         changeDisplay.style.display = 'none';
         qrisInfo.style.display = 'block';
         document.getElementById('changeAmount').textContent = `Rp ${formatRupiah(0)}`;
+        document.getElementById('quickPayButtons').innerHTML = '';
     } else {
         paymentInput.value = '';
         paymentInput.disabled = false;
         paymentLabel.textContent = 'Bayar (Rp)';
         changeDisplay.style.display = 'block';
         qrisInfo.style.display = 'none';
+        generateQuickPayButtons(total);
         paymentInput.dispatchEvent(new Event('input'));
     }
 });
 
-document.getElementById('paymentAmount').addEventListener('input', function() {
+// ===== EVENT FORMAT RUPIAH PADA INPUT BAYAR =====
+document.getElementById('paymentAmount').addEventListener('input', function(e) {
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    const length = this.value.length;
+
+    formatRupiahInput(this);
+
+    const newLength = this.value.length;
+    this.setSelectionRange(newLength, newLength);
+
+    const rawValue = this.value.replace(/\D/g, '');
+    const paid = parseInt(rawValue) || 0;
     const total = getCartTotal();
-    const paid = parseInt(this.value) || 0;
     const change = paid - total;
     const changeEl = document.getElementById('changeAmount');
     if (change >= 0) {
@@ -327,13 +424,22 @@ document.getElementById('paymentAmount').addEventListener('input', function() {
         changeEl.textContent = `Rp ${formatRupiah(Math.abs(change))} (kurang)`;
         changeEl.style.color = '#e74c3c';
     }
+
+    const quickButtons = document.querySelectorAll('.quick-pay-btn');
+    quickButtons.forEach(btn => {
+        btn.classList.remove('active-btn');
+        if (parseInt(btn.dataset.value) === paid) {
+            btn.classList.add('active-btn');
+        }
+    });
 });
 
 // ===== CONFIRM CHECKOUT =====
 document.getElementById('confirmCheckout').addEventListener('click', function() {
     const total = getCartTotal();
     const method = document.getElementById('paymentMethod').value;
-    let paid = parseInt(document.getElementById('paymentAmount').value) || 0;
+    const rawValue = document.getElementById('paymentAmount').value.replace(/\D/g, '');
+    let paid = parseInt(rawValue) || 0;
 
     if (method === 'cash') {
         if (paid < total) {
@@ -346,7 +452,7 @@ document.getElementById('confirmCheckout').addEventListener('click', function() 
     } else {
         if (paid !== total) {
             paid = total;
-            document.getElementById('paymentAmount').value = total;
+            document.getElementById('paymentAmount').value = formatRupiah(total);
         }
         saveTransaction('QRIS', total, paid, 0);
         showToast(`✅ Checkout berhasil! Metode: QRIS. Total: Rp ${formatRupiah(total)}`);
@@ -386,7 +492,20 @@ function saveTransaction(method, total, paid, change) {
     localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
 }
 
-// ===== RENDER HISTORY =====
+// ===== DELETE SINGLE TRANSACTION =====
+function deleteTransaction(id) {
+    if (confirm(`Yakin ingin menghapus transaksi #${id}?`)) {
+        transactionHistory = transactionHistory.filter(trx => trx.id !== id);
+        transactionHistory.forEach((trx, index) => {
+            trx.id = index + 1;
+        });
+        localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+        renderHistory();
+        showToast(`🗑️ Transaksi #${id} telah dihapus`);
+    }
+}
+
+// ===== RENDER HISTORY (Grand Total di Bawah) =====
 function renderHistory() {
     const container = document.getElementById('historyContent');
     const stored = localStorage.getItem('transactionHistory');
@@ -404,17 +523,27 @@ function renderHistory() {
         return;
     }
 
+    // Hitung Grand Total
+    const grandTotal = transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
+
     let html = '';
+
+    // Tampilkan transaksi dari yang terbaru (reverse)
     const reversed = [...transactionHistory].reverse();
-    reversed.forEach((trx, index) => {
-        const itemsList = trx.items.map(item => 
+    reversed.forEach((trx) => {
+        const itemsList = trx.items.map(item =>
             `${item.name} (${item.qty}×Rp${formatRupiah(item.price)})`
         ).join(', ');
         html += `
-            <div class="history-item">
+            <div class="history-item" data-id="${trx.id}">
                 <div class="header">
                     <span>#${trx.id} - ${trx.timestamp}</span>
-                    <span class="text-accent">Rp ${formatRupiah(trx.total)}</span>
+                    <div class="history-actions">
+                        <span class="text-accent">Rp ${formatRupiah(trx.total)}</span>
+                        <button class="delete-history-btn" data-id="${trx.id}" title="Hapus transaksi">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="detail">
                     <span><i class="bi bi-tag"></i> ${trx.method}</span>
@@ -427,10 +556,28 @@ function renderHistory() {
             </div>
         `;
     });
+
+    // Tambahkan Grand Total di Bawah (setelah semua transaksi)
+    html += `
+        <div class="history-grand-total">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
+                <span class="total">Rp ${formatRupiah(grandTotal)}</span>
+            </div>
+        </div>
+    `;
+
     container.innerHTML = html;
+
+    container.querySelectorAll('.delete-history-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = parseInt(this.dataset.id);
+            deleteTransaction(id);
+        });
+    });
 }
 
-// ===== CLEAR HISTORY =====
+// ===== CLEAR ALL HISTORY =====
 document.getElementById('clearHistoryBtn').addEventListener('click', function() {
     if (confirm('Yakin ingin menghapus semua history transaksi?')) {
         transactionHistory = [];
@@ -445,7 +592,7 @@ document.getElementById('manualImage').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const previewContainer = document.getElementById('imagePreviewContainer');
     const preview = document.getElementById('imagePreview');
-    
+
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -459,19 +606,31 @@ document.getElementById('manualImage').addEventListener('change', function(e) {
     }
 });
 
+document.getElementById('manualPrice').addEventListener('input', function(e) {
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    const length = this.value.length;
+
+    formatRupiahInput(this);
+
+    const newLength = this.value.length;
+    this.setSelectionRange(newLength, newLength);
+});
+
 document.getElementById('saveManualItem').addEventListener('click', function() {
     const name = document.getElementById('manualName').value.trim();
-    const price = parseInt(document.getElementById('manualPrice').value);
+    const rawPrice = document.getElementById('manualPrice').value.replace(/\D/g, '');
+    const price = parseInt(rawPrice) || 0;
     const category = document.getElementById('manualCategory').value;
     const status = document.getElementById('manualStatus').value;
     const icon = document.getElementById('manualIcon').value.trim() || '🍽️';
     const imageFile = document.getElementById('manualImage').files[0];
-    
+
     if (!name) {
         showToast('❌ Nama menu wajib diisi!');
         return;
     }
-    if (!price || price <= 0) {
+    if (price <= 0) {
         showToast('❌ Harga harus diisi dengan angka positif!');
         return;
     }
@@ -508,6 +667,10 @@ function saveNewItem(name, price, category, status, icon, imageData) {
     document.getElementById('imagePreviewContainer').style.display = 'none';
     document.getElementById('imagePreview').src = '#';
 }
+
+$('#addItemModal').on('shown.bs.modal', function() {
+    document.getElementById('manualPrice').value = '';
+});
 
 // ===== MOBILE CART TOGGLE =====
 function toggleMobileCart(open) {
@@ -591,12 +754,14 @@ document.getElementById('calcEqualsModal').addEventListener('click', function() 
         } else {
             calcExpression = 'Error';
             updateCalcDisplayModal();
-            setTimeout(() => { calcExpression = '0'; updateCalcDisplayModal(); }, 800);
+            setTimeout(() => { calcExpression = '0';
+                updateCalcDisplayModal(); }, 800);
         }
     } catch (e) {
         calcExpression = 'Error';
         updateCalcDisplayModal();
-        setTimeout(() => { calcExpression = '0'; updateCalcDisplayModal(); }, 800);
+        setTimeout(() => { calcExpression = '0';
+            updateCalcDisplayModal(); }, 800);
     }
 });
 
@@ -647,6 +812,18 @@ document.addEventListener('keydown', function(e) {
 function showToast(msg) {
     toastMsg.textContent = msg;
     toast.show();
+}
+
+// ===== UPDATE FOOTER YEAR =====
+function updateFooterYear() {
+    const startYear = 2026;
+    const currentYear = new Date().getFullYear();
+    const footerYearEl = document.getElementById('footerYear');
+    if (currentYear === startYear) {
+        footerYearEl.textContent = `${startYear}`;
+    } else {
+        footerYearEl.textContent = `${startYear} - ${currentYear}`;
+    }
 }
 
 // ================================================================
@@ -713,8 +890,8 @@ $(document).ready(function() {
 });
 
 // ===== INIT =====
-renderMenu();
-updateCartUI();
+updateFooterYear();
+loadMenuData();
 
 const storedHistory = localStorage.getItem('transactionHistory');
 if (storedHistory) {
@@ -728,10 +905,8 @@ window.addEventListener('resize', function() {
 });
 
 console.log('✅ KitaPOS siap!');
-console.log('📦 Menu items:', menuItems.length);
-console.log('🧮 Kalkulator tampilan rapi & menarik.');
 console.log('📱 Mobile-first responsive.');
 console.log('❤️ Tema #ED020E');
-console.log('💳 Metode pembayaran: Cash & QRIS dengan Select2.');
-console.log('📜 History transaksi tersedia.');
-console.log('🏠 Tombol Home untuk kembali ke menu utama.');
+console.log('📜 Data menu dari assets/data/data.json');
+console.log('🏷️ Footer: Kernel of Inventory Talent and Asset');
+console.log('📊 Grand Total di bagian bawah history');
