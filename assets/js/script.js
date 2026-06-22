@@ -133,6 +133,22 @@ const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal
 const calcModal = new bootstrap.Modal(document.getElementById('calcModal'));
 const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
 
+// ===== FUNGSI UNTUK SEMBUNYIKAN/TAMPILKAN CART DI MOBILE =====
+function hideMobileCart() {
+    if (window.innerWidth < 992) {
+        mobileCartToggle.style.display = 'none';
+    }
+}
+
+function showMobileCart() {
+    if (window.innerWidth < 992) {
+        // Tampilkan hanya jika cart sidebar tidak terbuka
+        if (!mobileCartSidebar.classList.contains('open')) {
+            mobileCartToggle.style.display = 'flex';
+        }
+    }
+}
+
 // ===== QUICK PAY BUTTONS =====
 function generateQuickPayButtons(total) {
     const container = document.getElementById('quickPayButtons');
@@ -569,6 +585,7 @@ document.getElementById('confirmCheckout').addEventListener('click', function() 
     clearCart();
     checkoutModal.hide();
     mobileCartSidebar.classList.remove('open');
+    showMobileCart();
 });
 
 // ===== SAVE TRANSACTION =====
@@ -796,6 +813,61 @@ document.getElementById('clearAllHistoryBtn').addEventListener('click', function
     clearAllTransactions();
 });
 
+// ===== MODAL EVENTS UNTUK SEMBUNYIKAN CART =====
+// History Modal
+document.getElementById('historyModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('historyModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
+// Add Menu Modal
+document.getElementById('addItemModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('addItemModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
+// Edit Menu Modal
+document.getElementById('editItemModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('editItemModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
+// Checkout Modal
+document.getElementById('checkoutModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('checkoutModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
+// Calculator Modal
+document.getElementById('calcModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('calcModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
+// Edit Opening Balance Modal
+document.getElementById('editOpeningBalanceModal').addEventListener('show.bs.modal', function() {
+    hideMobileCart();
+});
+
+document.getElementById('editOpeningBalanceModal').addEventListener('hidden.bs.modal', function() {
+    showMobileCart();
+});
+
 // ===== MANUAL ADD ITEM =====
 document.getElementById('manualImage').addEventListener('change', function (e) {
     var file = e.target.files[0];
@@ -1002,7 +1074,11 @@ function toggleMobileCart() {
     if (mobileCartSidebar.classList.contains('open')) {
         mobileCartToggle.style.display = 'none';
     } else {
-        mobileCartToggle.style.display = 'flex';
+        // Tampilkan hanya jika tidak ada modal yang terbuka
+        var modalBackdrop = document.querySelector('.modal-backdrop');
+        if (!modalBackdrop) {
+            mobileCartToggle.style.display = 'flex';
+        }
     }
 }
 
@@ -1010,7 +1086,10 @@ toggleCartBtn.addEventListener('click', toggleMobileCart);
 mobileCartToggle.addEventListener('click', toggleMobileCart);
 closeCartBtn.addEventListener('click', function() {
     mobileCartSidebar.classList.remove('open');
-    mobileCartToggle.style.display = 'flex';
+    var modalBackdrop = document.querySelector('.modal-backdrop');
+    if (!modalBackdrop) {
+        mobileCartToggle.style.display = 'flex';
+    }
 });
 
 document.addEventListener('click', function (e) {
@@ -1021,7 +1100,10 @@ document.addEventListener('click', function (e) {
         if (sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && !toggle.contains(e.target) && !toggleBtn.contains(e.target)) {
                 sidebar.classList.remove('open');
-                mobileCartToggle.style.display = 'flex';
+                var modalBackdrop = document.querySelector('.modal-backdrop');
+                if (!modalBackdrop) {
+                    mobileCartToggle.style.display = 'flex';
+                }
             }
         }
     }
@@ -1033,7 +1115,10 @@ window.addEventListener('resize', function () {
         mobileCartToggle.style.display = 'none';
     } else {
         if (!mobileCartSidebar.classList.contains('open')) {
-            mobileCartToggle.style.display = 'flex';
+            var modalBackdrop = document.querySelector('.modal-backdrop');
+            if (!modalBackdrop) {
+                mobileCartToggle.style.display = 'flex';
+            }
         } else {
             mobileCartToggle.style.display = 'none';
         }
@@ -1331,28 +1416,7 @@ $(document).ready(function () {
     });
 });
 
-// ===== HIDE CART TOGGLE WHEN HISTORY IS OPEN =====
-var historyModalEl = document.getElementById('historyModal');
-if (historyModalEl) {
-    historyModalEl.addEventListener('show.bs.modal', function () {
-        if (window.innerWidth < 992) {
-            var toggleBtn = document.getElementById('mobileCartToggle');
-            if (toggleBtn) toggleBtn.style.display = 'none';
-        }
-    });
-    historyModalEl.addEventListener('hidden.bs.modal', function () {
-        if (window.innerWidth < 992) {
-            var toggleBtn = document.getElementById('mobileCartToggle');
-            if (!mobileCartSidebar.classList.contains('open')) {
-                if (toggleBtn) toggleBtn.style.display = 'flex';
-            }
-        } else {
-            var toggleBtn = document.getElementById('mobileCartToggle');
-            if (toggleBtn) toggleBtn.style.display = 'none';
-        }
-    });
-}
-
+// ===== HIDE CART TOGGLE WHEN HISTORY IS OPEN (legacy, sudah diatasi oleh modal events) =====
 // ===== INITIALIZATION =====
 updateFooterYear();
 loadOpeningBalance();

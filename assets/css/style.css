@@ -3,7 +3,6 @@
    Main theme color: #ED020E
    ================================================================ */
 
-/* ===== GLOBAL RESET & BASE ===== */
 :root {
     --pos-primary: #ED020E;
     --pos-primary-dark: #c4020c;
@@ -1321,12 +1320,10 @@ body {
    PERBAIKAN UTAMA: MEDIA PRINT KHUSUS STRUK
    ================================================================ */
 @media print {
-    /* Sembunyikan SEMUA elemen di halaman */
     body * {
         visibility: hidden !important;
     }
 
-    /* Tampilkan hanya #strukContainer dan isinya */
     #strukContainer,
     #strukContainer * {
         visibility: visible !important;
