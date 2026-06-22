@@ -53,7 +53,7 @@
    ```bash
    git clone https://github.com/satriairawan05/KitaPOS.git
    cd KitaPOS
-   
+
 Buka di browser
 
 Jalankan dengan Live Server (VSCode), atau
@@ -75,30 +75,52 @@ Aplikasi siap digunakan! 🎉
 | 🧮 **Kalkulator** | Klik **Kalkulator** di navbar (desktop) atau floating button (mobile) |
 | 🏠 **Kembali ke Menu** | Klik ikon 🏠 di navbar atau floating button |
 
-📁 Struktur Proyek
+
+## 📁 Struktur Proyek
 
 
 KitaPOS/
-├── index.html              # Halaman utama
-├── assets/
-│   ├── css/
-│   │   └── style.css      # Custom CSS
-│   ├── js/
-│   │   └── script.js      # JavaScript utama
-│   └── data/
-│       └── data.json      # Data menu contoh
-└── README.md              # Dokumentasi
-🤝 Kontribusi
+├── 📄 index.html                 # Halaman utama aplikasi
+├── 📁 assets/
+│   ├── 📁 css/
+│   │   └── 🎨 style.css         # Custom CSS (tema #ED020E)
+│   ├── 📁 js/
+│   │   └── ⚡ script.js         # JavaScript utama (logika aplikasi)
+│   └── 📁 data/
+│       └── 📊 data.js          # Data menu contoh (default)
+└── 📄 README.md                 # Dokumentasi proyek
 
-Fork repository ini
+## 🤝 Kontribusi
 
-Buat branch fitur (git checkout -b fitur-keren)
+Kami sangat terbuka untuk kontribusi dari siapa pun! Ikuti langkah-langkah berikut:
 
-Commit perubahan (git commit -m 'Tambah fitur keren')
+1. **Fork** repository ini
+2. **Clone** hasil fork ke lokal Anda
+   ```bash
+   git clone https://github.com/username/KitaPOS.git
+   cd KitaPOS
+Buat branch untuk fitur baru
 
-Push ke branch (git push origin fitur-keren)
+bash
+git checkout -b fitur-keren
+Commit perubahan Anda
 
-Buat Pull Request
+bash
+git add .
+git commit -m 'Menambahkan fitur keren'
+Push ke branch
+
+bash
+git push origin fitur-keren
+Buat Pull Request di GitHub
+
+📋 Panduan Kontribusi
+Hal	Panduan
+Kode	Gunakan format yang konsisten dengan kode yang sudah ada
+Commit	Tulis pesan commit yang jelas dan deskriptif
+Dokumentasi	Perbarui README.md jika diperlukan
+Testing	Pastikan fitur berjalan dengan baik sebelum pull request
+Catatan: Jika menemukan bug atau memiliki saran fitur, silakan buat Issue terlebih dahulu di GitHub.
 
 📄 Lisensi
 
