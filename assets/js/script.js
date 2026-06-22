@@ -407,7 +407,7 @@ function updateCartUI() {
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
             cart.map(function (item) {
                 var clearBtn = item.qty > 2 ?
-                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 1"><i class="bi bi-x-circle"></i></button>` :
+                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 2"><i class="bi bi-x-circle"></i></button>` :
                     '';
                 return `
                     <div class="cart-item">
@@ -431,7 +431,7 @@ function updateCartUI() {
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
             cart.map(function (item) {
                 var clearBtn = item.qty > 2 ?
-                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 1"><i class="bi bi-x-circle"></i></button>` :
+                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 2"><i class="bi bi-x-circle"></i></button>` :
                     '';
                 return `
                     <div class="cart-item">
@@ -480,7 +480,7 @@ function updateCartUI() {
             var id = parseInt(this.dataset.id);
             var item = cart.find(function (c) { return c.id === id; });
             if (item && item.qty > 2) {
-                item.qty = 1;
+                item.qty = 2;
                 updateCartUI();
                 showToast('✅ ' + item.name + ' quantity reset to 1');
             }
