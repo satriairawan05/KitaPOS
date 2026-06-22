@@ -92,7 +92,8 @@ let transactionHistory = [];
 // ===== DOM REFERENCES =====
 const menuGrid = document.getElementById('menuGrid');
 const menuEmpty = document.getElementById('menuEmpty');
-const searchInput = document.getElementById('searchMenu');
+const searchInputDesktop = document.getElementById('searchMenuDesktop');
+const searchInputMobile = document.getElementById('searchMenuMobile');
 const categoryBtns = document.querySelectorAll('.btn-cat');
 
 const cartItemsEl = document.getElementById('cartItems');
@@ -147,21 +148,21 @@ function generateQuickPayButtons(total) {
 
     let html = '<div class="d-flex flex-wrap gap-2">';
     html += '<button class="quick-pay-btn btn-exact" data-value="' + exact + '">Exact</button>';
-    recommendations.forEach(function(val) {
+    recommendations.forEach(function (val) {
         html += '<button class="quick-pay-btn" data-value="' + val + '">Rp ' + formatRupiah(val) + '</button>';
     });
     html += '</div>';
 
     container.innerHTML = html;
 
-    container.querySelectorAll('.quick-pay-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    container.querySelectorAll('.quick-pay-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var value = parseInt(this.dataset.value);
             var paymentInput = document.getElementById('paymentAmount');
             paymentInput.value = formatRupiah(value);
             paymentInput.dispatchEvent(new Event('input'));
 
-            container.querySelectorAll('.quick-pay-btn').forEach(function(b) { b.classList.remove('active-btn'); });
+            container.querySelectorAll('.quick-pay-btn').forEach(function (b) { b.classList.remove('active-btn'); });
             this.classList.add('active-btn');
         });
     });
@@ -169,10 +170,11 @@ function generateQuickPayButtons(total) {
 
 // ===== GO HOME =====
 function goHome() {
-    categoryBtns.forEach(function(b) { b.classList.remove('active'); });
+    categoryBtns.forEach(function (b) { b.classList.remove('active'); });
     document.querySelector('.btn-cat[data-cat="all"]').classList.add('active');
     currentCategory = 'all';
-    searchInput.value = '';
+    if (searchInputDesktop) searchInputDesktop.value = '';
+    if (searchInputMobile) searchInputMobile.value = '';
     searchQuery = '';
     renderMenu();
     document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -182,22 +184,22 @@ function goHome() {
 // ===== EVENT LISTENERS =====
 document.getElementById('goHomeDesktop').addEventListener('click', goHome);
 document.getElementById('goHomeFab').addEventListener('click', goHome);
-document.getElementById('openCalcDesktop').addEventListener('click', function() { calcModal.show(); });
-document.getElementById('openCalcMobile').addEventListener('click', function() { calcModal.show(); });
-document.getElementById('openHistoryDesktop').addEventListener('click', function() {
+document.getElementById('openCalcDesktop').addEventListener('click', function () { calcModal.show(); });
+document.getElementById('openCalcMobile').addEventListener('click', function () { calcModal.show(); });
+document.getElementById('openHistoryDesktop').addEventListener('click', function () {
     renderHistory();
     historyModal.show();
 });
-document.getElementById('openHistoryMobile').addEventListener('click', function() {
+document.getElementById('openHistoryMobile').addEventListener('click', function () {
     renderHistory();
     historyModal.show();
 });
 
 // ===== EDIT OPENING BALANCE =====
-document.getElementById('editOpeningBalanceDesktop').addEventListener('click', function() {
+document.getElementById('editOpeningBalanceDesktop').addEventListener('click', function () {
     openEditOpeningBalanceModal();
 });
-document.getElementById('editOpeningBalanceMobile').addEventListener('click', function() {
+document.getElementById('editOpeningBalanceMobile').addEventListener('click', function () {
     openEditOpeningBalanceModal();
 });
 
@@ -206,12 +208,12 @@ function openEditOpeningBalanceModal() {
     input.value = formatRupiah(openingBalance);
     var modal = new bootstrap.Modal(document.getElementById('editOpeningBalanceModal'));
     modal.show();
-    input.addEventListener('input', function() {
+    input.addEventListener('input', function () {
         formatRupiahInput(this);
     });
 }
 
-document.getElementById('saveOpeningBalance').addEventListener('click', function() {
+document.getElementById('saveOpeningBalance').addEventListener('click', function () {
     var input = document.getElementById('editOpeningBalanceInput');
     var raw = input.value.replace(/\D/g, '');
     var value = parseInt(raw, 10) || 0;
@@ -235,11 +237,11 @@ var searchQuery = '';
 function renderMenu() {
     var filtered = menuItems;
     if (currentCategory !== 'all') {
-        filtered = filtered.filter(function(item) { return item.category === currentCategory; });
+        filtered = filtered.filter(function (item) { return item.category === currentCategory; });
     }
     if (searchQuery.trim()) {
         var q = searchQuery.trim().toLowerCase();
-        filtered = filtered.filter(function(item) { return item.name.toLowerCase().includes(q); });
+        filtered = filtered.filter(function (item) { return item.name.toLowerCase().includes(q); });
     }
 
     if (filtered.length === 0) {
@@ -252,7 +254,7 @@ function renderMenu() {
     menuEmpty.classList.add('d-none');
 
     var html = '';
-    filtered.forEach(function(item) {
+    filtered.forEach(function (item) {
         var statusMap = {
             available: { label: '✅ Available', cls: 'available' },
             low: { label: '⚠️ Low Stock', cls: 'low' },
@@ -284,14 +286,14 @@ function renderMenu() {
     });
     menuGrid.innerHTML = html;
 
-    document.querySelectorAll('.menu-card .btn-add-action:not([disabled])').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.menu-card .btn-add-action:not([disabled])').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             addToCart(parseInt(this.dataset.id));
         });
     });
 
-    document.querySelectorAll('.menu-card .btn-edit-action').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
+    document.querySelectorAll('.menu-card .btn-edit-action').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
             e.stopPropagation();
             var id = parseInt(this.dataset.id);
             openEditMenu(id);
@@ -300,9 +302,9 @@ function renderMenu() {
 }
 
 // ===== CATEGORY FILTER =====
-categoryBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        categoryBtns.forEach(function(b) { b.classList.remove('active'); });
+categoryBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        categoryBtns.forEach(function (b) { b.classList.remove('active'); });
         this.classList.add('active');
         currentCategory = this.dataset.cat;
         renderMenu();
@@ -310,19 +312,25 @@ categoryBtns.forEach(function(btn) {
 });
 
 // ===== SEARCH =====
-searchInput.addEventListener('input', function() {
+function handleSearchInput() {
     searchQuery = this.value;
     renderMenu();
-});
+}
+if (searchInputDesktop) {
+    searchInputDesktop.addEventListener('input', handleSearchInput);
+}
+if (searchInputMobile) {
+    searchInputMobile.addEventListener('input', handleSearchInput);
+}
 
 // ===== CART FUNCTIONS =====
 function addToCart(id) {
-    var item = menuItems.find(function(i) { return i.id === id; });
+    var item = menuItems.find(function (i) { return i.id === id; });
     if (!item || item.status === 'out') {
         showToast('Menu not available!');
         return;
     }
-    var existing = cart.find(function(c) { return c.id === id; });
+    var existing = cart.find(function (c) { return c.id === id; });
     if (existing) {
         existing.qty += 1;
     } else {
@@ -333,7 +341,7 @@ function addToCart(id) {
 }
 
 function removeFromCart(id) {
-    var idx = cart.findIndex(function(c) { return c.id === id; });
+    var idx = cart.findIndex(function (c) { return c.id === id; });
     if (idx === -1) return;
     if (cart[idx].qty > 1) {
         cart[idx].qty -= 1;
@@ -349,22 +357,22 @@ function clearCart() {
 }
 
 function getCartTotal() {
-    return cart.reduce(function(sum, item) { return sum + (item.price * item.qty); }, 0);
+    return cart.reduce(function (sum, item) { return sum + (item.price * item.qty); }, 0);
 }
 
 function getCartCount() {
-    return cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+    return cart.reduce(function (sum, item) { return sum + item.qty; }, 0);
 }
 
 function updateCartUI() {
-    requestAnimationFrame(function() {
+    requestAnimationFrame(function () {
         var total = getCartTotal();
         var count = getCartCount();
         var totalStr = 'Rp ' + formatRupiah(total);
 
         cartItemsEl.innerHTML = cart.length === 0 ?
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
-            cart.map(function(item) {
+            cart.map(function (item) {
                 return `
                     <div class="cart-item">
                         <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
@@ -383,7 +391,7 @@ function updateCartUI() {
 
         mobileCartItems.innerHTML = cart.length === 0 ?
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
-            cart.map(function(item) {
+            cart.map(function (item) {
                 return `
                     <div class="cart-item">
                         <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
@@ -402,13 +410,13 @@ function updateCartUI() {
         mobileCartCountTop.textContent = count;
         document.getElementById('mobileCheckoutBtn').disabled = count === 0;
 
-        document.querySelectorAll('.cart-item .remove-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('.cart-item .remove-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 removeFromCart(parseInt(this.dataset.id));
             });
         });
-        document.querySelectorAll('#mobileCartItems .remove-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+        document.querySelectorAll('#mobileCartItems .remove-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
                 removeFromCart(parseInt(this.dataset.id));
             });
         });
@@ -425,14 +433,14 @@ function openCheckout() {
     var summaryEl = document.getElementById('checkoutSummary');
     var html = `
         <p class="fw-600 mb-2">Ordered items:</p>
-        ${cart.map(function(item) {
-            return `
+        ${cart.map(function (item) {
+        return `
                 <div class="item-row">
                     <span>${item.icon || '🍽️'} ${item.name} × ${item.qty}</span>
                     <span>Rp ${formatRupiah(item.price * item.qty)}</span>
                 </div>
             `;
-        }).join('')}
+    }).join('')}
         <div class="total-row">
             <span>Total</span>
             <span>Rp ${formatRupiah(total)}</span>
@@ -457,7 +465,7 @@ function openCheckout() {
 }
 
 // ===== PAYMENT METHOD =====
-$(document).on('change', '#paymentMethod', function() {
+$(document).on('change', '#paymentMethod', function () {
     var method = this.value;
     var total = getCartTotal();
     var paymentInput = document.getElementById('paymentAmount');
@@ -485,7 +493,7 @@ $(document).on('change', '#paymentMethod', function() {
 });
 
 // ===== PAYMENT INPUT FORMAT =====
-document.getElementById('paymentAmount').addEventListener('input', function(e) {
+document.getElementById('paymentAmount').addEventListener('input', function (e) {
     var start = this.selectionStart;
     var end = this.selectionEnd;
     var length = this.value.length;
@@ -509,7 +517,7 @@ document.getElementById('paymentAmount').addEventListener('input', function(e) {
     }
 
     var quickButtons = document.querySelectorAll('.quick-pay-btn');
-    quickButtons.forEach(function(btn) {
+    quickButtons.forEach(function (btn) {
         btn.classList.remove('active-btn');
         if (parseInt(btn.dataset.value) === paid) {
             btn.classList.add('active-btn');
@@ -530,15 +538,17 @@ document.getElementById('confirmCheckout').addEventListener('click', function() 
             return;
         }
         var change = paid - total;
-        saveTransaction('Cash', total, paid, change);
+        var transaction = saveTransaction('Cash', total, paid, change);
         showToast('✅ Checkout successful! Method: Cash. Change: Rp ' + formatRupiah(change));
+        printStruk(transaction);
     } else {
         if (paid !== total) {
             paid = total;
             document.getElementById('paymentAmount').value = formatRupiah(total);
         }
-        saveTransaction('QRIS', total, paid, 0);
+        var transaction = saveTransaction('QRIS', total, paid, 0);
         showToast('✅ Checkout successful! Method: QRIS. Total: Rp ' + formatRupiah(total));
+        printStruk(transaction);
     }
 
     clearCart();
@@ -575,13 +585,83 @@ function saveTransaction(method, total, paid, change) {
     };
     transactionHistory.push(transaction);
     localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+    return transaction;
+}
+
+// ===== PRINT RECEIPT (EPSON 58mm/80mm) =====
+function printStruk(transaction) {
+    // Validate transaction data
+    if (!transaction || !transaction.items || transaction.items.length === 0) {
+        showToast('❌ No transaction data to print!');
+        return;
+    }
+
+    // Get the print container and ensure it's visible
+    var container = document.getElementById('strukContainer');
+    if (!container) {
+        showToast('❌ Print container not found!');
+        return;
+    }
+
+    // Fill receipt data
+    document.getElementById('strukKasir').textContent = 'Admin';
+    document.getElementById('strukWaktu').textContent = transaction.timestamp;
+    document.getElementById('strukId').textContent = '#' + transaction.id;
+    document.getElementById('strukMethod').textContent = transaction.method === 'Cash' ? 'Tunai' : 'QRIS';
+
+    // Calculate total items count
+    var totalQty = transaction.items.reduce(function(sum, item) {
+        return sum + item.qty;
+    }, 0);
+
+    // Generate items list
+    var tbody = document.getElementById('strukItemList');
+    tbody.innerHTML = '';
+    transaction.items.forEach(function(item) {
+        var tr = document.createElement('tr');
+        var pricePerItem = formatRupiah(item.price);
+        var subtotal = formatRupiah(item.subtotal);
+        tr.innerHTML = '<td style="text-align:left;">' + item.name + '</td>' +
+                       '<td style="text-align:center;">' + pricePerItem + ' x ' + item.qty + '</td>' +
+                       '<td style="text-align:right;">' + subtotal + '</td>';
+        tbody.appendChild(tr);
+    });
+
+    // Totals
+    document.getElementById('strukSubtotal').textContent = 'Rp' + formatRupiah(transaction.total);
+    document.getElementById('strukTotalQty').textContent = totalQty;
+    document.getElementById('strukTotal').textContent = 'Rp' + formatRupiah(transaction.total);
+    document.getElementById('strukBayar').textContent = 'Rp' + formatRupiah(transaction.paid);
+    document.getElementById('strukKembali').textContent = 'Rp' + formatRupiah(transaction.change);
+
+    // Apply printer size class (58mm or 80mm)
+    var strukContent = container.querySelector('.struk-content');
+    if (strukContent) {
+        strukContent.classList.remove('paper-58mm', 'paper-80mm');
+        var size = localStorage.getItem('defaultPrinterSize') || '58mm';
+        strukContent.classList.add('paper-' + size);
+    }
+
+    // Show container and trigger print
+    container.style.display = 'block';
+
+    // Use a slight delay to ensure DOM update
+    setTimeout(function() {
+        window.print();
+    }, 200);
+
+    // After print, hide container
+    window.onafterprint = function() {
+        container.style.display = 'none';
+        window.onafterprint = null;
+    };
 }
 
 // ===== DELETE TRANSACTION =====
 function deleteTransaction(id) {
     if (confirm('Are you sure you want to delete transaction #' + id + '?')) {
-        transactionHistory = transactionHistory.filter(function(trx) { return trx.id !== id; });
-        transactionHistory.forEach(function(trx, index) {
+        transactionHistory = transactionHistory.filter(function (trx) { return trx.id !== id; });
+        transactionHistory.forEach(function (trx, index) {
             trx.id = index + 1;
         });
         localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
@@ -591,7 +671,6 @@ function deleteTransaction(id) {
 }
 
 // ===== RENDER HISTORY =====
-// Render transaction history with opening balance, total transactions, and grand total
 function renderHistory() {
     var container = document.getElementById('historyContent');
     var stored = localStorage.getItem('transactionHistory');
@@ -599,13 +678,11 @@ function renderHistory() {
         transactionHistory = JSON.parse(stored);
     }
 
-    // Calculate total transactions (0 if empty)
-    var totalTransactions = transactionHistory.reduce(function(sum, trx) { return sum + trx.total; }, 0);
+    var totalTransactions = transactionHistory.reduce(function (sum, trx) { return sum + trx.total; }, 0);
     var grandTotal = openingBalance + totalTransactions;
 
     var html = '';
 
-    // Opening Balance section
     html += `
         <div class="history-opening-balance">
             <div class="d-flex justify-content-between align-items-center">
@@ -615,7 +692,6 @@ function renderHistory() {
         </div>
     `;
 
-    // Total Transactions (excluding opening balance)
     html += `
         <div class="history-total-transactions">
             <div class="d-flex justify-content-between align-items-center">
@@ -625,7 +701,6 @@ function renderHistory() {
         </div>
     `;
 
-    // Grand Total
     html += `
         <div class="history-grand-total">
             <div class="d-flex justify-content-between align-items-center">
@@ -636,7 +711,6 @@ function renderHistory() {
         <hr />
     `;
 
-    // If no transactions exist, show empty state
     if (transactionHistory.length === 0) {
         html += `
             <div class="history-empty">
@@ -648,10 +722,9 @@ function renderHistory() {
         return;
     }
 
-    // Display transactions in reverse chronological order (newest first)
     var reversed = [...transactionHistory].reverse();
-    reversed.forEach(function(trx) {
-        var itemsList = trx.items.map(function(item) {
+    reversed.forEach(function (trx) {
+        var itemsList = trx.items.map(function (item) {
             return item.name + ' (' + item.qty + '×Rp' + formatRupiah(item.price) + ')';
         }).join(', ');
         html += `
@@ -660,6 +733,9 @@ function renderHistory() {
                     <span>#${trx.id} - ${trx.timestamp}</span>
                     <div class="history-actions">
                         <span class="text-accent">Rp ${formatRupiah(trx.total)}</span>
+                        <button class="print-history-btn" data-transaction='${JSON.stringify(trx).replace(/'/g, "&#39;")}' title="Print receipt">
+                            <i class="bi bi-printer"></i>
+                        </button>
                         <button class="delete-history-btn" data-id="${trx.id}" title="Delete transaction">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -679,9 +755,23 @@ function renderHistory() {
 
     container.innerHTML = html;
 
-    // Attach event listeners to delete buttons
-    container.querySelectorAll('.delete-history-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    container.querySelectorAll('.print-history-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var transactionData = this.dataset.transaction;
+            if (transactionData) {
+                try {
+                    var transaction = JSON.parse(transactionData);
+                    printStruk(transaction);
+                } catch (e) {
+                    showToast('❌ Error printing receipt');
+                    console.error('Print error:', e);
+                }
+            }
+        });
+    });
+
+    container.querySelectorAll('.delete-history-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
             var id = parseInt(this.dataset.id);
             deleteTransaction(id);
         });
@@ -689,7 +779,7 @@ function renderHistory() {
 }
 
 // ===== CLEAR HISTORY =====
-document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+document.getElementById('clearHistoryBtn')?.addEventListener('click', function () {
     if (confirm('Are you sure you want to clear all transaction history?')) {
         transactionHistory = [];
         localStorage.removeItem('transactionHistory');
@@ -699,14 +789,14 @@ document.getElementById('clearHistoryBtn').addEventListener('click', function() 
 });
 
 // ===== MANUAL ADD ITEM =====
-document.getElementById('manualImage').addEventListener('change', function(e) {
+document.getElementById('manualImage').addEventListener('change', function (e) {
     var file = e.target.files[0];
     var previewContainer = document.getElementById('imagePreviewContainer');
     var preview = document.getElementById('imagePreview');
 
     if (file) {
         var reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             preview.src = event.target.result;
             previewContainer.style.display = 'block';
         };
@@ -717,23 +807,16 @@ document.getElementById('manualImage').addEventListener('change', function(e) {
     }
 });
 
-document.getElementById('manualPrice').addEventListener('input', function(e) {
-    var start = this.selectionStart;
-    var end = this.selectionEnd;
-    var length = this.value.length;
-
+document.getElementById('manualPrice').addEventListener('input', function (e) {
     formatRupiahInput(this);
-
-    var newLength = this.value.length;
-    this.setSelectionRange(newLength, newLength);
 });
 
-document.getElementById('editImage').addEventListener('change', function(e) {
+document.getElementById('editImage').addEventListener('change', function (e) {
     var file = e.target.files[0];
     var preview = document.getElementById('editImagePreview');
     if (file) {
         var reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             preview.src = event.target.result;
             preview.style.display = 'block';
         };
@@ -744,11 +827,11 @@ document.getElementById('editImage').addEventListener('change', function(e) {
     }
 });
 
-document.getElementById('editPrice').addEventListener('input', function(e) {
+document.getElementById('editPrice').addEventListener('input', function (e) {
     formatRupiahInput(this);
 });
 
-document.getElementById('saveManualItem').addEventListener('click', function() {
+document.getElementById('saveManualItem').addEventListener('click', function () {
     var name = document.getElementById('manualName').value.trim();
     var rawPrice = document.getElementById('manualPrice').value.replace(/\D/g, '');
     var price = parseInt(rawPrice) || 0;
@@ -769,7 +852,7 @@ document.getElementById('saveManualItem').addEventListener('click', function() {
     var imageData = null;
     if (imageFile) {
         var reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             imageData = event.target.result;
             saveNewItem(name, price, category, status, icon, imageData);
         };
@@ -801,7 +884,7 @@ function saveNewItem(name, price, category, status, icon, imageData) {
 
 // ===== EDIT MENU =====
 function openEditMenu(id) {
-    var item = menuItems.find(function(i) { return i.id === id; });
+    var item = menuItems.find(function (i) { return i.id === id; });
     if (!item) {
         showToast('❌ Menu not found!');
         return;
@@ -827,7 +910,7 @@ function openEditMenu(id) {
     var editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
     editModal.show();
 
-    setTimeout(function() {
+    setTimeout(function () {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -840,7 +923,7 @@ function openEditMenu(id) {
     }, 100);
 }
 
-document.getElementById('saveEditItem').addEventListener('click', function() {
+document.getElementById('saveEditItem').addEventListener('click', function () {
     var id = parseInt(document.getElementById('editItemId').value);
     var name = document.getElementById('editName').value.trim();
     var rawPrice = document.getElementById('editPrice').value.replace(/\D/g, '');
@@ -859,7 +942,7 @@ document.getElementById('saveEditItem').addEventListener('click', function() {
         return;
     }
 
-    var index = menuItems.findIndex(function(i) { return i.id === id; });
+    var index = menuItems.findIndex(function (i) { return i.id === id; });
     if (index === -1) {
         showToast('❌ Menu not found!');
         return;
@@ -876,7 +959,7 @@ document.getElementById('saveEditItem').addEventListener('click', function() {
             image: imageData !== undefined ? imageData : menuItems[index].image
         };
 
-        cart.forEach(function(cartItem) {
+        cart.forEach(function (cartItem) {
             if (cartItem.id === id) {
                 cartItem.name = name;
                 cartItem.price = price;
@@ -892,7 +975,7 @@ document.getElementById('saveEditItem').addEventListener('click', function() {
 
     if (imageFile) {
         var reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             applyEdit(event.target.result);
         };
         reader.readAsDataURL(imageFile);
@@ -901,20 +984,28 @@ document.getElementById('saveEditItem').addEventListener('click', function() {
     }
 });
 
-$('#addItemModal').on('shown.bs.modal', function() {
+$('#addItemModal').on('shown.bs.modal', function () {
     document.getElementById('manualPrice').value = '';
 });
 
 // ===== MOBILE CART TOGGLE =====
 function toggleMobileCart() {
     mobileCartSidebar.classList.toggle('open');
+    if (mobileCartSidebar.classList.contains('open')) {
+        mobileCartToggle.style.display = 'none';
+    } else {
+        mobileCartToggle.style.display = 'flex';
+    }
 }
 
 toggleCartBtn.addEventListener('click', toggleMobileCart);
 mobileCartToggle.addEventListener('click', toggleMobileCart);
-closeCartBtn.addEventListener('click', toggleMobileCart);
+closeCartBtn.addEventListener('click', function() {
+    mobileCartSidebar.classList.remove('open');
+    mobileCartToggle.style.display = 'flex';
+});
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (window.innerWidth < 992) {
         var sidebar = mobileCartSidebar;
         var toggle = mobileCartToggle;
@@ -922,7 +1013,21 @@ document.addEventListener('click', function(e) {
         if (sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && !toggle.contains(e.target) && !toggleBtn.contains(e.target)) {
                 sidebar.classList.remove('open');
+                mobileCartToggle.style.display = 'flex';
             }
+        }
+    }
+});
+
+window.addEventListener('resize', function () {
+    if (window.innerWidth >= 992) {
+        mobileCartSidebar.classList.remove('open');
+        mobileCartToggle.style.display = 'none';
+    } else {
+        if (!mobileCartSidebar.classList.contains('open')) {
+            mobileCartToggle.style.display = 'flex';
+        } else {
+            mobileCartToggle.style.display = 'none';
         }
     }
 });
@@ -952,7 +1057,7 @@ function updateCalcDisplayModal() {
         return;
     }
     var tokens = displayText.split(/([+\−×÷])/);
-    var formattedTokens = tokens.map(function(token) {
+    var formattedTokens = tokens.map(function (token) {
         if (['+', '−', '×', '÷'].includes(token)) return token;
         var num = parseFloat(token);
         if (!isNaN(num) && token !== '') {
@@ -987,21 +1092,21 @@ function appendToExpression(value) {
     updateCalcDisplayModal();
 }
 
-document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
         var val = this.dataset.val;
         appendToExpression(val);
     });
 });
 
-document.getElementById('calcClearModal').addEventListener('click', function() {
+document.getElementById('calcClearModal').addEventListener('click', function () {
     calcExpression = '';
     calcResult = '';
     calcJustEvaluated = false;
     updateCalcDisplayModal();
 });
 
-document.getElementById('calcBackspaceModal').addEventListener('click', function() {
+document.getElementById('calcBackspaceModal').addEventListener('click', function () {
     if (calcJustEvaluated) {
         calcExpression = '';
         calcJustEvaluated = false;
@@ -1011,7 +1116,7 @@ document.getElementById('calcBackspaceModal').addEventListener('click', function
     updateCalcDisplayModal();
 });
 
-document.getElementById('calcEqualsModal').addEventListener('click', function() {
+document.getElementById('calcEqualsModal').addEventListener('click', function () {
     try {
         var expr = calcExpression;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
@@ -1026,7 +1131,7 @@ document.getElementById('calcEqualsModal').addEventListener('click', function() 
         } else {
             calcExpression = 'Error';
             updateCalcDisplayModal();
-            setTimeout(function() {
+            setTimeout(function () {
                 calcExpression = '';
                 updateCalcDisplayModal();
             }, 800);
@@ -1034,7 +1139,7 @@ document.getElementById('calcEqualsModal').addEventListener('click', function() 
     } catch (e) {
         calcExpression = 'Error';
         updateCalcDisplayModal();
-        setTimeout(function() {
+        setTimeout(function () {
             calcExpression = '';
             updateCalcDisplayModal();
         }, 800);
@@ -1043,7 +1148,7 @@ document.getElementById('calcEqualsModal').addEventListener('click', function() 
 
 updateCalcDisplayModal();
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     var modalOpen = document.getElementById('calcModal').classList.contains('show');
     if (!modalOpen) return;
     var key = e.key;
@@ -1086,10 +1191,56 @@ function updateFooterYear() {
     }
 }
 
+// ===== SYSTEM SETTING: PRINTER SIZE MANAGEMENT =====
+let defaultPrinterSize = '58mm';
+
+function loadPrinterSetting() {
+    const savedSize = localStorage.getItem('defaultPrinterSize');
+    if (savedSize) {
+        defaultPrinterSize = savedSize;
+    } else {
+        defaultPrinterSize = '58mm';
+        localStorage.setItem('defaultPrinterSize', '58mm');
+    }
+    
+    if (defaultPrinterSize === '80mm') {
+        const radio80 = document.getElementById('size80');
+        if (radio80) radio80.checked = true;
+    } else {
+        const radio58 = document.getElementById('size58');
+        if (radio58) radio58.checked = true;
+    }
+    applyReceiptLayoutClass();
+}
+
+function applyReceiptLayoutClass() {
+    const strukContent = document.querySelector('#strukContainer .struk-content');
+    if (!strukContent) return;
+
+    if (defaultPrinterSize === '80mm') {
+        strukContent.classList.remove('paper-58mm');
+        strukContent.classList.add('paper-80mm');
+    } else {
+        strukContent.classList.remove('paper-80mm');
+        strukContent.classList.add('paper-58mm');
+    }
+}
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'printerSizeSetting') {
+        defaultPrinterSize = e.target.value;
+        localStorage.setItem('defaultPrinterSize', defaultPrinterSize);
+        applyReceiptLayoutClass();
+        showToast('⚙️ Printer setting updated to: ' + defaultPrinterSize);
+    }
+});
+
+loadPrinterSetting();
+
 // ================================================================
 // ===== SELECT2 INITIALIZATION =====
 // ================================================================
-$(document).ready(function() {
+$(document).ready(function () {
     function initSelect2() {
         $('.select2-custom').select2({
             theme: 'default',
@@ -1102,7 +1253,7 @@ $(document).ready(function() {
 
     initSelect2();
 
-    $('#addItemModal').on('shown.bs.modal', function() {
+    $('#addItemModal').on('shown.bs.modal', function () {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -1114,7 +1265,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#editItemModal').on('shown.bs.modal', function() {
+    $('#editItemModal').on('shown.bs.modal', function () {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -1126,7 +1277,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#editItemModal').on('hidden.bs.modal', function() {
+    $('#editItemModal').on('hidden.bs.modal', function () {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -1137,7 +1288,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#checkoutModal').on('shown.bs.modal', function() {
+    $('#checkoutModal').on('shown.bs.modal', function () {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -1149,7 +1300,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#addItemModal').on('hidden.bs.modal', function() {
+    $('#addItemModal').on('hidden.bs.modal', function () {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -1160,7 +1311,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#checkoutModal').on('hidden.bs.modal', function() {
+    $('#checkoutModal').on('hidden.bs.modal', function () {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -1175,16 +1326,18 @@ $(document).ready(function() {
 // ===== HIDE CART TOGGLE WHEN HISTORY IS OPEN =====
 var historyModalEl = document.getElementById('historyModal');
 if (historyModalEl) {
-    historyModalEl.addEventListener('show.bs.modal', function() {
+    historyModalEl.addEventListener('show.bs.modal', function () {
         if (window.innerWidth < 992) {
             var toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'none';
         }
     });
-    historyModalEl.addEventListener('hidden.bs.modal', function() {
+    historyModalEl.addEventListener('hidden.bs.modal', function () {
         if (window.innerWidth < 992) {
             var toggleBtn = document.getElementById('mobileCartToggle');
-            if (toggleBtn) toggleBtn.style.display = 'flex';
+            if (!mobileCartSidebar.classList.contains('open')) {
+                if (toggleBtn) toggleBtn.style.display = 'flex';
+            }
         } else {
             var toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'none';
@@ -1202,7 +1355,7 @@ if (storedHistory) {
     transactionHistory = JSON.parse(storedHistory);
 }
 
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     if (window.innerWidth >= 992) {
         mobileCartSidebar.classList.remove('open');
     }

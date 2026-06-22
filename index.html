@@ -21,15 +21,21 @@
     <nav class="pos-navbar">
         <div class="container-fluid px-0 px-sm-2">
             <div class="row g-2 align-items-center">
+
+                <!-- Brand (left) + mobile cart badge -->
                 <div class="col-6 col-md-3 d-flex align-items-center">
                     <span class="brand"><i class="bi bi-shop"></i> Kita<span>POS</span></span>
                     <span class="cart-badge d-md-none" id="mobileCartCount">0</span>
                 </div>
-                <div class="col-6 col-md-4 d-flex justify-content-end justify-content-md-start">
-                    <input type="text" class="search-box" id="searchMenu" placeholder="Search menu..." />
+
+                <!-- Desktop: Search (center) -->
+                <div class="col-md-4 d-none d-md-flex justify-content-md-start">
+                    <input type="text" class="search-box" id="searchMenuDesktop" placeholder="Search menu..." />
                 </div>
-                <div class="col-12 col-md-5 d-flex justify-content-between align-items-center mt-1 mt-md-0">
-                    <div class="d-none d-md-flex align-items-center gap-2">
+
+                <!-- Desktop: Actions (right) -->
+                <div class="col-md-5 d-none d-md-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
                         <button class="home-nav-btn" id="goHomeDesktop" title="Main Menu">
                             <i class="bi bi-house-fill"></i>
                         </button>
@@ -43,19 +49,27 @@
                         <span class="fw-700" style="color:#fff;">Cart</span>
                         <span class="cart-badge" id="desktopCartCount">0</span>
                     </div>
-                    <div class="d-flex gap-1 w-100 w-md-auto justify-content-end">
-                        <button class="btn btn-sm btn-nav-icon d-md-none" id="toggleCartMobile">
-                            <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
-                                style="color:#7a1a1a;">0</span>
-                        </button>
-                        <button class="btn btn-sm btn-history-mobile d-md-none" id="openHistoryMobile">
-                            <i class="bi bi-clock-history"></i>
-                        </button>
-                        <button class="btn btn-sm btn-add-menu" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                            <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
-                        </button>
-                    </div>
                 </div>
+
+                <!-- Mobile: Actions (right) -->
+                <div class="col-6 d-md-none d-flex justify-content-end gap-1">
+                    <button class="btn btn-sm btn-nav-icon" id="toggleCartMobile">
+                        <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
+                            style="color:#7a1a1a;">0</span>
+                    </button>
+                    <button class="btn btn-sm btn-history-mobile" id="openHistoryMobile">
+                        <i class="bi bi-clock-history"></i>
+                    </button>
+                    <button class="btn btn-sm btn-add-menu" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
+                    </button>
+                </div>
+
+                <!-- Mobile: Search (full width below brand) -->
+                <div class="col-12 d-md-none mt-1">
+                    <input type="text" class="search-box w-100" id="searchMenuMobile" placeholder="Search menu..." />
+                </div>
+
             </div>
         </div>
     </nav>
@@ -78,13 +92,14 @@
             </div>
             <div class="col-lg-4 d-none d-lg-block">
                 <div class="cart-sidebar" id="cartSidebar">
-                    <!-- ===== OPENING BALANCE (DESKTOP) ===== -->
+                    <!-- Opening Balance (Desktop) -->
                     <div class="opening-balance">
                         <div class="d-flex justify-content-between align-items-center">
                             <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                             <span>
                                 <span id="openingBalanceDisplay">Rp 0</span>
-                                <button class="btn btn-sm btn-link p-0 ms-1" id="editOpeningBalanceDesktop" title="Edit Opening Balance">
+                                <button class="btn btn-sm btn-link p-0 ms-1" id="editOpeningBalanceDesktop"
+                                    title="Edit Opening Balance">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                             </span>
@@ -121,13 +136,14 @@
     </button>
     <div class="cart-sidebar d-lg-none" id="mobileCartSidebar">
         <button class="cart-close" id="closeMobileCart"><i class="bi bi-x-lg"></i></button>
-        <!-- ===== OPENING BALANCE (MOBILE) ===== -->
+        <!-- Opening Balance (Mobile) -->
         <div class="opening-balance">
             <div class="d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                 <span>
                     <span id="mobileOpeningBalanceDisplay">Rp 0</span>
-                    <button class="btn btn-sm btn-link p-0 ms-1" id="editOpeningBalanceMobile" title="Edit Opening Balance">
+                    <button class="btn btn-sm btn-link p-0 ms-1" id="editOpeningBalanceMobile"
+                        title="Edit Opening Balance">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </span>
@@ -409,37 +425,138 @@
     </div>
 
     <!-- ===== MODAL: TRANSACTION HISTORY ===== -->
-    <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
-                    <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Transaction History</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        style="filter:brightness(0) invert(1);"></button>
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: var(--pos-radius);">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title fw-bold" id="historyModalLabel">
+                        <i class="bi bi-clock-history me-2 text-danger"></i>History Transaction
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="historyContent"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-danger" id="clearHistoryBtn">
-                        <i class="bi bi-trash me-1"></i> Clear All
-                    </button>
+
+                    <div class="card mb-4 border-0 bg-light-subtle shadow-sm">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-sliders text-danger me-2 fs-5"></i>
+                                    <span class="fw-bold text-dark">System Setting (Printer Struk)</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="radio" name="printerSizeSetting"
+                                            id="size58" value="58mm" checked>
+                                        <label class="form-check-label fw-semibold text-secondary" for="size58">
+                                            🖨️ Thermal 58mm (Default)
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="radio" name="printerSizeSetting"
+                                            id="size80" value="80mm">
+                                        <label class="form-check-label fw-semibold text-secondary" for="size80">
+                                            🖨️ Thermal 80mm
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="historyContent">
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== TOAST ===== -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <i class="bi bi-bell-fill me-2" style="color:var(--pos-accent);"></i>
-                <strong class="me-auto">KitaPOS</strong>
-                <small>just now</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+    <!-- ===== STRUK PRINT CONTAINER (hidden, used for printing) ===== -->
+    <div id="strukContainer" style="display:none;">
+        <div class="struk-content paper-58mm">
+            <!-- Header -->
+            <div class="struk-header">
+                <h3 style="margin:0;font-size:1.1rem;">My Fried Chicken</h3>
+                <p style="margin:0;font-size:0.8rem;">Pusat</p>
+                <hr style="margin:4px 0;">
             </div>
-            <div class="toast-body" id="toastMessage">Notification message</div>
+
+            <!-- Info -->
+            <div class="struk-info" style="font-size:0.75rem;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Kasir</strong> <span id="strukKasir">Admin</span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Waktu</strong> <span id="strukWaktu"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>No. Struk</strong> <span id="strukId"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Bayar</strong> <span id="strukMethod">Tunai</span>
+                </p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <!-- Status LUNAS -->
+            <div class="struk-status" style="text-align:center;font-weight:700;font-size:0.9rem;">
+                <p style="margin:2px 0;color:#28a745;">LUNAS</p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <!-- Items -->
+            <div class="struk-items" style="font-size:0.7rem;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Item</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="strukItemList"></tbody>
+                </table>
+            </div>
+
+            <!-- Totals -->
+            <div class="struk-total" style="font-size:0.75rem;margin-top:4px;">
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Subtotal</strong> <span id="strukSubtotal"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;font-weight:700;">
+                    <strong>Total (<span id="strukTotalQty">0</span>)</strong> <span id="strukTotal"></span>
+                </p>
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Bayar</strong> <span id="strukBayar"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Kembali</strong> <span id="strukKembali"></span>
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="struk-footer" style="text-align:center;font-size:0.7rem;margin-top:4px;">
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;">Powered by KitaPOS</p>
+                <p style="margin:2px 0;font-size:0.6rem;color:#888;">Terima kasih</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container position-fixed start-50 translate-middle-x top-0 p-3 top-md-0 start-md-auto translate-middle-x-md-none end-md-0"
+        style="z-index: 1080;">
+        <div id="liveToast" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Notification message.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="danger"
+                    data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
     </div>
 
@@ -477,9 +594,11 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js">
     </script>
     <!-- Data Menu -->
-    <script src="assets/data/data.js"></script>
+    <script src="assets/data/data.js">
+    </script>
     <!-- Custom JavaScript -->
-    <script src="assets/js/script.js"></script>
+    <script src="assets/js/script.js">
+    </script>
 </body>
 
 </html>
