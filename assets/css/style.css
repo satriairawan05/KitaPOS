@@ -492,6 +492,22 @@ body {
     color: #fff;
 }
 
+/* Tambahan di bagian .cart-item */
+.cart-item .clear-btn {
+    background: transparent;
+    border: none;
+    color: #dc3545;
+    font-size: 1.1rem;
+    padding: 0 4px;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-left: 4px;
+}
+.cart-item .clear-btn:hover {
+    transform: scale(1.2);
+    color: #a71d2a;
+}
+
 .cart-sidebar .cart-item {
     display: flex;
     justify-content: space-between;

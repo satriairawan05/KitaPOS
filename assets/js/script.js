@@ -395,21 +395,27 @@ function getCartCount() {
     return cart.reduce(function (sum, item) { return sum + item.qty; }, 0);
 }
 
+// ===== UPDATE CART UI (dengan tombol clear jika qty > 2) =====
 function updateCartUI() {
     requestAnimationFrame(function () {
         var total = getCartTotal();
         var count = getCartCount();
         var totalStr = 'Rp ' + formatRupiah(total);
 
+        // --- Desktop Cart ---
         cartItemsEl.innerHTML = cart.length === 0 ?
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
             cart.map(function (item) {
+                var clearBtn = item.qty > 2 ?
+                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 1"><i class="bi bi-x-circle"></i></button>` :
+                    '';
                 return `
                     <div class="cart-item">
                         <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
                         <span>
                             Rp ${formatRupiah(item.price * item.qty)}
                             <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                            ${clearBtn}
                         </span>
                     </div>
                 `;
@@ -420,15 +426,20 @@ function updateCartUI() {
         desktopCartCount.textContent = count;
         checkoutBtn.disabled = count === 0;
 
+        // --- Mobile Cart ---
         mobileCartItems.innerHTML = cart.length === 0 ?
             '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
             cart.map(function (item) {
+                var clearBtn = item.qty > 2 ?
+                    `<button class="clear-btn" data-id="${item.id}" title="Reset to 1"><i class="bi bi-x-circle"></i></button>` :
+                    '';
                 return `
                     <div class="cart-item">
                         <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
                         <span>
                             Rp ${formatRupiah(item.price * item.qty)}
                             <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                            ${clearBtn}
                         </span>
                     </div>
                 `;
@@ -441,16 +452,39 @@ function updateCartUI() {
         mobileCartCountTop.textContent = count;
         document.getElementById('mobileCheckoutBtn').disabled = count === 0;
 
+        // --- Event listeners untuk remove dan clear ---
         document.querySelectorAll('.cart-item .remove-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                removeFromCart(parseInt(this.dataset.id));
-            });
+            btn.removeEventListener('click', removeHandler);
+            btn.addEventListener('click', removeHandler);
         });
         document.querySelectorAll('#mobileCartItems .remove-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                removeFromCart(parseInt(this.dataset.id));
-            });
+            btn.removeEventListener('click', removeHandler);
+            btn.addEventListener('click', removeHandler);
         });
+
+        function removeHandler(e) {
+            removeFromCart(parseInt(this.dataset.id));
+        }
+
+        // Event listener untuk clear button
+        document.querySelectorAll('.cart-item .clear-btn').forEach(function (btn) {
+            btn.removeEventListener('click', clearHandler);
+            btn.addEventListener('click', clearHandler);
+        });
+        document.querySelectorAll('#mobileCartItems .clear-btn').forEach(function (btn) {
+            btn.removeEventListener('click', clearHandler);
+            btn.addEventListener('click', clearHandler);
+        });
+
+        function clearHandler(e) {
+            var id = parseInt(this.dataset.id);
+            var item = cart.find(function (c) { return c.id === id; });
+            if (item && item.qty > 2) {
+                item.qty = 1;
+                updateCartUI();
+                showToast('✅ ' + item.name + ' quantity reset to 1');
+            }
+        }
     });
 }
 
