@@ -587,7 +587,7 @@ function renderHistory() {
     container.innerHTML = html;
 
     container.querySelectorAll('.delete-history-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const id = parseInt(this.dataset.id);
             deleteTransaction(id);
         });
@@ -815,7 +815,6 @@ $('#addItemModal').on('shown.bs.modal', function () {
 
 // ===== MOBILE CART TOGGLE =====
 function toggleMobileCart() {
-    // toggle class 'open'
     mobileCartSidebar.classList.toggle('open');
 }
 
@@ -843,63 +842,120 @@ document.addEventListener('click', function (e) {
 });
 
 // ===== CALCULATOR =====
+// ===== CALCULATOR dengan format ribuan =====
 let calcDisplayModal = document.getElementById('calcDisplayModal');
-let calcExpression = '0';
+let calcExpression = '';        // ekspresi sebagai string (tanpa format)
+let calcResult = '';            // hasil terakhir (string angka tanpa format)
 let calcJustEvaluated = false;
 
-function updateCalcDisplayModal() {
-    calcDisplayModal.textContent = calcExpression || '0';
+// Fungsi untuk memformat angka dengan pemisah ribuan (contoh: 50000 → 50.000)
+function formatThousand(numStr) {
+    let parts = numStr.split('.');
+    let integerPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+    let formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return formatted + decimalPart;
 }
 
+// Fungsi untuk memperbarui tampilan dengan format ribuan
+function updateCalcDisplayModal() {
+    if (!calcExpression) {
+        calcDisplayModal.textContent = '0';
+        return;
+    }
+    let displayText = calcExpression;
+    // Jika ekspresi berakhir dengan operator, tampilkan apa adanya
+    if (['+', '−', '×', '÷'].includes(displayText.slice(-1))) {
+        calcDisplayModal.textContent = displayText;
+        return;
+    }
+    // Pecah berdasarkan operator, format angka, lalu gabung kembali
+    let tokens = displayText.split(/([+\−×÷])/);
+    let formattedTokens = tokens.map(token => {
+        if (['+', '−', '×', '÷'].includes(token)) return token;
+        let num = parseFloat(token);
+        if (!isNaN(num) && token !== '') {
+            return formatThousand(token);
+        }
+        return token;
+    });
+    calcDisplayModal.textContent = formattedTokens.join('');
+}
+
+// Fungsi untuk menambahkan nilai ke ekspresi
+function appendToExpression(value) {
+    if (calcJustEvaluated) {
+        if (['+', '−', '×', '÷'].includes(value)) {
+            calcExpression = calcResult + value;
+        } else {
+            calcExpression = value;
+        }
+        calcJustEvaluated = false;
+    } else {
+        const lastChar = calcExpression.slice(-1);
+        // Cegah multiple titik atau operator berurutan
+        if (value === '.') {
+            let lastNum = calcExpression.split(/[+\−×÷]/).pop();
+            if (lastNum && lastNum.includes('.')) return;
+        }
+        if (['+', '−', '×', '÷'].includes(value) && ['+', '−', '×', '÷'].includes(lastChar)) {
+            calcExpression = calcExpression.slice(0, -1) + value;
+            updateCalcDisplayModal();
+            return;
+        }
+        calcExpression += value;
+    }
+    updateCalcDisplayModal();
+}
+
+// Event listener untuk tombol angka dan titik
 document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(btn => {
     btn.addEventListener('click', function () {
         const val = this.dataset.val;
-        if (calcJustEvaluated) {
-            if (['+', '−', '×', '÷'].includes(val)) {
-                calcJustEvaluated = false;
-            } else {
-                calcExpression = '0';
-                calcJustEvaluated = false;
-            }
-        }
-        if (val === '.' && calcExpression.includes('.')) return;
-        if (calcExpression === '0' && val !== '.') {
-            calcExpression = val;
-        } else {
-            calcExpression += val;
-        }
-        updateCalcDisplayModal();
+        appendToExpression(val);
     });
 });
 
-document.querySelectorAll('#calcModal .calc-btn.op').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const op = this.dataset.val;
-        const lastChar = calcExpression.slice(-1);
-        if (['+', '−', '×', '÷'].includes(lastChar)) {
-            calcExpression = calcExpression.slice(0, -1) + op;
-        } else {
-            calcExpression += op;
-        }
+// Event listener untuk tombol operator (karena tombol operator juga punya data-val, sudah tertangani di atas)
+// Tapi kita tetap pertahankan yang lama untuk kompatibilitas, tapi kita bisa biarkan saja karena sudah ditangani
+
+// Tombol C (Clear)
+document.getElementById('calcClearModal').addEventListener('click', function () {
+    calcExpression = '';
+    calcResult = '';
+    calcJustEvaluated = false;
+    updateCalcDisplayModal();
+});
+
+// Tombol ⌫ (Backspace)
+document.getElementById('calcBackspaceModal').addEventListener('click', function () {
+    if (calcJustEvaluated) {
+        calcExpression = '';
         calcJustEvaluated = false;
-        updateCalcDisplayModal();
-    });
+    } else {
+        calcExpression = calcExpression.slice(0, -1);
+    }
+    updateCalcDisplayModal();
 });
 
+// Tombol = 
 document.getElementById('calcEqualsModal').addEventListener('click', function () {
     try {
         let expr = calcExpression;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
         const result = Function('"use strict"; return (' + expr + ')')();
-        if (typeof result === 'number' && !isNaN(result)) {
-            calcExpression = String(Math.round(result * 100) / 100);
+        if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+            let rounded = Math.round(result * 100) / 100;
+            let resultStr = rounded.toString();
+            calcResult = resultStr;
+            calcExpression = resultStr;
             calcJustEvaluated = true;
             updateCalcDisplayModal();
         } else {
             calcExpression = 'Error';
             updateCalcDisplayModal();
             setTimeout(() => {
-                calcExpression = '0';
+                calcExpression = '';
                 updateCalcDisplayModal();
             }, 800);
         }
@@ -907,46 +963,32 @@ document.getElementById('calcEqualsModal').addEventListener('click', function ()
         calcExpression = 'Error';
         updateCalcDisplayModal();
         setTimeout(() => {
-            calcExpression = '0';
+            calcExpression = '';
             updateCalcDisplayModal();
         }, 800);
     }
 });
 
-document.getElementById('calcClearModal').addEventListener('click', function () {
-    calcExpression = '0';
-    calcJustEvaluated = false;
-    updateCalcDisplayModal();
-});
+// Inisialisasi display
+updateCalcDisplayModal();
 
-document.getElementById('calcBackspaceModal').addEventListener('click', function () {
-    if (calcJustEvaluated) {
-        calcExpression = '0';
-        calcJustEvaluated = false;
-    } else if (calcExpression.length > 1) {
-        calcExpression = calcExpression.slice(0, -1);
-    } else {
-        calcExpression = '0';
-    }
-    updateCalcDisplayModal();
-});
-
+// Keyboard support (tetap seperti sebelumnya)
 document.addEventListener('keydown', function (e) {
     const modalOpen = document.getElementById('calcModal').classList.contains('show');
     if (!modalOpen) return;
     const key = e.key;
     if (key >= '0' && key <= '9') {
-        document.querySelector(`#calcModal .calc-btn[data-val="${key}"]`)?.click();
+        appendToExpression(key);
     } else if (key === '.') {
-        document.querySelector(`#calcModal .calc-btn[data-val="."]`)?.click();
+        appendToExpression('.');
     } else if (key === '+') {
-        document.querySelector(`#calcModal .calc-btn[data-val="+"]`)?.click();
+        appendToExpression('+');
     } else if (key === '-') {
-        document.querySelector(`#calcModal .calc-btn[data-val="−"]`)?.click();
+        appendToExpression('−');
     } else if (key === '*') {
-        document.querySelector(`#calcModal .calc-btn[data-val="×"]`)?.click();
+        appendToExpression('×');
     } else if (key === '/') {
-        document.querySelector(`#calcModal .calc-btn[data-val="÷"]`)?.click();
+        appendToExpression('÷');
     } else if (key === 'Enter' || key === '=') {
         document.getElementById('calcEqualsModal').click();
     } else if (key === 'Backspace') {
@@ -1061,13 +1103,18 @@ $(document).ready(function () {
 });
 
 const historyModalEl = document.getElementById('historyModal');
-historyModalEl.addEventListener('show.bs.modal', function() {
-    const toggleBtn = document.getElementById('mobileCartToggle');
-    if (toggleBtn) toggleBtn.style.display = 'none';
+historyModal.addEventListener('show.bs.modal', function () {
+    if (window.innerWidth < 992) {
+        document.getElementById('mobileCartToggle').style.display = 'none';
+    }
 });
-historyModalEl.addEventListener('hidden.bs.modal', function() {
-    const toggleBtn = document.getElementById('mobileCartToggle');
-    if (toggleBtn) toggleBtn.style.display = 'flex';
+historyModal.addEventListener('hidden.bs.modal', function () {
+    if (window.innerWidth < 992) {
+        document.getElementById('mobileCartToggle').style.display = 'flex';
+    } else {
+        // Pastikan di desktop tombol tetap tersembunyi (default)
+        document.getElementById('mobileCartToggle').style.display = 'none';
+    }
 });
 
 // ===== INIT =====
