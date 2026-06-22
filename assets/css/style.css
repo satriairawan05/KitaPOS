@@ -737,10 +737,11 @@ body {
     z-index: 9999;
 }
 
-/* ===== FLOATING CALCULATOR ===== */
+/* ===== FLOATING BUTTONS (Mobile) ===== */
+/* Calculator FAB - di atas */
 .calc-fab {
     position: fixed;
-    bottom: 80px;
+    bottom: 140px;
     right: 16px;
     z-index: 1050;
     width: 50px;
@@ -764,19 +765,59 @@ body {
 .calc-fab i {
     font-size: 1.5rem;
 }
+
+/* Home FAB - di bawah (sejajar dengan kalkulator) */
+.home-fab {
+    position: fixed;
+    bottom: 76px;
+    right: 16px;
+    z-index: 1050;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--pos-primary);
+    color: #fff;
+    border: 2px solid #ffc107;
+    font-size: 1.2rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: 0.2s;
+    cursor: pointer;
+}
+.home-fab:hover {
+    transform: scale(1.08);
+    background: #ffc107;
+    color: #7a1a1a;
+}
+.home-fab i {
+    font-size: 1.5rem;
+}
+
+/* Tampilkan hanya di mobile */
 @media (max-width: 991px) {
     .calc-fab {
         display: flex;
+        bottom: 140px;
+        right: 16px;
+    }
+    .home-fab {
+        display: flex;
         bottom: 76px;
+        right: 16px;
     }
 }
 @media (min-width: 992px) {
     .calc-fab {
         display: none !important;
     }
+    .home-fab {
+        display: none !important;
+    }
 }
 
-/* ===== NAVBAR CALC BUTTON ===== */
+/* ===== NAVBAR BUTTONS ===== */
 .calc-nav-btn {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -804,7 +845,6 @@ body {
     }
 }
 
-/* ===== HISTORY BUTTON ===== */
 .history-nav-btn {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -854,41 +894,6 @@ body {
     }
 }
 
-/* ===== HISTORY MODAL ===== */
-.history-item {
-    border-bottom: 1px solid #f0e0e0;
-    padding: 12px 0;
-}
-.history-item:last-child {
-    border-bottom: none;
-}
-.history-item .header {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    color: var(--pos-primary);
-}
-.history-item .detail {
-    font-size: 0.9rem;
-    color: #555;
-    margin-top: 4px;
-}
-.history-item .detail span {
-    margin-right: 12px;
-}
-.history-empty {
-    text-align: center;
-    color: #999;
-    padding: 40px 0;
-}
-.history-empty i {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 12px;
-    color: #ddd;
-}
-
-/* ===== HOME BUTTON ===== */
 .home-nav-btn {
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -910,7 +915,6 @@ body {
 .home-nav-btn i {
     font-size: 1.1rem;
 }
-
 .btn-home-mobile {
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -928,7 +932,6 @@ body {
     border-color: #ffc107;
     color: #7a1a1a;
 }
-
 @media (min-width: 992px) {
     .btn-home-mobile {
         display: none !important;
@@ -936,97 +939,6 @@ body {
 }
 @media (max-width: 991px) {
     .home-nav-btn {
-        display: none !important;
-    }
-}
-
-/* ===== HOME FLOATING BUTTON (kiri) ===== */
-.home-fab {
-    position: fixed;
-    bottom: 80px;
-    left: 16px;
-    z-index: 1050;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--pos-primary);
-    color: #fff;
-    border: 2px solid #ffc107;
-    font-size: 1.2rem;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    transition: 0.2s;
-    cursor: pointer;
-}
-.home-fab:hover {
-    transform: scale(1.08);
-    background: #ffc107;
-    color: #7a1a1a;
-}
-.home-fab i {
-    font-size: 1.5rem;
-}
-@media (max-width: 991px) {
-    .home-fab {
-        display: flex;
-        bottom: 140px;
-        left: 16px;
-    }
-}
-@media (min-width: 992px) {
-    .home-fab {
-        display: none !important;
-    }
-}
-
-/* ===== HISTORY BUTTON ===== */
-.history-nav-btn {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
-    border-radius: 50px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    transition: 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-}
-.history-nav-btn:hover {
-    background: #17a2b8;
-    border-color: #17a2b8;
-    color: #fff;
-}
-.history-nav-btn i {
-    font-size: 1.1rem;
-}
-.btn-history-mobile {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-radius: 50px;
-    padding: 4px 10px;
-    font-size: 0.85rem;
-    transition: 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.btn-history-mobile:hover {
-    background: #17a2b8;
-    border-color: #17a2b8;
-    color: #fff;
-}
-@media (min-width: 992px) {
-    .btn-history-mobile {
-        display: none !important;
-    }
-}
-@media (max-width: 991px) {
-    .history-nav-btn {
         display: none !important;
     }
 }

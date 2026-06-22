@@ -1,5 +1,5 @@
 // ================================================================
-// assets/js/script.js - KitaPOS (tambahan fungsi goHome)
+// assets/js/script.js - KitaPOS
 // ================================================================
 
 // ===== DATA MENU =====
@@ -50,38 +50,38 @@ const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal
 const calcModal = new bootstrap.Modal(document.getElementById('calcModal'));
 const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
 
-// ===== FUNGSI GO HOME (Menu Utama) =====
+// ===== FUNGSI FORMAT RUPIAH =====
+function formatRupiah(angka) {
+    // Ubah angka menjadi string dengan pemisah ribuan
+    return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function formatRupiahFull(angka) {
+    return `Rp ${formatRupiah(angka)}`;
+}
+
+// ===== FUNGSI GO HOME =====
 function goHome() {
-    // Reset filter kategori ke "Semua"
     categoryBtns.forEach(b => b.classList.remove('active'));
     document.querySelector('.btn-cat[data-cat="all"]').classList.add('active');
     currentCategory = 'all';
-    
-    // Reset search
     searchInput.value = '';
     searchQuery = '';
-    
-    // Render ulang menu
     renderMenu();
-    
-    // Scroll ke atas dengan smooth
     document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
     showToast('🏠 Kembali ke menu utama');
 }
 
-// ===== EVENT LISTENER UNTUK TOMBOL HOME =====
+// ===== EVENT LISTENER =====
 document.getElementById('goHomeDesktop').addEventListener('click', goHome);
 document.getElementById('goHomeMobile').addEventListener('click', goHome);
 document.getElementById('goHomeFab').addEventListener('click', goHome);
 
-// ===== EVENT LISTENER UNTUK KALKULATOR & HISTORY =====
 document.getElementById('openCalcDesktop').addEventListener('click', () => calcModal.show());
 document.getElementById('openCalcMobile').addEventListener('click', () => calcModal.show());
 document.getElementById('openHistoryDesktop').addEventListener('click', () => { renderHistory(); historyModal.show(); });
 document.getElementById('openHistoryMobile').addEventListener('click', () => { renderHistory(); historyModal.show(); });
 
-// ===== TOAST =====
 const toastEl = document.getElementById('liveToast');
 const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
 const toastMsg = document.getElementById('toastMessage');
@@ -125,7 +125,7 @@ function renderMenu() {
             <div class="menu-card" data-id="${item.id}">
                 <div class="menu-img">${imageHtml}</div>
                 <div class="menu-name" title="${item.name}">${item.name}</div>
-                <div class="menu-price">Rp ${formatPrice(item.price)}</div>
+                <div class="menu-price">Rp ${formatRupiah(item.price)}</div>
                 <span class="menu-status ${st.cls}">${st.label}</span>
                 <button class="btn-add" ${disabled} data-id="${item.id}">
                     <i class="bi bi-plus-circle me-1"></i> Tambah
@@ -199,14 +199,10 @@ function getCartCount() {
     return cart.reduce((sum, item) => sum + item.qty, 0);
 }
 
-function formatPrice(val) {
-    return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
-
 function updateCartUI() {
     const total = getCartTotal();
     const count = getCartCount();
-    const totalStr = `Rp ${formatPrice(total)}`;
+    const totalStr = `Rp ${formatRupiah(total)}`;
 
     cartItemsEl.innerHTML = cart.length === 0 ?
         `<div class="cart-empty"><i class="bi bi-basket"></i>Belum ada item</div>` :
@@ -214,7 +210,7 @@ function updateCartUI() {
             <div class="cart-item">
                 <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
                 <span>
-                    Rp ${formatPrice(item.price * item.qty)}
+                    Rp ${formatRupiah(item.price * item.qty)}
                     <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
                 </span>
             </div>
@@ -231,7 +227,7 @@ function updateCartUI() {
             <div class="cart-item">
                 <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
                 <span>
-                    Rp ${formatPrice(item.price * item.qty)}
+                    Rp ${formatRupiah(item.price * item.qty)}
                     <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
                 </span>
             </div>
@@ -269,16 +265,16 @@ function openCheckout() {
         ${cart.map(item => `
             <div class="item-row">
                 <span>${item.icon || '🍽️'} ${item.name} × ${item.qty}</span>
-                <span>Rp ${formatPrice(item.price * item.qty)}</span>
+                <span>Rp ${formatRupiah(item.price * item.qty)}</span>
             </div>
         `).join('')}
         <div class="total-row">
             <span>Total</span>
-            <span>Rp ${formatPrice(total)}</span>
+            <span>Rp ${formatRupiah(total)}</span>
         </div>
     `;
     summaryEl.innerHTML = html;
-    document.getElementById('checkoutGrandTotal').textContent = `Rp ${formatPrice(total)}`;
+    document.getElementById('checkoutGrandTotal').textContent = `Rp ${formatRupiah(total)}`;
     
     const $paymentMethod = $('#paymentMethod');
     $paymentMethod.val('cash').trigger('change');
@@ -308,7 +304,7 @@ $(document).on('change', '#paymentMethod', function() {
         paymentLabel.textContent = 'Total Dibayar (QRIS)';
         changeDisplay.style.display = 'none';
         qrisInfo.style.display = 'block';
-        document.getElementById('changeAmount').textContent = 'Rp 0';
+        document.getElementById('changeAmount').textContent = `Rp ${formatRupiah(0)}`;
     } else {
         paymentInput.value = '';
         paymentInput.disabled = false;
@@ -325,10 +321,10 @@ document.getElementById('paymentAmount').addEventListener('input', function() {
     const change = paid - total;
     const changeEl = document.getElementById('changeAmount');
     if (change >= 0) {
-        changeEl.textContent = `Rp ${formatPrice(change)}`;
+        changeEl.textContent = `Rp ${formatRupiah(change)}`;
         changeEl.style.color = 'var(--pos-accent)';
     } else {
-        changeEl.textContent = `Rp ${formatPrice(Math.abs(change))} (kurang)`;
+        changeEl.textContent = `Rp ${formatRupiah(Math.abs(change))} (kurang)`;
         changeEl.style.color = '#e74c3c';
     }
 });
@@ -346,14 +342,14 @@ document.getElementById('confirmCheckout').addEventListener('click', function() 
         }
         const change = paid - total;
         saveTransaction('Cash', total, paid, change);
-        showToast(`✅ Checkout berhasil! Metode: Cash. Kembalian: Rp ${formatPrice(change)}`);
+        showToast(`✅ Checkout berhasil! Metode: Cash. Kembalian: Rp ${formatRupiah(change)}`);
     } else {
         if (paid !== total) {
             paid = total;
             document.getElementById('paymentAmount').value = total;
         }
         saveTransaction('QRIS', total, paid, 0);
-        showToast(`✅ Checkout berhasil! Metode: QRIS. Total: Rp ${formatPrice(total)}`);
+        showToast(`✅ Checkout berhasil! Metode: QRIS. Total: Rp ${formatRupiah(total)}`);
     }
 
     clearCart();
@@ -412,18 +408,18 @@ function renderHistory() {
     const reversed = [...transactionHistory].reverse();
     reversed.forEach((trx, index) => {
         const itemsList = trx.items.map(item => 
-            `${item.name} (${item.qty}×Rp${formatPrice(item.price)})`
+            `${item.name} (${item.qty}×Rp${formatRupiah(item.price)})`
         ).join(', ');
         html += `
             <div class="history-item">
                 <div class="header">
                     <span>#${trx.id} - ${trx.timestamp}</span>
-                    <span class="text-accent">Rp ${formatPrice(trx.total)}</span>
+                    <span class="text-accent">Rp ${formatRupiah(trx.total)}</span>
                 </div>
                 <div class="detail">
                     <span><i class="bi bi-tag"></i> ${trx.method}</span>
-                    <span><i class="bi bi-cash-stack"></i> Bayar: Rp ${formatPrice(trx.paid)}</span>
-                    ${trx.method === 'Cash' ? `<span><i class="bi bi-arrow-return-left"></i> Kembali: Rp ${formatPrice(trx.change)}</span>` : ''}
+                    <span><i class="bi bi-cash-stack"></i> Bayar: Rp ${formatRupiah(trx.paid)}</span>
+                    ${trx.method === 'Cash' ? `<span><i class="bi bi-arrow-return-left"></i> Kembali: Rp ${formatRupiah(trx.change)}</span>` : ''}
                 </div>
                 <div class="detail" style="font-size:0.8rem;color:#888;">
                     <i class="bi bi-list-ul"></i> ${itemsList}
