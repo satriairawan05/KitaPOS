@@ -26,36 +26,41 @@ let menuItems = [];
 let nextId = 1;
 
 // ===== LOAD DATA DARI JSON =====
-async function loadMenuData() {
-    try {
-        const response = await fetch('assets/data/data.json');
-        const data = await response.json();
-        menuItems = data;
-        if (menuItems.length > 0) {
-            const maxId = Math.max(...menuItems.map(item => item.id));
-            nextId = maxId + 1;
+function loadMenuData() {
+    $.ajax({
+        url: 'assets/data/data.json',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            menuItems = data;
+            if (menuItems.length > 0) {
+                const maxId = Math.max(...menuItems.map(item => item.id));
+                nextId = maxId + 1;
+            }
+            renderMenu();
+            updateCartUI();
+            console.log('✅ Data menu loaded dari JSON:', menuItems.length, 'item');
+        },
+        error: function(xhr, status, error) {
+            console.error('❌ Gagal load data.json:', error);
+            // Gunakan data default
+            menuItems = [
+                { id: 1, name: 'Nasi Goreng', price: 25000, category: 'makanan', status: 'available', icon: '🍚', image: null },
+                { id: 2, name: 'Mie Goreng', price: 22000, category: 'makanan', status: 'available', icon: '🍜', image: null },
+                { id: 3, name: 'Ayam Geprek', price: 28000, category: 'makanan', status: 'low', icon: '🍗', image: null },
+                { id: 4, name: 'Es Teh Manis', price: 8000, category: 'minuman', status: 'available', icon: '🧋', image: null },
+                { id: 5, name: 'Es Jeruk', price: 10000, category: 'minuman', status: 'available', icon: '🍊', image: null },
+                { id: 6, name: 'Kopi Hitam', price: 12000, category: 'minuman', status: 'out', icon: '☕', image: null },
+                { id: 7, name: 'Pisang Goreng', price: 15000, category: 'cemilan', status: 'available', icon: '🍌', image: null },
+                { id: 8, name: 'Kentang Goreng', price: 18000, category: 'cemilan', status: 'available', icon: '🥔', image: null },
+                { id: 9, name: 'Roti Bakar', price: 14000, category: 'cemilan', status: 'low', icon: '🍞', image: null }
+            ];
+            nextId = 10;
+            renderMenu();
+            updateCartUI();
+            showToast('⚠️ Menggunakan data default (data.json tidak ditemukan)');
         }
-        renderMenu();
-        updateCartUI();
-        console.log('✅ Data menu loaded dari JSON:', menuItems.length, 'item');
-    } catch (error) {
-        console.error('❌ Gagal load data.json:', error);
-        menuItems = [
-            { id: 1, name: 'Nasi Goreng', price: 25000, category: 'makanan', status: 'available', icon: '🍚', image: null },
-            { id: 2, name: 'Mie Goreng', price: 22000, category: 'makanan', status: 'available', icon: '🍜', image: null },
-            { id: 3, name: 'Ayam Geprek', price: 28000, category: 'makanan', status: 'low', icon: '🍗', image: null },
-            { id: 4, name: 'Es Teh Manis', price: 8000, category: 'minuman', status: 'available', icon: '🧋', image: null },
-            { id: 5, name: 'Es Jeruk', price: 10000, category: 'minuman', status: 'available', icon: '🍊', image: null },
-            { id: 6, name: 'Kopi Hitam', price: 12000, category: 'minuman', status: 'out', icon: '☕', image: null },
-            { id: 7, name: 'Pisang Goreng', price: 15000, category: 'cemilan', status: 'available', icon: '🍌', image: null },
-            { id: 8, name: 'Kentang Goreng', price: 18000, category: 'cemilan', status: 'available', icon: '🥔', image: null },
-            { id: 9, name: 'Roti Bakar', price: 14000, category: 'cemilan', status: 'low', icon: '🍞', image: null }
-        ];
-        nextId = 10;
-        renderMenu();
-        updateCartUI();
-        showToast('⚠️ Menggunakan data default (data.json tidak ditemukan)');
-    }
+    });
 }
 
 // ===== CART =====
