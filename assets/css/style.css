@@ -1318,100 +1318,52 @@ body {
 }
 
 /* ================================================================
-   TAMBAHAN / PERBAIKAN UNTUK KITAPOS
+   PERBAIKAN UTAMA: MEDIA PRINT KHUSUS STRUK
    ================================================================ */
-
-/* --- TAMPILAN TOMBOL PRINT DI RIWAYAT (TIDAK POLOS) --- */
-.btn-print-history {
-    background-color: #118ab2 !important;
-    color: #ffffff !important;
-    border: none !important;
-    padding: 0.4rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 6px rgba(17, 138, 178, 0.2);
-    transition: all 0.2s ease-in-out;
-}
-
-.btn-print-history:hover {
-    background-color: #0f7799 !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(17, 138, 178, 0.35);
-}
-
-.btn-print-history:active {
-    transform: translateY(0);
-}
-
-/* --- RESPONSIVE TOAST POSITION OVERRIDE --- */
-@media (min-width: 992px) {
-    .toast-container {
-        position: fixed !important;
-        top: 25px !important;
-        right: 25px !important;
-        left: auto !important;
-        bottom: auto !important;
-        transform: none !important;
+@media print {
+    /* Sembunyikan SEMUA elemen di halaman */
+    body * {
+        visibility: hidden !important;
     }
-}
-@media (max-width: 991.98px) {
-    .toast-container {
-        position: fixed !important;
-        top: 15px !important;
-        left: 50% !important;
-        right: auto !important;
-        bottom: auto !important;
-        transform: translateX(-50%) !important;
-        width: 90% !important;
-        max-width: 360px !important;
+
+    /* Tampilkan hanya #strukContainer dan isinya */
+    #strukContainer,
+    #strukContainer * {
+        visibility: visible !important;
     }
-}
 
-/* --- VIEW FORMAT VIEW STRUK (58mm vs 80mm) --- */
-.struk-preview-box {
-    background: #fff;
-    border: 1px dashed #ccc;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin: 10px auto;
-    font-family: 'Courier New', Courier, monospace;
-    color: #000;
-}
+    #strukContainer {
+        display: block !important;
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        z-index: 99999 !important;
+        box-shadow: none !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        border: none !important;
+    }
 
-/* Ukuran Kertas 58mm */
-.paper-58mm {
-    width: 58mm !important;
-    max-width: 58mm !important;
-    padding: 3mm !important;
-    font-size: 11px !important;
-}
-.paper-58mm table {
-    font-size: 10px !important;
-}
+    .struk-content {
+        margin: 0 auto !important;
+        background: #fff !important;
+    }
 
-/* Ukuran Kertas 80mm */
-.paper-80mm {
-    width: 80mm !important;
-    max-width: 80mm !important;
-    padding: 5mm !important;
-    font-size: 13px !important;
-}
-.paper-80mm table {
-    font-size: 12px !important;
-}
+    /* Hanya 1 halaman, tidak terpotong */
+    @page {
+        margin: 0 !important;
+        size: auto !important;
+    }
 
-/* Reserve space for quick pay buttons */
-#quickPayButtons {
-    min-height: 40px;
-}
-
-/* Reserve space for cart items */
-#cartItems,
-#mobileCartItems {
-    min-height: 60px;
+    /* Hindari page break di dalam struk */
+    .struk-content {
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+    }
 }
 
 /* ===== RECEIPT PRINT STYLES ===== */
@@ -1487,44 +1439,4 @@ body {
 .print-history-btn:hover {
     transform: scale(1.2);
     background: rgba(23, 162, 184, 0.1);
-}
-
-/* ================================================================
-   PERBAIKAN UTAMA: MEDIA PRINT KHUSUS STRUK
-   ================================================================ */
-@media print {
-    /* Sembunyikan semua elemen kecuali #strukContainer */
-    body * {
-        visibility: hidden !important;
-    }
-
-    #strukContainer,
-    #strukContainer * {
-        visibility: visible !important;
-    }
-
-    #strukContainer {
-        display: block !important;
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #fff !important;
-        z-index: 99999 !important;
-        box-shadow: none !important;
-        width: auto !important;
-        height: auto !important;
-        overflow: visible !important;
-        border: none !important;
-    }
-
-    .struk-content {
-        margin: 0 auto !important;
-    }
-
-    @page {
-        margin: 0 !important;
-        size: auto !important;
-    }
 }

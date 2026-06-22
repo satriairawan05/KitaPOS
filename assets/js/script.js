@@ -22,6 +22,22 @@ function formatRupiahInput(input) {
     input.value = formatRupiah(number);
 }
 
+// ===== FORMAT TANGGAL INDONESIA =====
+// Output: "22 Juni 2026, 18:54:35"
+function formatTanggalIndonesia(date) {
+    const month = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    const day = date.getDate();
+    const monthIndex = date.getMonth();
+    const year = date.getFullYear();
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+    return day + ' ' + month[monthIndex] + ' ' + year + ', ' + hour + ':' + minute + ':' + second;
+}
+
 // ===== MENU DATA =====
 let menuItems = [];
 let nextId = 1;
@@ -559,14 +575,7 @@ document.getElementById('confirmCheckout').addEventListener('click', function() 
 // ===== SAVE TRANSACTION =====
 function saveTransaction(method, total, paid, change) {
     var now = new Date();
-    var timestamp = now.toLocaleString('id-ID', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    });
+    var timestamp = formatTanggalIndonesia(now);
     var transaction = {
         id: transactionHistory.length + 1,
         timestamp: timestamp,
@@ -596,16 +605,15 @@ function printStruk(transaction) {
         return;
     }
 
-    // Get the print container and ensure it's visible
     var container = document.getElementById('strukContainer');
     if (!container) {
         showToast('❌ Print container not found!');
         return;
     }
 
-    // Fill receipt data
+    // Fill receipt data (gunakan timestamp dari transaksi, bukan waktu sekarang)
     document.getElementById('strukKasir').textContent = 'Admin';
-    document.getElementById('strukWaktu').textContent = transaction.timestamp;
+    document.getElementById('strukWaktu').textContent = transaction.timestamp; // <-- ini waktu transaksi
     document.getElementById('strukId').textContent = '#' + transaction.id;
     document.getElementById('strukMethod').textContent = transaction.method === 'Cash' ? 'Tunai' : 'QRIS';
 
@@ -634,7 +642,7 @@ function printStruk(transaction) {
     document.getElementById('strukBayar').textContent = 'Rp' + formatRupiah(transaction.paid);
     document.getElementById('strukKembali').textContent = 'Rp' + formatRupiah(transaction.change);
 
-    // Apply printer size class (58mm or 80mm)
+    // Apply printer size
     var strukContent = container.querySelector('.struk-content');
     if (strukContent) {
         strukContent.classList.remove('paper-58mm', 'paper-80mm');
@@ -642,15 +650,15 @@ function printStruk(transaction) {
         strukContent.classList.add('paper-' + size);
     }
 
-    // Show container and trigger print
+    // Show container
     container.style.display = 'block';
 
-    // Use a slight delay to ensure DOM update
+    // Print with delay
     setTimeout(function() {
         window.print();
-    }, 200);
+    }, 300);
 
-    // After print, hide container
+    // Hide after print
     window.onafterprint = function() {
         container.style.display = 'none';
         window.onafterprint = null;
