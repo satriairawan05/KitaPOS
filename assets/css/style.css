@@ -1,9 +1,9 @@
 /* ================================================================
    assets/css/style.css - KitaPOS
-   Tema utama: #ED020E
+   Main theme color: #ED020E
    ================================================================ */
 
-/* ===== GLOBAL ===== */
+/* ===== GLOBAL RESET & BASE ===== */
 :root {
     --pos-primary: #ED020E;
     --pos-primary-dark: #c4020c;
@@ -394,7 +394,7 @@ body {
     transform: scale(1.1);
 }
 
-/* Tombol aksi di bawah gambar (Tambah & Edit) */
+/* Action buttons below image (Add & Edit) */
 .menu-card .menu-actions {
     display: flex;
     gap: 8px;
@@ -443,12 +443,12 @@ body {
     color: #5a1a1a;
 }
 
-/* Hapus tombol add lama yang pakai teks */
+/* Hide old text-based add button (now replaced by icon button) */
 .menu-card .btn-add {
-    display: none; /* Sembunyikan tombol Tambah teks */
+    display: none;
 }
 
-/* ===== CART SIDEBAR ===== */
+/* ===== CART SIDEBAR (Desktop & Mobile) ===== */
 .cart-sidebar {
     background: #fff;
     border-radius: var(--pos-radius);
@@ -579,7 +579,7 @@ body {
     color: #ddd;
 }
 
-/* ===== MOBILE CART ===== */
+/* ===== MOBILE CART (Slide-up from bottom) ===== */
 .mobile-cart-toggle {
     position: fixed;
     bottom: 80px;
@@ -613,7 +613,6 @@ body {
     .cart-sidebar {
         position: fixed;
         top: 0;
-        /* dari atas */
         left: 0;
         right: 0;
         bottom: auto;
@@ -631,7 +630,7 @@ body {
         transform: translateY(0);
     }
 
-    /* tombol close di kanan */
+    /* Close button positioned at top-right */
     .cart-sidebar .cart-close {
         display: block !important;
         text-align: right;
@@ -748,7 +747,7 @@ body {
     color: #fff;
 }
 
-/* ===== SELECT2 Custom ===== */
+/* ===== SELECT2 CUSTOM STYLING ===== */
 .select2-container--default .select2-selection--single {
     border-radius: 8px !important;
     border-color: #ced4da !important;
@@ -912,7 +911,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* ===== UTILITY ===== */
+/* ===== UTILITY CLASSES ===== */
 .text-accent {
     color: var(--pos-accent);
 }
@@ -925,7 +924,7 @@ body {
     font-weight: 700;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 575px) {
     .pos-navbar .brand {
         font-size: 1.0rem;
@@ -1015,7 +1014,7 @@ body {
     }
 }
 
-/* ===== SCROLLBAR ===== */
+/* ===== SCROLLBAR STYLING ===== */
 .cart-sidebar::-webkit-scrollbar {
     width: 4px;
 }
@@ -1030,12 +1029,12 @@ body {
     border-radius: 10px;
 }
 
-/* ===== TOAST ===== */
+/* ===== TOAST CONTAINER ===== */
 .toast-container {
     z-index: 9999;
 }
 
-/* ===== FLOATING BUTTONS (Mobile) ===== */
+/* ===== FLOATING ACTION BUTTONS (Mobile) ===== */
 .calc-fab {
     position: fixed;
     bottom: 140px;
@@ -1117,7 +1116,7 @@ body {
     }
 }
 
-/* ===== NAVBAR BUTTONS ===== */
+/* ===== NAVBAR BUTTONS (Desktop & Mobile) ===== */
 .calc-nav-btn,
 .history-nav-btn,
 .home-nav-btn {
@@ -1190,7 +1189,7 @@ body {
     }
 }
 
-/* ===== HISTORY MODAL ===== */
+/* ===== TRANSACTION HISTORY MODAL ===== */
 .history-item {
     border-bottom: 1px solid #f0e0e0;
     padding: 12px 0;
