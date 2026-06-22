@@ -279,7 +279,7 @@ class PosController extends Controller
     }
 }
 
-4. Buat Model dan Migration
+### 4. Buat Model dan Migration
 bash
 php artisan make:model Menu -m
 php artisan make:model Transaction -m
@@ -321,7 +321,7 @@ Schema::create('transaction_items', function (Blueprint $table) {
     $table->timestamps();
 });
 
-5. Modifikasi JavaScript untuk Gunakan API
+### 5. Modifikasi JavaScript untuk Gunakan API
 Ubah fungsi loadMenuData():
 
 javascript
@@ -377,11 +377,11 @@ function saveTransaction(method, total, paid, change) {
     .catch(error => console.error('Error:', error));
 }
 
-6. Tambahkan CSRF Token di Blade
+### 6. Tambahkan CSRF Token di Blade
 blade
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-7. Siapkan Seeder untuk Data Awal
+### 7. Siapkan Seeder untuk Data Awal
 bash
 php artisan make:seeder MenuSeeder
 php
