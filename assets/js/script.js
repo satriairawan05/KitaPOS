@@ -23,19 +23,18 @@ function formatRupiahInput(input) {
 }
 
 // ===== FORMAT TANGGAL INDONESIA =====
-// Output: "22 Juni 2026, 18:54:35"
 function formatTanggalIndonesia(date) {
-    const month = [
+    const bulan = [
         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
-    const day = date.getDate();
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
-    const hour = String(date.getHours()).padStart(2, '0');
-    const minute = String(date.getMinutes()).padStart(2, '0');
-    const second = String(date.getSeconds()).padStart(2, '0');
-    return day + ' ' + month[monthIndex] + ' ' + year + ', ' + hour + ':' + minute + ':' + second;
+    const hari = date.getDate();
+    const bulanIndex = date.getMonth();
+    const tahun = date.getFullYear();
+    const jam = String(date.getHours()).padStart(2, '0');
+    const menit = String(date.getMinutes()).padStart(2, '0');
+    const detik = String(date.getSeconds()).padStart(2, '0');
+    return hari + ' ' + bulan[bulanIndex] + ' ' + tahun + ', ' + jam + '.' + menit + '.' + detik;
 }
 
 // ===== MENU DATA =====
@@ -597,9 +596,8 @@ function saveTransaction(method, total, paid, change) {
     return transaction;
 }
 
-// ===== PRINT RECEIPT (EPSON 58mm/80mm) =====
+// ===== PRINT RECEIPT =====
 function printStruk(transaction) {
-    // Validate transaction data
     if (!transaction || !transaction.items || transaction.items.length === 0) {
         showToast('❌ No transaction data to print!');
         return;
@@ -611,18 +609,16 @@ function printStruk(transaction) {
         return;
     }
 
-    // Fill receipt data (gunakan timestamp dari transaksi, bukan waktu sekarang)
+    // Fill receipt data
     document.getElementById('strukKasir').textContent = 'Admin';
-    document.getElementById('strukWaktu').textContent = transaction.timestamp; // <-- ini waktu transaksi
+    document.getElementById('strukWaktu').textContent = transaction.timestamp;
     document.getElementById('strukId').textContent = '#' + transaction.id;
     document.getElementById('strukMethod').textContent = transaction.method === 'Cash' ? 'Tunai' : 'QRIS';
 
-    // Calculate total items count
     var totalQty = transaction.items.reduce(function(sum, item) {
         return sum + item.qty;
     }, 0);
 
-    // Generate items list
     var tbody = document.getElementById('strukItemList');
     tbody.innerHTML = '';
     transaction.items.forEach(function(item) {
@@ -635,14 +631,12 @@ function printStruk(transaction) {
         tbody.appendChild(tr);
     });
 
-    // Totals
     document.getElementById('strukSubtotal').textContent = 'Rp' + formatRupiah(transaction.total);
     document.getElementById('strukTotalQty').textContent = totalQty;
     document.getElementById('strukTotal').textContent = 'Rp' + formatRupiah(transaction.total);
     document.getElementById('strukBayar').textContent = 'Rp' + formatRupiah(transaction.paid);
     document.getElementById('strukKembali').textContent = 'Rp' + formatRupiah(transaction.change);
 
-    // Apply printer size
     var strukContent = container.querySelector('.struk-content');
     if (strukContent) {
         strukContent.classList.remove('paper-58mm', 'paper-80mm');
@@ -650,22 +644,19 @@ function printStruk(transaction) {
         strukContent.classList.add('paper-' + size);
     }
 
-    // Show container
     container.style.display = 'block';
 
-    // Print with delay
     setTimeout(function() {
         window.print();
     }, 300);
 
-    // Hide after print
     window.onafterprint = function() {
         container.style.display = 'none';
         window.onafterprint = null;
     };
 }
 
-// ===== DELETE TRANSACTION =====
+// ===== DELETE SINGLE TRANSACTION =====
 function deleteTransaction(id) {
     if (confirm('Are you sure you want to delete transaction #' + id + '?')) {
         transactionHistory = transactionHistory.filter(function (trx) { return trx.id !== id; });
@@ -675,6 +666,16 @@ function deleteTransaction(id) {
         localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
         renderHistory();
         showToast('🗑️ Transaction #' + id + ' has been deleted');
+    }
+}
+
+// ===== CLEAR ALL TRANSACTIONS =====
+function clearAllTransactions() {
+    if (confirm('⚠️ Are you sure you want to delete ALL transactions? This cannot be undone!')) {
+        transactionHistory = [];
+        localStorage.removeItem('transactionHistory');
+        renderHistory();
+        showToast('🗑️ All transactions have been cleared');
     }
 }
 
@@ -786,14 +787,13 @@ function renderHistory() {
     });
 }
 
-// ===== CLEAR HISTORY =====
-document.getElementById('clearHistoryBtn')?.addEventListener('click', function () {
-    if (confirm('Are you sure you want to clear all transaction history?')) {
-        transactionHistory = [];
-        localStorage.removeItem('transactionHistory');
-        renderHistory();
-        showToast('🗑️ All history has been cleared');
-    }
+// ===== EVENT LISTENER UNTUK TOMBOL CANCEL & CLEAR ALL =====
+document.getElementById('cancelHistoryBtn').addEventListener('click', function() {
+    historyModal.hide();
+});
+
+document.getElementById('clearAllHistoryBtn').addEventListener('click', function() {
+    clearAllTransactions();
 });
 
 // ===== MANUAL ADD ITEM =====
