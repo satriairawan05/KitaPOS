@@ -45,14 +45,14 @@ function loadMenuData() {
         // Fallback data if data.js not found
         menuItems = [
             { id: 1, name: 'Nasi Goreng', price: 25000, category: 'food', status: 'available', icon: '🍚', image: null },
-    { id: 2, name: 'Mie Goreng', price: 22000, category: 'food', status: 'available', icon: '🍜', image: null },
-    { id: 3, name: 'Ayam Geprek', price: 28000, category: 'food', status: 'low', icon: '🍗', image: null },
-    { id: 4, name: 'Es Teh Manis', price: 8000, category: 'drink', status: 'available', icon: '🧋', image: null },
-    { id: 5, name: 'Es Jeruk', price: 10000, category: 'drink', status: 'available', icon: '🍊', image: null },
-    { id: 6, name: 'Kopi Hitam', price: 12000, category: 'drink', status: 'out', icon: '☕', image: null },
-    { id: 7, name: 'Pisang Goreng', price: 15000, category: 'snack', status: 'available', icon: '🍌', image: null },
-    { id: 8, name: 'Kentang Goreng', price: 18000, category: 'snack', status: 'available', icon: '🥔', image: null },
-    { id: 9, name: 'Roti Bakar', price: 14000, category: 'snack', status: 'low', icon: '🍞', image: null }
+            { id: 2, name: 'Mie Goreng', price: 22000, category: 'food', status: 'available', icon: '🍜', image: null },
+            { id: 3, name: 'Ayam Geprek', price: 28000, category: 'food', status: 'low', icon: '🍗', image: null },
+            { id: 4, name: 'Es Teh Manis', price: 8000, category: 'drink', status: 'available', icon: '🧋', image: null },
+            { id: 5, name: 'Es Jeruk', price: 10000, category: 'drink', status: 'available', icon: '🍊', image: null },
+            { id: 6, name: 'Kopi Hitam', price: 12000, category: 'drink', status: 'out', icon: '☕', image: null },
+            { id: 7, name: 'Pisang Goreng', price: 15000, category: 'snack', status: 'available', icon: '🍌', image: null },
+            { id: 8, name: 'Kentang Goreng', price: 18000, category: 'snack', status: 'available', icon: '🥔', image: null },
+            { id: 9, name: 'Roti Bakar', price: 14000, category: 'snack', status: 'low', icon: '🍞', image: null }
         ];
         nextId = 10;
         renderMenu();
@@ -151,6 +151,70 @@ function generateQuickPayButtons(total) {
     });
 }
 
+// ===== OPENING BALANCE =====
+let openingBalance = 0;
+
+// Load opening balance from localStorage
+function loadOpeningBalance() {
+    const stored = localStorage.getItem('openingBalance');
+    if (stored !== null) {
+        openingBalance = parseInt(stored, 10) || 0;
+    } else {
+        // Default contoh: My Fried Chicken 150.000
+        openingBalance = 150000;
+        localStorage.setItem('openingBalance', openingBalance.toString());
+    }
+    updateOpeningBalanceUI();
+}
+
+// Save opening balance to localStorage
+function saveOpeningBalance(value) {
+    openingBalance = value;
+    localStorage.setItem('openingBalance', value.toString());
+    updateOpeningBalanceUI();
+    showToast(`✅ Opening balance updated: Rp ${formatRupiah(value)}`);
+}
+
+// Update opening balance display on desktop and mobile
+function updateOpeningBalanceUI() {
+    const displayEl = document.getElementById('openingBalanceDisplay');
+    const mobileDisplayEl = document.getElementById('mobileOpeningBalanceDisplay');
+    const formatted = `Rp ${formatRupiah(openingBalance)}`;
+    if (displayEl) displayEl.textContent = formatted;
+    if (mobileDisplayEl) mobileDisplayEl.textContent = formatted;
+}
+
+// Edit opening balance modal
+document.getElementById('editOpeningBalanceDesktop').addEventListener('click', function () {
+    openEditOpeningBalanceModal();
+});
+document.getElementById('editOpeningBalanceMobile').addEventListener('click', function () {
+    openEditOpeningBalanceModal();
+});
+
+function openEditOpeningBalanceModal() {
+    const input = document.getElementById('editOpeningBalanceInput');
+    input.value = formatRupiah(openingBalance);
+    const modal = new bootstrap.Modal(document.getElementById('editOpeningBalanceModal'));
+    modal.show();
+    // Format input as Rupiah
+    input.addEventListener('input', function () {
+        formatRupiahInput(this);
+    });
+}
+
+document.getElementById('saveOpeningBalance').addEventListener('click', function () {
+    const input = document.getElementById('editOpeningBalanceInput');
+    const raw = input.value.replace(/\D/g, '');
+    const value = parseInt(raw, 10) || 0;
+    if (value < 0) {
+        showToast('❌ Opening balance cannot be negative!');
+        return;
+    }
+    saveOpeningBalance(value);
+    bootstrap.Modal.getInstance(document.getElementById('editOpeningBalanceModal')).hide();
+});
+
 // ===== GO HOME FUNCTION =====
 // Reset filters and scroll to top of menu
 function goHome() {
@@ -202,9 +266,11 @@ function renderMenu() {
 
     if (filtered.length === 0) {
         menuGrid.innerHTML = '';
+        menuEmpty.style.display = 'flex'; // use flex instead of removing class
         menuEmpty.classList.remove('d-none');
         return;
     }
+    menuEmpty.style.display = 'none';
     menuEmpty.classList.add('d-none');
 
     let html = '';
@@ -218,7 +284,7 @@ function renderMenu() {
         const disabled = item.status === 'out' ? 'disabled' : '';
 
         const imageHtml = item.image ?
-            `<img src="${item.image}" alt="${item.name}" />` :
+            `<img src="${item.image}" alt="${item.name}" width="100%" height="100%" loading="lazy" />` :
             `<span class="no-image">${item.icon || '🍽️'}</span>`;
 
         html += `
@@ -321,57 +387,59 @@ function getCartCount() {
 
 // Update all cart UI elements (desktop and mobile)
 function updateCartUI() {
-    const total = getCartTotal();
-    const count = getCartCount();
-    const totalStr = `Rp ${formatRupiah(total)}`;
-
-    // Desktop cart items
-    cartItemsEl.innerHTML = cart.length === 0 ?
-        `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
-        cart.map(item => `
-            <div class="cart-item">
-                <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
-                <span>
-                    Rp ${formatRupiah(item.price * item.qty)}
-                    <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
-                </span>
-            </div>
-        `).join('');
-
-    cartTotalEl.textContent = totalStr;
-    cartCountEl.textContent = count;
-    desktopCartCount.textContent = count;
-    checkoutBtn.disabled = count === 0;
-
-    // Mobile cart items
-    mobileCartItems.innerHTML = cart.length === 0 ?
-        `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
-        cart.map(item => `
-            <div class="cart-item">
-                <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
-                <span>
-                    Rp ${formatRupiah(item.price * item.qty)}
-                    <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
-                </span>
-            </div>
-        `).join('');
-
-    mobileCartTotal.textContent = totalStr;
-    mobileCartCount.textContent = count;
-    mobileCartBadge.textContent = count;
-    mobileCartBadge2.textContent = count;
-    mobileCartCountTop.textContent = count;
-    document.getElementById('mobileCheckoutBtn').disabled = count === 0;
-
-    // Attach remove event listeners to all remove buttons
-    document.querySelectorAll('.cart-item .remove-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            removeFromCart(parseInt(this.dataset.id));
+    requestAnimationFrame(() => {
+        const total = getCartTotal();
+        const count = getCartCount();
+        const totalStr = `Rp ${formatRupiah(total)}`;
+    
+        // Desktop cart items
+        cartItemsEl.innerHTML = cart.length === 0 ?
+            `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
+            cart.map(item => `
+                <div class="cart-item">
+                    <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
+                    <span>
+                        Rp ${formatRupiah(item.price * item.qty)}
+                        <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                    </span>
+                </div>
+            `).join('');
+    
+        cartTotalEl.textContent = totalStr;
+        cartCountEl.textContent = count;
+        desktopCartCount.textContent = count;
+        checkoutBtn.disabled = count === 0;
+    
+        // Mobile cart items
+        mobileCartItems.innerHTML = cart.length === 0 ?
+            `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
+            cart.map(item => `
+                <div class="cart-item">
+                    <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
+                    <span>
+                        Rp ${formatRupiah(item.price * item.qty)}
+                        <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                    </span>
+                </div>
+            `).join('');
+                
+        mobileCartTotal.textContent = totalStr;
+        mobileCartCount.textContent = count;
+        mobileCartBadge.textContent = count;
+        mobileCartBadge2.textContent = count;
+        mobileCartCountTop.textContent = count;
+        document.getElementById('mobileCheckoutBtn').disabled = count === 0;
+    
+        // Attach remove event listeners to all remove buttons
+        document.querySelectorAll('.cart-item .remove-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                removeFromCart(parseInt(this.dataset.id));
+            });
         });
-    });
-    document.querySelectorAll('#mobileCartItems .remove-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            removeFromCart(parseInt(this.dataset.id));
+        document.querySelectorAll('#mobileCartItems .remove-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                removeFromCart(parseInt(this.dataset.id));
+            });
         });
     });
 }
@@ -550,7 +618,7 @@ function deleteTransaction(id) {
 }
 
 // ===== RENDER HISTORY =====
-// Render transaction history with grand total at top
+// Render transaction history with opening balance, total transactions, and grand total
 function renderHistory() {
     const container = document.getElementById('historyContent');
     const stored = localStorage.getItem('transactionHistory');
@@ -568,12 +636,33 @@ function renderHistory() {
         return;
     }
 
-    // Calculate grand total
-    const grandTotal = transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
+    // Calculate totals
+    const totalTransactions = transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
+    const grandTotal = openingBalance + totalTransactions;
 
     let html = '';
 
-    // Grand total at the top
+    // ===== OPENING BALANCE =====
+    html += `
+        <div class="history-opening-balance">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="label"><i class="bi bi-wallet2 me-2"></i>Opening Balance</span>
+                <span class="total">Rp ${formatRupiah(openingBalance)}</span>
+            </div>
+        </div>
+    `;
+
+    // ===== TOTAL TRANSACTIONS (tanpa opening) =====
+    html += `
+        <div class="history-total-transactions">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="label"><i class="bi bi-receipt me-2"></i>Total Transactions</span>
+                <span class="total">Rp ${formatRupiah(totalTransactions)}</span>
+            </div>
+        </div>
+    `;
+
+    // ===== GRAND TOTAL (opening + transactions) =====
     html += `
         <div class="history-grand-total">
             <div class="d-flex justify-content-between align-items-center">
@@ -1141,13 +1230,13 @@ $(document).ready(function () {
 // ===== HIDE CART TOGGLE WHEN HISTORY IS OPEN =====
 const historyModalEl = document.getElementById('historyModal');
 if (historyModalEl) {
-    historyModalEl.addEventListener('show.bs.modal', function() {
+    historyModalEl.addEventListener('show.bs.modal', function () {
         if (window.innerWidth < 992) {
             const toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'none';
         }
     });
-    historyModalEl.addEventListener('hidden.bs.modal', function() {
+    historyModalEl.addEventListener('hidden.bs.modal', function () {
         if (window.innerWidth < 992) {
             const toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'flex';
@@ -1161,6 +1250,7 @@ if (historyModalEl) {
 // ===== INITIALIZATION =====
 // Run on page load
 updateFooterYear();
+loadOpeningBalance();
 loadMenuData();
 
 // Load transaction history from localStorage

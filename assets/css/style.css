@@ -579,6 +579,46 @@ body {
     color: #ddd;
 }
 
+/* ===== OPENING BALANCE ===== */
+.opening-balance {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--pos-primary);
+}
+
+.opening-balance i {
+    color: var(--pos-accent);
+    margin-right: 4px;
+}
+
+.opening-balance .btn-link {
+    color: var(--pos-accent);
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.opening-balance .btn-link:hover {
+    color: var(--pos-accent-hover);
+    text-decoration: underline;
+}
+
+/* Mobile opening balance */
+#mobileCartSidebar .opening-balance {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--pos-primary);
+}
+
 /* ===== MOBILE CART (Slide-up from bottom) ===== */
 .mobile-cart-toggle {
     position: fixed;
@@ -1270,4 +1310,31 @@ body {
     font-weight: 700;
     color: var(--pos-accent);
     font-size: 1.3rem;
+}
+
+/* Opening Balance & Total Transactions in History */
+.history-opening-balance,
+.history-total-transactions {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-top: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.history-opening-balance .label,
+.history-total-transactions .label {
+    font-weight: 600;
+    color: var(--pos-primary);
+}
+
+.history-opening-balance .total,
+.history-total-transactions .total {
+    font-weight: 700;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.history-opening-balance .total {
+    color: #28a745;
 }
