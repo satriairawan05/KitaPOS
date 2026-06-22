@@ -4,12 +4,10 @@
 // ================================================================
 
 // ===== CURRENCY FORMATTER =====
-// Format number as Indonesian Rupiah (with thousand separators)
 function formatRupiah(angka) {
     return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-// Format input field value as Rupiah while typing
 function formatRupiahInput(input) {
     let value = input.value.replace(/\D/g, '');
     if (value === '') {
@@ -25,15 +23,40 @@ function formatRupiahInput(input) {
 }
 
 // ===== MENU DATA =====
-// Array to hold all menu items
 let menuItems = [];
-// Auto-increment ID for new items
 let nextId = 1;
 
+// ===== OPENING BALANCE =====
+let openingBalance = 0;
+
+function loadOpeningBalance() {
+    const stored = localStorage.getItem('openingBalance');
+    if (stored !== null) {
+        openingBalance = parseInt(stored, 10) || 0;
+    } else {
+        openingBalance = 150000;
+        localStorage.setItem('openingBalance', openingBalance.toString());
+    }
+    updateOpeningBalanceUI();
+}
+
+function saveOpeningBalance(value) {
+    openingBalance = value;
+    localStorage.setItem('openingBalance', value.toString());
+    updateOpeningBalanceUI();
+    showToast('✅ Opening balance updated: Rp ' + formatRupiah(value));
+}
+
+function updateOpeningBalanceUI() {
+    const displayEl = document.getElementById('openingBalanceDisplay');
+    const mobileDisplayEl = document.getElementById('mobileOpeningBalanceDisplay');
+    const formatted = 'Rp ' + formatRupiah(openingBalance);
+    if (displayEl) displayEl.textContent = formatted;
+    if (mobileDisplayEl) mobileDisplayEl.textContent = formatted;
+}
+
 // ===== LOAD MENU DATA =====
-// Load menu data from global variable defaultMenuData (from data.js) or use fallback data
 function loadMenuData() {
-    // Check if defaultMenuData is available (loaded from data.js)
     if (typeof defaultMenuData !== 'undefined' && defaultMenuData.length > 0) {
         menuItems = defaultMenuData;
         const maxId = Math.max(...menuItems.map(item => item.id));
@@ -42,7 +65,6 @@ function loadMenuData() {
         updateCartUI();
         console.log('✅ Menu data loaded from data.js:', menuItems.length, 'items');
     } else {
-        // Fallback data if data.js not found
         menuItems = [
             { id: 1, name: 'Nasi Goreng', price: 25000, category: 'food', status: 'available', icon: '🍚', image: null },
             { id: 2, name: 'Mie Goreng', price: 22000, category: 'food', status: 'available', icon: '🍜', image: null },
@@ -62,15 +84,12 @@ function loadMenuData() {
 }
 
 // ===== CART =====
-// Shopping cart array
 let cart = [];
 
 // ===== TRANSACTION HISTORY =====
-// Array to store completed transactions
 let transactionHistory = [];
 
 // ===== DOM REFERENCES =====
-// Cache DOM elements for better performance
 const menuGrid = document.getElementById('menuGrid');
 const menuEmpty = document.getElementById('menuEmpty');
 const searchInput = document.getElementById('searchMenu');
@@ -93,14 +112,12 @@ const toggleCartBtn = document.getElementById('toggleCartMobile');
 const closeCartBtn = document.getElementById('closeMobileCart');
 const mobileCartToggle = document.getElementById('mobileCartToggle');
 
-// Bootstrap modal instances
 const addItemModal = new bootstrap.Modal(document.getElementById('addItemModal'));
 const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
 const calcModal = new bootstrap.Modal(document.getElementById('calcModal'));
 const historyModal = new bootstrap.Modal(document.getElementById('historyModal'));
 
 // ===== QUICK PAY BUTTONS =====
-// Generate quick payment amount buttons based on total
 function generateQuickPayButtons(total) {
     const container = document.getElementById('quickPayButtons');
     if (!container) return;
@@ -113,9 +130,8 @@ function generateQuickPayButtons(total) {
     let recommendations = [];
     let exact = total;
 
-    // Determine suggested payment amounts
     if (total <= 50000) {
-        recommendations = [50000, 70000, 100000];
+        recommendations = [50000, 75000, 100000];
     } else if (total <= 100000) {
         recommendations = [100000, 150000, 200000];
     } else {
@@ -130,95 +146,30 @@ function generateQuickPayButtons(total) {
     recommendations = recommendations.slice(0, 3);
 
     let html = '<div class="d-flex flex-wrap gap-2">';
-    html += `<button class="quick-pay-btn btn-exact" data-value="${exact}">Exact</button>`;
-    recommendations.forEach(val => {
-        html += `<button class="quick-pay-btn" data-value="${val}">Rp ${formatRupiah(val)}</button>`;
+    html += '<button class="quick-pay-btn btn-exact" data-value="' + exact + '">Exact</button>';
+    recommendations.forEach(function(val) {
+        html += '<button class="quick-pay-btn" data-value="' + val + '">Rp ' + formatRupiah(val) + '</button>';
     });
     html += '</div>';
 
     container.innerHTML = html;
 
-    container.querySelectorAll('.quick-pay-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const value = parseInt(this.dataset.value);
-            const paymentInput = document.getElementById('paymentAmount');
+    container.querySelectorAll('.quick-pay-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var value = parseInt(this.dataset.value);
+            var paymentInput = document.getElementById('paymentAmount');
             paymentInput.value = formatRupiah(value);
             paymentInput.dispatchEvent(new Event('input'));
 
-            container.querySelectorAll('.quick-pay-btn').forEach(b => b.classList.remove('active-btn'));
+            container.querySelectorAll('.quick-pay-btn').forEach(function(b) { b.classList.remove('active-btn'); });
             this.classList.add('active-btn');
         });
     });
 }
 
-// ===== OPENING BALANCE =====
-let openingBalance = 0;
-
-// Load opening balance from localStorage
-function loadOpeningBalance() {
-    const stored = localStorage.getItem('openingBalance');
-    if (stored !== null) {
-        openingBalance = parseInt(stored, 10) || 0;
-    } else {
-        // Default contoh: My Fried Chicken 150.000
-        openingBalance = 150000;
-        localStorage.setItem('openingBalance', openingBalance.toString());
-    }
-    updateOpeningBalanceUI();
-}
-
-// Save opening balance to localStorage
-function saveOpeningBalance(value) {
-    openingBalance = value;
-    localStorage.setItem('openingBalance', value.toString());
-    updateOpeningBalanceUI();
-    showToast(`✅ Opening balance updated: Rp ${formatRupiah(value)}`);
-}
-
-// Update opening balance display on desktop and mobile
-function updateOpeningBalanceUI() {
-    const displayEl = document.getElementById('openingBalanceDisplay');
-    const mobileDisplayEl = document.getElementById('mobileOpeningBalanceDisplay');
-    const formatted = `Rp ${formatRupiah(openingBalance)}`;
-    if (displayEl) displayEl.textContent = formatted;
-    if (mobileDisplayEl) mobileDisplayEl.textContent = formatted;
-}
-
-// Edit opening balance modal
-document.getElementById('editOpeningBalanceDesktop').addEventListener('click', function () {
-    openEditOpeningBalanceModal();
-});
-document.getElementById('editOpeningBalanceMobile').addEventListener('click', function () {
-    openEditOpeningBalanceModal();
-});
-
-function openEditOpeningBalanceModal() {
-    const input = document.getElementById('editOpeningBalanceInput');
-    input.value = formatRupiah(openingBalance);
-    const modal = new bootstrap.Modal(document.getElementById('editOpeningBalanceModal'));
-    modal.show();
-    // Format input as Rupiah
-    input.addEventListener('input', function () {
-        formatRupiahInput(this);
-    });
-}
-
-document.getElementById('saveOpeningBalance').addEventListener('click', function () {
-    const input = document.getElementById('editOpeningBalanceInput');
-    const raw = input.value.replace(/\D/g, '');
-    const value = parseInt(raw, 10) || 0;
-    if (value < 0) {
-        showToast('❌ Opening balance cannot be negative!');
-        return;
-    }
-    saveOpeningBalance(value);
-    bootstrap.Modal.getInstance(document.getElementById('editOpeningBalanceModal')).hide();
-});
-
-// ===== GO HOME FUNCTION =====
-// Reset filters and scroll to top of menu
+// ===== GO HOME =====
 function goHome() {
-    categoryBtns.forEach(b => b.classList.remove('active'));
+    categoryBtns.forEach(function(b) { b.classList.remove('active'); });
     document.querySelector('.btn-cat[data-cat="all"]').classList.add('active');
     currentCategory = 'all';
     searchInput.value = '';
@@ -228,64 +179,91 @@ function goHome() {
     showToast('🏠 Returned to main menu');
 }
 
-// ===== EVENT LISTENERS FOR NAVIGATION =====
+// ===== EVENT LISTENERS =====
 document.getElementById('goHomeDesktop').addEventListener('click', goHome);
 document.getElementById('goHomeFab').addEventListener('click', goHome);
-document.getElementById('openCalcDesktop').addEventListener('click', () => calcModal.show());
-document.getElementById('openCalcMobile').addEventListener('click', () => calcModal.show());
-document.getElementById('openHistoryDesktop').addEventListener('click', () => {
+document.getElementById('openCalcDesktop').addEventListener('click', function() { calcModal.show(); });
+document.getElementById('openCalcMobile').addEventListener('click', function() { calcModal.show(); });
+document.getElementById('openHistoryDesktop').addEventListener('click', function() {
     renderHistory();
     historyModal.show();
 });
-document.getElementById('openHistoryMobile').addEventListener('click', () => {
+document.getElementById('openHistoryMobile').addEventListener('click', function() {
     renderHistory();
     historyModal.show();
 });
 
-// Toast notification setup
-const toastEl = document.getElementById('liveToast');
-const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-const toastMsg = document.getElementById('toastMessage');
+// ===== EDIT OPENING BALANCE =====
+document.getElementById('editOpeningBalanceDesktop').addEventListener('click', function() {
+    openEditOpeningBalanceModal();
+});
+document.getElementById('editOpeningBalanceMobile').addEventListener('click', function() {
+    openEditOpeningBalanceModal();
+});
+
+function openEditOpeningBalanceModal() {
+    var input = document.getElementById('editOpeningBalanceInput');
+    input.value = formatRupiah(openingBalance);
+    var modal = new bootstrap.Modal(document.getElementById('editOpeningBalanceModal'));
+    modal.show();
+    input.addEventListener('input', function() {
+        formatRupiahInput(this);
+    });
+}
+
+document.getElementById('saveOpeningBalance').addEventListener('click', function() {
+    var input = document.getElementById('editOpeningBalanceInput');
+    var raw = input.value.replace(/\D/g, '');
+    var value = parseInt(raw, 10) || 0;
+    if (value < 0) {
+        showToast('❌ Opening balance cannot be negative!');
+        return;
+    }
+    saveOpeningBalance(value);
+    bootstrap.Modal.getInstance(document.getElementById('editOpeningBalanceModal')).hide();
+});
+
+// Toast setup
+var toastEl = document.getElementById('liveToast');
+var toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+var toastMsg = document.getElementById('toastMessage');
 
 // ===== RENDER MENU =====
-// Current category filter (all, makanan, minuman, cemilan)
-let currentCategory = 'all';
-// Current search query
-let searchQuery = '';
+var currentCategory = 'all';
+var searchQuery = '';
 
-// Render menu items based on current filters
 function renderMenu() {
-    let filtered = menuItems;
+    var filtered = menuItems;
     if (currentCategory !== 'all') {
-        filtered = filtered.filter(item => item.category === currentCategory);
+        filtered = filtered.filter(function(item) { return item.category === currentCategory; });
     }
     if (searchQuery.trim()) {
-        const q = searchQuery.trim().toLowerCase();
-        filtered = filtered.filter(item => item.name.toLowerCase().includes(q));
+        var q = searchQuery.trim().toLowerCase();
+        filtered = filtered.filter(function(item) { return item.name.toLowerCase().includes(q); });
     }
 
     if (filtered.length === 0) {
         menuGrid.innerHTML = '';
-        menuEmpty.style.display = 'flex'; // use flex instead of removing class
+        menuEmpty.style.display = 'flex';
         menuEmpty.classList.remove('d-none');
         return;
     }
     menuEmpty.style.display = 'none';
     menuEmpty.classList.add('d-none');
 
-    let html = '';
-    filtered.forEach(item => {
-        const statusMap = {
+    var html = '';
+    filtered.forEach(function(item) {
+        var statusMap = {
             available: { label: '✅ Available', cls: 'available' },
             low: { label: '⚠️ Low Stock', cls: 'low' },
             out: { label: '❌ Out of Stock', cls: 'out' }
         };
-        const st = statusMap[item.status] || statusMap.out;
-        const disabled = item.status === 'out' ? 'disabled' : '';
+        var st = statusMap[item.status] || statusMap.out;
+        var disabled = item.status === 'out' ? 'disabled' : '';
 
-        const imageHtml = item.image ?
-            `<img src="${item.image}" alt="${item.name}" width="100%" height="100%" loading="lazy" />` :
-            `<span class="no-image">${item.icon || '🍽️'}</span>`;
+        var imageHtml = item.image ?
+            '<img src="' + item.image + '" alt="' + item.name + '" width="100%" height="100%" loading="lazy" />' :
+            '<span class="no-image">' + (item.icon || '🍽️') + '</span>';
 
         html += `
             <div class="menu-card" data-id="${item.id}">
@@ -295,7 +273,7 @@ function renderMenu() {
                 <span class="menu-status ${st.cls}">${st.label}</span>
                 <div class="menu-actions">
                     <button class="btn-action btn-add-action" ${disabled} data-id="${item.id}" title="Add to cart">
-                        <i class="bi bi-plus-lg"></i>
+                        <i class="bi bi-plus"></i>
                     </button>
                     <button class="btn-action btn-edit-action" data-id="${item.id}" title="Edit menu">
                         <i class="bi bi-pencil"></i>
@@ -306,27 +284,25 @@ function renderMenu() {
     });
     menuGrid.innerHTML = html;
 
-    // Attach event listeners to "Add" buttons
-    document.querySelectorAll('.menu-card .btn-add-action:not([disabled])').forEach(btn => {
-        btn.addEventListener('click', function () {
+    document.querySelectorAll('.menu-card .btn-add-action:not([disabled])').forEach(function(btn) {
+        btn.addEventListener('click', function() {
             addToCart(parseInt(this.dataset.id));
         });
     });
 
-    // Attach event listeners to "Edit" buttons
-    document.querySelectorAll('.menu-card .btn-edit-action').forEach(btn => {
-        btn.addEventListener('click', function (e) {
+    document.querySelectorAll('.menu-card .btn-edit-action').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const id = parseInt(this.dataset.id);
+            var id = parseInt(this.dataset.id);
             openEditMenu(id);
         });
     });
 }
 
 // ===== CATEGORY FILTER =====
-categoryBtns.forEach(btn => {
-    btn.addEventListener('click', function () {
-        categoryBtns.forEach(b => b.classList.remove('active'));
+categoryBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        categoryBtns.forEach(function(b) { b.classList.remove('active'); });
         this.classList.add('active');
         currentCategory = this.dataset.cat;
         renderMenu();
@@ -334,32 +310,30 @@ categoryBtns.forEach(btn => {
 });
 
 // ===== SEARCH =====
-searchInput.addEventListener('input', function () {
+searchInput.addEventListener('input', function() {
     searchQuery = this.value;
     renderMenu();
 });
 
 // ===== CART FUNCTIONS =====
-// Add item to cart
 function addToCart(id) {
-    const item = menuItems.find(i => i.id === id);
+    var item = menuItems.find(function(i) { return i.id === id; });
     if (!item || item.status === 'out') {
         showToast('Menu not available!');
         return;
     }
-    const existing = cart.find(c => c.id === id);
+    var existing = cart.find(function(c) { return c.id === id; });
     if (existing) {
         existing.qty += 1;
     } else {
         cart.push({ ...item, qty: 1 });
     }
     updateCartUI();
-    showToast(`✅ ${item.name} added to cart`);
+    showToast('✅ ' + item.name + ' added to cart');
 }
 
-// Remove one quantity of item from cart
 function removeFromCart(id) {
-    const idx = cart.findIndex(c => c.id === id);
+    var idx = cart.findIndex(function(c) { return c.id === id; });
     if (idx === -1) return;
     if (cart[idx].qty > 1) {
         cart[idx].qty -= 1;
@@ -369,75 +343,72 @@ function removeFromCart(id) {
     updateCartUI();
 }
 
-// Clear entire cart
 function clearCart() {
     cart = [];
     updateCartUI();
 }
 
-// Calculate total price of cart
 function getCartTotal() {
-    return cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    return cart.reduce(function(sum, item) { return sum + (item.price * item.qty); }, 0);
 }
 
-// Calculate total quantity of items in cart
 function getCartCount() {
-    return cart.reduce((sum, item) => sum + item.qty, 0);
+    return cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
 }
 
-// Update all cart UI elements (desktop and mobile)
 function updateCartUI() {
-    requestAnimationFrame(() => {
-        const total = getCartTotal();
-        const count = getCartCount();
-        const totalStr = `Rp ${formatRupiah(total)}`;
-    
-        // Desktop cart items
+    requestAnimationFrame(function() {
+        var total = getCartTotal();
+        var count = getCartCount();
+        var totalStr = 'Rp ' + formatRupiah(total);
+
         cartItemsEl.innerHTML = cart.length === 0 ?
-            `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
-            cart.map(item => `
-                <div class="cart-item">
-                    <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
-                    <span>
-                        Rp ${formatRupiah(item.price * item.qty)}
-                        <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
-                    </span>
-                </div>
-            `).join('');
-    
+            '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
+            cart.map(function(item) {
+                return `
+                    <div class="cart-item">
+                        <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
+                        <span>
+                            Rp ${formatRupiah(item.price * item.qty)}
+                            <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
         cartTotalEl.textContent = totalStr;
         cartCountEl.textContent = count;
         desktopCartCount.textContent = count;
         checkoutBtn.disabled = count === 0;
-    
-        // Mobile cart items
+
         mobileCartItems.innerHTML = cart.length === 0 ?
-            `<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>` :
-            cart.map(item => `
-                <div class="cart-item">
-                    <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
-                    <span>
-                        Rp ${formatRupiah(item.price * item.qty)}
-                        <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
-                    </span>
-                </div>
-            `).join('');
-                
+            '<div class="cart-empty"><i class="bi bi-basket"></i>No items yet</div>' :
+            cart.map(function(item) {
+                return `
+                    <div class="cart-item">
+                        <span>${item.icon || '🍽️'} ${item.name} <span class="qty">×${item.qty}</span></span>
+                        <span>
+                            Rp ${formatRupiah(item.price * item.qty)}
+                            <button class="remove-btn" data-id="${item.id}"><i class="bi bi-dash-circle"></i></button>
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
         mobileCartTotal.textContent = totalStr;
         mobileCartCount.textContent = count;
         mobileCartBadge.textContent = count;
         mobileCartBadge2.textContent = count;
         mobileCartCountTop.textContent = count;
         document.getElementById('mobileCheckoutBtn').disabled = count === 0;
-    
-        // Attach remove event listeners to all remove buttons
-        document.querySelectorAll('.cart-item .remove-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+
+        document.querySelectorAll('.cart-item .remove-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
                 removeFromCart(parseInt(this.dataset.id));
             });
         });
-        document.querySelectorAll('#mobileCartItems .remove-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
+        document.querySelectorAll('#mobileCartItems .remove-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
                 removeFromCart(parseInt(this.dataset.id));
             });
         });
@@ -448,28 +419,29 @@ function updateCartUI() {
 document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
 document.getElementById('mobileCheckoutBtn').addEventListener('click', openCheckout);
 
-// Open checkout modal with order summary
 function openCheckout() {
     if (cart.length === 0) return;
-    const total = getCartTotal();
-    const summaryEl = document.getElementById('checkoutSummary');
-    let html = `
+    var total = getCartTotal();
+    var summaryEl = document.getElementById('checkoutSummary');
+    var html = `
         <p class="fw-600 mb-2">Ordered items:</p>
-        ${cart.map(item => `
-            <div class="item-row">
-                <span>${item.icon || '🍽️'} ${item.name} × ${item.qty}</span>
-                <span>Rp ${formatRupiah(item.price * item.qty)}</span>
-            </div>
-        `).join('')}
+        ${cart.map(function(item) {
+            return `
+                <div class="item-row">
+                    <span>${item.icon || '🍽️'} ${item.name} × ${item.qty}</span>
+                    <span>Rp ${formatRupiah(item.price * item.qty)}</span>
+                </div>
+            `;
+        }).join('')}
         <div class="total-row">
             <span>Total</span>
             <span>Rp ${formatRupiah(total)}</span>
         </div>
     `;
     summaryEl.innerHTML = html;
-    document.getElementById('checkoutGrandTotal').textContent = `Rp ${formatRupiah(total)}`;
+    document.getElementById('checkoutGrandTotal').textContent = 'Rp ' + formatRupiah(total);
 
-    const $paymentMethod = $('#paymentMethod');
+    var $paymentMethod = $('#paymentMethod');
     $paymentMethod.val('cash').trigger('change');
 
     document.getElementById('paymentAmount').value = '';
@@ -484,14 +456,14 @@ function openCheckout() {
     checkoutModal.show();
 }
 
-// ===== PAYMENT METHOD HANDLER =====
-$(document).on('change', '#paymentMethod', function () {
-    const method = this.value;
-    const total = getCartTotal();
-    const paymentInput = document.getElementById('paymentAmount');
-    const changeDisplay = document.getElementById('changeDisplay');
-    const qrisInfo = document.getElementById('qrisInfo');
-    const paymentLabel = document.getElementById('paymentLabel');
+// ===== PAYMENT METHOD =====
+$(document).on('change', '#paymentMethod', function() {
+    var method = this.value;
+    var total = getCartTotal();
+    var paymentInput = document.getElementById('paymentAmount');
+    var changeDisplay = document.getElementById('changeDisplay');
+    var qrisInfo = document.getElementById('qrisInfo');
+    var paymentLabel = document.getElementById('paymentLabel');
 
     if (method === 'qris') {
         paymentInput.value = formatRupiah(total);
@@ -499,7 +471,7 @@ $(document).on('change', '#paymentMethod', function () {
         paymentLabel.textContent = 'Total Paid (QRIS)';
         changeDisplay.style.display = 'none';
         qrisInfo.style.display = 'block';
-        document.getElementById('changeAmount').textContent = `Rp ${formatRupiah(0)}`;
+        document.getElementById('changeAmount').textContent = 'Rp ' + formatRupiah(0);
         document.getElementById('quickPayButtons').innerHTML = '';
     } else {
         paymentInput.value = '';
@@ -512,32 +484,32 @@ $(document).on('change', '#paymentMethod', function () {
     }
 });
 
-// ===== RUPIAH FORMAT ON PAYMENT INPUT =====
-document.getElementById('paymentAmount').addEventListener('input', function (e) {
-    const start = this.selectionStart;
-    const end = this.selectionEnd;
-    const length = this.value.length;
+// ===== PAYMENT INPUT FORMAT =====
+document.getElementById('paymentAmount').addEventListener('input', function(e) {
+    var start = this.selectionStart;
+    var end = this.selectionEnd;
+    var length = this.value.length;
 
     formatRupiahInput(this);
 
-    const newLength = this.value.length;
+    var newLength = this.value.length;
     this.setSelectionRange(newLength, newLength);
 
-    const rawValue = this.value.replace(/\D/g, '');
-    const paid = parseInt(rawValue) || 0;
-    const total = getCartTotal();
-    const change = paid - total;
-    const changeEl = document.getElementById('changeAmount');
+    var rawValue = this.value.replace(/\D/g, '');
+    var paid = parseInt(rawValue) || 0;
+    var total = getCartTotal();
+    var change = paid - total;
+    var changeEl = document.getElementById('changeAmount');
     if (change >= 0) {
-        changeEl.textContent = `Rp ${formatRupiah(change)}`;
+        changeEl.textContent = 'Rp ' + formatRupiah(change);
         changeEl.style.color = 'var(--pos-accent)';
     } else {
-        changeEl.textContent = `Rp ${formatRupiah(Math.abs(change))} (insufficient)`;
+        changeEl.textContent = 'Rp ' + formatRupiah(Math.abs(change)) + ' (insufficient)';
         changeEl.style.color = '#e74c3c';
     }
 
-    const quickButtons = document.querySelectorAll('.quick-pay-btn');
-    quickButtons.forEach(btn => {
+    var quickButtons = document.querySelectorAll('.quick-pay-btn');
+    quickButtons.forEach(function(btn) {
         btn.classList.remove('active-btn');
         if (parseInt(btn.dataset.value) === paid) {
             btn.classList.add('active-btn');
@@ -546,27 +518,27 @@ document.getElementById('paymentAmount').addEventListener('input', function (e) 
 });
 
 // ===== CONFIRM CHECKOUT =====
-document.getElementById('confirmCheckout').addEventListener('click', function () {
-    const total = getCartTotal();
-    const method = document.getElementById('paymentMethod').value;
-    const rawValue = document.getElementById('paymentAmount').value.replace(/\D/g, '');
-    let paid = parseInt(rawValue) || 0;
+document.getElementById('confirmCheckout').addEventListener('click', function() {
+    var total = getCartTotal();
+    var method = document.getElementById('paymentMethod').value;
+    var rawValue = document.getElementById('paymentAmount').value.replace(/\D/g, '');
+    var paid = parseInt(rawValue) || 0;
 
     if (method === 'cash') {
         if (paid < total) {
             showToast('❌ Payment insufficient!');
             return;
         }
-        const change = paid - total;
+        var change = paid - total;
         saveTransaction('Cash', total, paid, change);
-        showToast(`✅ Checkout successful! Method: Cash. Change: Rp ${formatRupiah(change)}`);
+        showToast('✅ Checkout successful! Method: Cash. Change: Rp ' + formatRupiah(change));
     } else {
         if (paid !== total) {
             paid = total;
             document.getElementById('paymentAmount').value = formatRupiah(total);
         }
         saveTransaction('QRIS', total, paid, 0);
-        showToast(`✅ Checkout successful! Method: QRIS. Total: Rp ${formatRupiah(total)}`);
+        showToast('✅ Checkout successful! Method: QRIS. Total: Rp ' + formatRupiah(total));
     }
 
     clearCart();
@@ -575,10 +547,9 @@ document.getElementById('confirmCheckout').addEventListener('click', function ()
 });
 
 // ===== SAVE TRANSACTION =====
-// Save completed transaction to localStorage
 function saveTransaction(method, total, paid, change) {
-    const now = new Date();
-    const timestamp = now.toLocaleString('id-ID', {
+    var now = new Date();
+    var timestamp = now.toLocaleString('id-ID', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -586,15 +557,17 @@ function saveTransaction(method, total, paid, change) {
         minute: '2-digit',
         second: '2-digit'
     });
-    const transaction = {
+    var transaction = {
         id: transactionHistory.length + 1,
         timestamp: timestamp,
-        items: cart.map(item => ({
-            name: item.name,
-            qty: item.qty,
-            price: item.price,
-            subtotal: item.price * item.qty
-        })),
+        items: cart.map(function(item) {
+            return {
+                name: item.name,
+                qty: item.qty,
+                price: item.price,
+                subtotal: item.price * item.qty
+            };
+        }),
         total: total,
         method: method,
         paid: paid,
@@ -604,45 +577,35 @@ function saveTransaction(method, total, paid, change) {
     localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
 }
 
-// ===== DELETE SINGLE TRANSACTION =====
+// ===== DELETE TRANSACTION =====
 function deleteTransaction(id) {
-    if (confirm(`Are you sure you want to delete transaction #${id}?`)) {
-        transactionHistory = transactionHistory.filter(trx => trx.id !== id);
-        transactionHistory.forEach((trx, index) => {
+    if (confirm('Are you sure you want to delete transaction #' + id + '?')) {
+        transactionHistory = transactionHistory.filter(function(trx) { return trx.id !== id; });
+        transactionHistory.forEach(function(trx, index) {
             trx.id = index + 1;
         });
         localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
         renderHistory();
-        showToast(`🗑️ Transaction #${id} has been deleted`);
+        showToast('🗑️ Transaction #' + id + ' has been deleted');
     }
 }
 
 // ===== RENDER HISTORY =====
 // Render transaction history with opening balance, total transactions, and grand total
 function renderHistory() {
-    const container = document.getElementById('historyContent');
-    const stored = localStorage.getItem('transactionHistory');
+    var container = document.getElementById('historyContent');
+    var stored = localStorage.getItem('transactionHistory');
     if (stored) {
         transactionHistory = JSON.parse(stored);
     }
 
-    if (transactionHistory.length === 0) {
-        container.innerHTML = `
-            <div class="history-empty">
-                <i class="bi bi-inbox"></i>
-                <p>No transactions yet</p>
-            </div>
-        `;
-        return;
-    }
+    // Calculate total transactions (0 if empty)
+    var totalTransactions = transactionHistory.reduce(function(sum, trx) { return sum + trx.total; }, 0);
+    var grandTotal = openingBalance + totalTransactions;
 
-    // Calculate totals
-    const totalTransactions = transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
-    const grandTotal = openingBalance + totalTransactions;
+    var html = '';
 
-    let html = '';
-
-    // ===== OPENING BALANCE =====
+    // Opening Balance section
     html += `
         <div class="history-opening-balance">
             <div class="d-flex justify-content-between align-items-center">
@@ -652,7 +615,7 @@ function renderHistory() {
         </div>
     `;
 
-    // ===== TOTAL TRANSACTIONS (tanpa opening) =====
+    // Total Transactions (excluding opening balance)
     html += `
         <div class="history-total-transactions">
             <div class="d-flex justify-content-between align-items-center">
@@ -662,7 +625,7 @@ function renderHistory() {
         </div>
     `;
 
-    // ===== GRAND TOTAL (opening + transactions) =====
+    // Grand Total
     html += `
         <div class="history-grand-total">
             <div class="d-flex justify-content-between align-items-center">
@@ -673,12 +636,24 @@ function renderHistory() {
         <hr />
     `;
 
+    // If no transactions exist, show empty state
+    if (transactionHistory.length === 0) {
+        html += `
+            <div class="history-empty">
+                <i class="bi bi-inbox"></i>
+                <p>No transactions yet</p>
+            </div>
+        `;
+        container.innerHTML = html;
+        return;
+    }
+
     // Display transactions in reverse chronological order (newest first)
-    const reversed = [...transactionHistory].reverse();
-    reversed.forEach((trx) => {
-        const itemsList = trx.items.map(item =>
-            `${item.name} (${item.qty}×Rp${formatRupiah(item.price)})`
-        ).join(', ');
+    var reversed = [...transactionHistory].reverse();
+    reversed.forEach(function(trx) {
+        var itemsList = trx.items.map(function(item) {
+            return item.name + ' (' + item.qty + '×Rp' + formatRupiah(item.price) + ')';
+        }).join(', ');
         html += `
             <div class="history-item" data-id="${trx.id}">
                 <div class="header">
@@ -704,16 +679,17 @@ function renderHistory() {
 
     container.innerHTML = html;
 
-    container.querySelectorAll('.delete-history-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const id = parseInt(this.dataset.id);
+    // Attach event listeners to delete buttons
+    container.querySelectorAll('.delete-history-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var id = parseInt(this.dataset.id);
             deleteTransaction(id);
         });
     });
 }
 
-// ===== CLEAR ALL HISTORY =====
-document.getElementById('clearHistoryBtn').addEventListener('click', function () {
+// ===== CLEAR HISTORY =====
+document.getElementById('clearHistoryBtn').addEventListener('click', function() {
     if (confirm('Are you sure you want to clear all transaction history?')) {
         transactionHistory = [];
         localStorage.removeItem('transactionHistory');
@@ -723,15 +699,14 @@ document.getElementById('clearHistoryBtn').addEventListener('click', function ()
 });
 
 // ===== MANUAL ADD ITEM =====
-// Preview uploaded image for new item
-document.getElementById('manualImage').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    const previewContainer = document.getElementById('imagePreviewContainer');
-    const preview = document.getElementById('imagePreview');
+document.getElementById('manualImage').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    var previewContainer = document.getElementById('imagePreviewContainer');
+    var preview = document.getElementById('imagePreview');
 
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
             preview.src = event.target.result;
             previewContainer.style.display = 'block';
         };
@@ -742,25 +717,23 @@ document.getElementById('manualImage').addEventListener('change', function (e) {
     }
 });
 
-// Format price input for new item
-document.getElementById('manualPrice').addEventListener('input', function (e) {
-    const start = this.selectionStart;
-    const end = this.selectionEnd;
-    const length = this.value.length;
+document.getElementById('manualPrice').addEventListener('input', function(e) {
+    var start = this.selectionStart;
+    var end = this.selectionEnd;
+    var length = this.value.length;
 
     formatRupiahInput(this);
 
-    const newLength = this.value.length;
+    var newLength = this.value.length;
     this.setSelectionRange(newLength, newLength);
 });
 
-// Preview image for edit item
-document.getElementById('editImage').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    const preview = document.getElementById('editImagePreview');
+document.getElementById('editImage').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    var preview = document.getElementById('editImagePreview');
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
             preview.src = event.target.result;
             preview.style.display = 'block';
         };
@@ -771,20 +744,18 @@ document.getElementById('editImage').addEventListener('change', function (e) {
     }
 });
 
-// Format price input for edit item
-document.getElementById('editPrice').addEventListener('input', function (e) {
+document.getElementById('editPrice').addEventListener('input', function(e) {
     formatRupiahInput(this);
 });
 
-// Save new menu item
-document.getElementById('saveManualItem').addEventListener('click', function () {
-    const name = document.getElementById('manualName').value.trim();
-    const rawPrice = document.getElementById('manualPrice').value.replace(/\D/g, '');
-    const price = parseInt(rawPrice) || 0;
-    const category = document.getElementById('manualCategory').value;
-    const status = document.getElementById('manualStatus').value;
-    const icon = document.getElementById('manualIcon').value.trim() || '🍽️';
-    const imageFile = document.getElementById('manualImage').files[0];
+document.getElementById('saveManualItem').addEventListener('click', function() {
+    var name = document.getElementById('manualName').value.trim();
+    var rawPrice = document.getElementById('manualPrice').value.replace(/\D/g, '');
+    var price = parseInt(rawPrice) || 0;
+    var category = document.getElementById('manualCategory').value;
+    var status = document.getElementById('manualStatus').value;
+    var icon = document.getElementById('manualIcon').value.trim() || '🍽️';
+    var imageFile = document.getElementById('manualImage').files[0];
 
     if (!name) {
         showToast('❌ Menu name is required!');
@@ -795,10 +766,10 @@ document.getElementById('saveManualItem').addEventListener('click', function () 
         return;
     }
 
-    let imageData = null;
+    var imageData = null;
     if (imageFile) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
             imageData = event.target.result;
             saveNewItem(name, price, category, status, icon, imageData);
         };
@@ -808,9 +779,8 @@ document.getElementById('saveManualItem').addEventListener('click', function () 
     }
 });
 
-// Helper to save new item and update UI
 function saveNewItem(name, price, category, status, icon, imageData) {
-    const newItem = {
+    var newItem = {
         id: nextId++,
         name: name,
         price: price,
@@ -822,7 +792,7 @@ function saveNewItem(name, price, category, status, icon, imageData) {
     menuItems.push(newItem);
     renderMenu();
     addItemModal.hide();
-    showToast(`✅ Menu "${name}" has been added successfully!`);
+    showToast('✅ Menu "' + name + '" has been added successfully!');
     document.getElementById('addItemForm').reset();
     document.getElementById('manualIcon').value = '🍽️';
     document.getElementById('imagePreviewContainer').style.display = 'none';
@@ -830,9 +800,8 @@ function saveNewItem(name, price, category, status, icon, imageData) {
 }
 
 // ===== EDIT MENU =====
-// Open edit modal with selected item data
 function openEditMenu(id) {
-    const item = menuItems.find(i => i.id === id);
+    var item = menuItems.find(function(i) { return i.id === id; });
     if (!item) {
         showToast('❌ Menu not found!');
         return;
@@ -845,7 +814,7 @@ function openEditMenu(id) {
     document.getElementById('editStatus').value = item.status;
     document.getElementById('editIcon').value = item.icon || '🍽️';
 
-    const preview = document.getElementById('editImagePreview');
+    var preview = document.getElementById('editImagePreview');
     if (item.image) {
         preview.src = item.image;
         preview.style.display = 'block';
@@ -855,11 +824,10 @@ function openEditMenu(id) {
     }
     document.getElementById('editImage').value = '';
 
-    const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+    var editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
     editModal.show();
 
-    // Re-initialize Select2 for dropdowns inside modal
-    setTimeout(() => {
+    setTimeout(function() {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -872,16 +840,15 @@ function openEditMenu(id) {
     }, 100);
 }
 
-// Save edited item
-document.getElementById('saveEditItem').addEventListener('click', function () {
-    const id = parseInt(document.getElementById('editItemId').value);
-    const name = document.getElementById('editName').value.trim();
-    const rawPrice = document.getElementById('editPrice').value.replace(/\D/g, '');
-    const price = parseInt(rawPrice) || 0;
-    const category = document.getElementById('editCategory').value;
-    const status = document.getElementById('editStatus').value;
-    const icon = document.getElementById('editIcon').value.trim() || '🍽️';
-    const imageFile = document.getElementById('editImage').files[0];
+document.getElementById('saveEditItem').addEventListener('click', function() {
+    var id = parseInt(document.getElementById('editItemId').value);
+    var name = document.getElementById('editName').value.trim();
+    var rawPrice = document.getElementById('editPrice').value.replace(/\D/g, '');
+    var price = parseInt(rawPrice) || 0;
+    var category = document.getElementById('editCategory').value;
+    var status = document.getElementById('editStatus').value;
+    var icon = document.getElementById('editIcon').value.trim() || '🍽️';
+    var imageFile = document.getElementById('editImage').files[0];
 
     if (!name) {
         showToast('❌ Menu name is required!');
@@ -892,7 +859,7 @@ document.getElementById('saveEditItem').addEventListener('click', function () {
         return;
     }
 
-    const index = menuItems.findIndex(i => i.id === id);
+    var index = menuItems.findIndex(function(i) { return i.id === id; });
     if (index === -1) {
         showToast('❌ Menu not found!');
         return;
@@ -909,8 +876,7 @@ document.getElementById('saveEditItem').addEventListener('click', function () {
             image: imageData !== undefined ? imageData : menuItems[index].image
         };
 
-        // Update cart items if they exist
-        cart.forEach(cartItem => {
+        cart.forEach(function(cartItem) {
             if (cartItem.id === id) {
                 cartItem.name = name;
                 cartItem.price = price;
@@ -921,12 +887,12 @@ document.getElementById('saveEditItem').addEventListener('click', function () {
         renderMenu();
         updateCartUI();
         bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
-        showToast(`✅ Menu "${name}" has been updated successfully!`);
+        showToast('✅ Menu "' + name + '" has been updated successfully!');
     }
 
     if (imageFile) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
+        var reader = new FileReader();
+        reader.onload = function(event) {
             applyEdit(event.target.result);
         };
         reader.readAsDataURL(imageFile);
@@ -935,28 +901,24 @@ document.getElementById('saveEditItem').addEventListener('click', function () {
     }
 });
 
-// Reset manual price field when add modal opens
-$('#addItemModal').on('shown.bs.modal', function () {
+$('#addItemModal').on('shown.bs.modal', function() {
     document.getElementById('manualPrice').value = '';
 });
 
 // ===== MOBILE CART TOGGLE =====
-// Toggle mobile cart sidebar visibility
 function toggleMobileCart() {
     mobileCartSidebar.classList.toggle('open');
 }
 
-// Event listeners for opening/closing mobile cart
 toggleCartBtn.addEventListener('click', toggleMobileCart);
 mobileCartToggle.addEventListener('click', toggleMobileCart);
 closeCartBtn.addEventListener('click', toggleMobileCart);
 
-// Close mobile cart when clicking outside
-document.addEventListener('click', function (e) {
+document.addEventListener('click', function(e) {
     if (window.innerWidth < 992) {
-        const sidebar = mobileCartSidebar;
-        const toggle = mobileCartToggle;
-        const toggleBtn = toggleCartBtn;
+        var sidebar = mobileCartSidebar;
+        var toggle = mobileCartToggle;
+        var toggleBtn = toggleCartBtn;
         if (sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && !toggle.contains(e.target) && !toggleBtn.contains(e.target)) {
                 sidebar.classList.remove('open');
@@ -966,38 +928,33 @@ document.addEventListener('click', function (e) {
 });
 
 // ===== CALCULATOR =====
-// Calculator with thousand separators (e.g., 50000 -> 50.000)
-let calcDisplayModal = document.getElementById('calcDisplayModal');
-let calcExpression = '';        // expression as string (unformatted)
-let calcResult = '';            // last result (unformatted)
-let calcJustEvaluated = false;
+var calcDisplayModal = document.getElementById('calcDisplayModal');
+var calcExpression = '';
+var calcResult = '';
+var calcJustEvaluated = false;
 
-// Format number with thousand separators
 function formatThousand(numStr) {
-    let parts = numStr.split('.');
-    let integerPart = parts[0];
-    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
-    let formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    var parts = numStr.split('.');
+    var integerPart = parts[0];
+    var decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+    var formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return formatted + decimalPart;
 }
 
-// Update calculator display with formatting
 function updateCalcDisplayModal() {
     if (!calcExpression) {
         calcDisplayModal.textContent = '0';
         return;
     }
-    let displayText = calcExpression;
-    // If expression ends with operator, show as-is
+    var displayText = calcExpression;
     if (['+', '−', '×', '÷'].includes(displayText.slice(-1))) {
         calcDisplayModal.textContent = displayText;
         return;
     }
-    // Split by operators, format numbers, then join back
-    let tokens = displayText.split(/([+\−×÷])/);
-    let formattedTokens = tokens.map(token => {
+    var tokens = displayText.split(/([+\−×÷])/);
+    var formattedTokens = tokens.map(function(token) {
         if (['+', '−', '×', '÷'].includes(token)) return token;
-        let num = parseFloat(token);
+        var num = parseFloat(token);
         if (!isNaN(num) && token !== '') {
             return formatThousand(token);
         }
@@ -1006,7 +963,6 @@ function updateCalcDisplayModal() {
     calcDisplayModal.textContent = formattedTokens.join('');
 }
 
-// Append a value to the expression
 function appendToExpression(value) {
     if (calcJustEvaluated) {
         if (['+', '−', '×', '÷'].includes(value)) {
@@ -1016,10 +972,9 @@ function appendToExpression(value) {
         }
         calcJustEvaluated = false;
     } else {
-        const lastChar = calcExpression.slice(-1);
-        // Prevent multiple dots or consecutive operators
+        var lastChar = calcExpression.slice(-1);
         if (value === '.') {
-            let lastNum = calcExpression.split(/[+\−×÷]/).pop();
+            var lastNum = calcExpression.split(/[+\−×÷]/).pop();
             if (lastNum && lastNum.includes('.')) return;
         }
         if (['+', '−', '×', '÷'].includes(value) && ['+', '−', '×', '÷'].includes(lastChar)) {
@@ -1032,24 +987,21 @@ function appendToExpression(value) {
     updateCalcDisplayModal();
 }
 
-// Event listeners for number and decimal buttons
-document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(btn => {
-    btn.addEventListener('click', function () {
-        const val = this.dataset.val;
+document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var val = this.dataset.val;
         appendToExpression(val);
     });
 });
 
-// Clear button
-document.getElementById('calcClearModal').addEventListener('click', function () {
+document.getElementById('calcClearModal').addEventListener('click', function() {
     calcExpression = '';
     calcResult = '';
     calcJustEvaluated = false;
     updateCalcDisplayModal();
 });
 
-// Backspace button
-document.getElementById('calcBackspaceModal').addEventListener('click', function () {
+document.getElementById('calcBackspaceModal').addEventListener('click', function() {
     if (calcJustEvaluated) {
         calcExpression = '';
         calcJustEvaluated = false;
@@ -1059,15 +1011,14 @@ document.getElementById('calcBackspaceModal').addEventListener('click', function
     updateCalcDisplayModal();
 });
 
-// Equals button
-document.getElementById('calcEqualsModal').addEventListener('click', function () {
+document.getElementById('calcEqualsModal').addEventListener('click', function() {
     try {
-        let expr = calcExpression;
+        var expr = calcExpression;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-        const result = Function('"use strict"; return (' + expr + ')')();
+        var result = Function('"use strict"; return (' + expr + ')')();
         if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
-            let rounded = Math.round(result * 100) / 100;
-            let resultStr = rounded.toString();
+            var rounded = Math.round(result * 100) / 100;
+            var resultStr = rounded.toString();
             calcResult = resultStr;
             calcExpression = resultStr;
             calcJustEvaluated = true;
@@ -1075,7 +1026,7 @@ document.getElementById('calcEqualsModal').addEventListener('click', function ()
         } else {
             calcExpression = 'Error';
             updateCalcDisplayModal();
-            setTimeout(() => {
+            setTimeout(function() {
                 calcExpression = '';
                 updateCalcDisplayModal();
             }, 800);
@@ -1083,21 +1034,19 @@ document.getElementById('calcEqualsModal').addEventListener('click', function ()
     } catch (e) {
         calcExpression = 'Error';
         updateCalcDisplayModal();
-        setTimeout(() => {
+        setTimeout(function() {
             calcExpression = '';
             updateCalcDisplayModal();
         }, 800);
     }
 });
 
-// Initialize calculator display
 updateCalcDisplayModal();
 
-// Keyboard support for calculator
-document.addEventListener('keydown', function (e) {
-    const modalOpen = document.getElementById('calcModal').classList.contains('show');
+document.addEventListener('keydown', function(e) {
+    var modalOpen = document.getElementById('calcModal').classList.contains('show');
     if (!modalOpen) return;
-    const key = e.key;
+    var key = e.key;
     if (key >= '0' && key <= '9') {
         appendToExpression(key);
     } else if (key === '.') {
@@ -1120,30 +1069,27 @@ document.addEventListener('keydown', function (e) {
 });
 
 // ===== TOAST =====
-// Show toast notification
 function showToast(msg) {
     toastMsg.textContent = msg;
     toast.show();
 }
 
 // ===== UPDATE FOOTER YEAR =====
-// Update footer copyright year
 function updateFooterYear() {
-    const startYear = 2026;
-    const currentYear = new Date().getFullYear();
-    const footerYearEl = document.getElementById('footerYear');
+    var startYear = 2026;
+    var currentYear = new Date().getFullYear();
+    var footerYearEl = document.getElementById('footerYear');
     if (currentYear === startYear) {
-        footerYearEl.textContent = `${startYear}`;
+        footerYearEl.textContent = startYear + '';
     } else {
-        footerYearEl.textContent = `${startYear} - ${currentYear}`;
+        footerYearEl.textContent = startYear + ' - ' + currentYear;
     }
 }
 
 // ================================================================
 // ===== SELECT2 INITIALIZATION =====
 // ================================================================
-$(document).ready(function () {
-    // Initialize all Select2 dropdowns
+$(document).ready(function() {
     function initSelect2() {
         $('.select2-custom').select2({
             theme: 'default',
@@ -1156,8 +1102,7 @@ $(document).ready(function () {
 
     initSelect2();
 
-    // Reinitialize Select2 inside modals when they open
-    $('#addItemModal').on('shown.bs.modal', function () {
+    $('#addItemModal').on('shown.bs.modal', function() {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -1169,7 +1114,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#editItemModal').on('shown.bs.modal', function () {
+    $('#editItemModal').on('shown.bs.modal', function() {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -1181,7 +1126,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#editItemModal').on('hidden.bs.modal', function () {
+    $('#editItemModal').on('hidden.bs.modal', function() {
         $('#editCategory, #editStatus').select2('destroy');
         $('#editCategory, #editStatus').select2({
             theme: 'default',
@@ -1192,7 +1137,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#checkoutModal').on('shown.bs.modal', function () {
+    $('#checkoutModal').on('shown.bs.modal', function() {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -1204,7 +1149,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#addItemModal').on('hidden.bs.modal', function () {
+    $('#addItemModal').on('hidden.bs.modal', function() {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -1215,7 +1160,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#checkoutModal').on('hidden.bs.modal', function () {
+    $('#checkoutModal').on('hidden.bs.modal', function() {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -1228,39 +1173,36 @@ $(document).ready(function () {
 });
 
 // ===== HIDE CART TOGGLE WHEN HISTORY IS OPEN =====
-const historyModalEl = document.getElementById('historyModal');
+var historyModalEl = document.getElementById('historyModal');
 if (historyModalEl) {
-    historyModalEl.addEventListener('show.bs.modal', function () {
+    historyModalEl.addEventListener('show.bs.modal', function() {
         if (window.innerWidth < 992) {
-            const toggleBtn = document.getElementById('mobileCartToggle');
+            var toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'none';
         }
     });
-    historyModalEl.addEventListener('hidden.bs.modal', function () {
+    historyModalEl.addEventListener('hidden.bs.modal', function() {
         if (window.innerWidth < 992) {
-            const toggleBtn = document.getElementById('mobileCartToggle');
+            var toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'flex';
         } else {
-            const toggleBtn = document.getElementById('mobileCartToggle');
+            var toggleBtn = document.getElementById('mobileCartToggle');
             if (toggleBtn) toggleBtn.style.display = 'none';
         }
     });
 }
 
 // ===== INITIALIZATION =====
-// Run on page load
 updateFooterYear();
 loadOpeningBalance();
 loadMenuData();
 
-// Load transaction history from localStorage
-const storedHistory = localStorage.getItem('transactionHistory');
+var storedHistory = localStorage.getItem('transactionHistory');
 if (storedHistory) {
     transactionHistory = JSON.parse(storedHistory);
 }
 
-// Reset mobile cart when resizing to desktop
-window.addEventListener('resize', function () {
+window.addEventListener('resize', function() {
     if (window.innerWidth >= 992) {
         mobileCartSidebar.classList.remove('open');
     }
@@ -1269,6 +1211,6 @@ window.addEventListener('resize', function () {
 console.log('✅ KitaPOS ready!');
 console.log('📱 Mobile-first responsive.');
 console.log('❤️ Theme: #ED020E');
-console.log('📜 Menu data from assets/data/data.json');
+console.log('📜 Menu data from assets/data/data.js');
 console.log('🏷️ Footer: Kernel of Inventory Talent and Asset');
-console.log('📊 Grand Total at top of history');
+console.log('📊 Grand Total = Opening Balance + Total Transactions');
