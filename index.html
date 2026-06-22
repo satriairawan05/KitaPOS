@@ -235,6 +235,64 @@
         </div>
     </div>
 
+        <!-- ===== MODAL: EDIT MENU ===== -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:brightness(0) invert(1);"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editItemForm">
+                        <input type="hidden" id="editItemId" />
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Nama Menu <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editName" placeholder="Contoh: Nasi Goreng" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Harga (Rp) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editPrice" placeholder="Contoh: 25.000" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Kategori</label>
+                            <select class="form-select select2-custom" id="editCategory">
+                                <option value="makanan">🍔 Makanan</option>
+                                <option value="minuman">🥤 Minuman</option>
+                                <option value="cemilan">🍿 Cemilan</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Status Stok</label>
+                            <select class="form-select select2-custom" id="editStatus">
+                                <option value="available">✅ Tersedia</option>
+                                <option value="low">⚠️ Stok Menipis</option>
+                                <option value="out">❌ Habis</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Gambar Menu</label>
+                            <input type="file" class="form-control" id="editImage" accept="image/*" />
+                            <div class="mt-2" id="editImagePreviewContainer">
+                                <img id="editImagePreview" src="#" alt="Preview" style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;display:none;" />
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-600">Emoji (alternatif jika gambar tidak ada)</label>
+                            <input type="text" class="form-control" id="editIcon" placeholder="🍔" maxlength="2" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-accent" id="saveEditItem">
+                        <i class="bi bi-save me-1"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== MODAL: CHECKOUT ===== -->
     <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">

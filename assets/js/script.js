@@ -106,7 +106,7 @@ function generateQuickPayButtons(total) {
     let exact = total;
 
     if (total <= 50000) {
-        recommendations = [50000, 60000, 100000];
+        recommendations = [50000, 70000, 100000];
     } else if (total <= 100000) {
         recommendations = [100000, 150000, 200000];
     } else {
@@ -130,7 +130,7 @@ function generateQuickPayButtons(total) {
     container.innerHTML = html;
 
     container.querySelectorAll('.quick-pay-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const value = parseInt(this.dataset.value);
             const paymentInput = document.getElementById('paymentAmount');
             paymentInput.value = formatRupiah(value);
@@ -159,10 +159,14 @@ document.getElementById('goHomeDesktop').addEventListener('click', goHome);
 document.getElementById('goHomeFab').addEventListener('click', goHome);
 document.getElementById('openCalcDesktop').addEventListener('click', () => calcModal.show());
 document.getElementById('openCalcMobile').addEventListener('click', () => calcModal.show());
-document.getElementById('openHistoryDesktop').addEventListener('click', () => { renderHistory();
-    historyModal.show(); });
-document.getElementById('openHistoryMobile').addEventListener('click', () => { renderHistory();
-    historyModal.show(); });
+document.getElementById('openHistoryDesktop').addEventListener('click', () => {
+    renderHistory();
+    historyModal.show();
+});
+document.getElementById('openHistoryMobile').addEventListener('click', () => {
+    renderHistory();
+    historyModal.show();
+});
 
 const toastEl = document.getElementById('liveToast');
 const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
@@ -209,24 +213,37 @@ function renderMenu() {
                 <div class="menu-name" title="${item.name}">${item.name}</div>
                 <div class="menu-price">Rp ${formatRupiah(item.price)}</div>
                 <span class="menu-status ${st.cls}">${st.label}</span>
-                <button class="btn-add" ${disabled} data-id="${item.id}">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah
-                </button>
+                <div class="menu-actions">
+                    <button class="btn-action btn-add-action" ${disabled} data-id="${item.id}" title="Tambah ke keranjang">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <button class="btn-action btn-edit-action" data-id="${item.id}" title="Edit menu">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
             </div>
         `;
     });
     menuGrid.innerHTML = html;
 
-    document.querySelectorAll('.menu-card .btn-add:not([disabled])').forEach(btn => {
-        btn.addEventListener('click', function() {
+    document.querySelectorAll('.menu-card .btn-add-action:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', function () {
             addToCart(parseInt(this.dataset.id));
+        });
+    });
+
+    document.querySelectorAll('.menu-card .btn-edit-action').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const id = parseInt(this.dataset.id);
+            openEditMenu(id);
         });
     });
 }
 
 // ===== CATEGORY FILTER =====
 categoryBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
         categoryBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         currentCategory = this.dataset.cat;
@@ -235,7 +252,7 @@ categoryBtns.forEach(btn => {
 });
 
 // ===== SEARCH =====
-searchInput.addEventListener('input', function() {
+searchInput.addEventListener('input', function () {
     searchQuery = this.value;
     renderMenu();
 });
@@ -323,12 +340,12 @@ function updateCartUI() {
     document.getElementById('mobileCheckoutBtn').disabled = count === 0;
 
     document.querySelectorAll('.cart-item .remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             removeFromCart(parseInt(this.dataset.id));
         });
     });
     document.querySelectorAll('#mobileCartItems .remove-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             removeFromCart(parseInt(this.dataset.id));
         });
     });
@@ -374,7 +391,7 @@ function openCheckout() {
 }
 
 // ===== PAYMENT METHOD HANDLER =====
-$(document).on('change', '#paymentMethod', function() {
+$(document).on('change', '#paymentMethod', function () {
     const method = this.value;
     const total = getCartTotal();
     const paymentInput = document.getElementById('paymentAmount');
@@ -402,7 +419,7 @@ $(document).on('change', '#paymentMethod', function() {
 });
 
 // ===== EVENT FORMAT RUPIAH PADA INPUT BAYAR =====
-document.getElementById('paymentAmount').addEventListener('input', function(e) {
+document.getElementById('paymentAmount').addEventListener('input', function (e) {
     const start = this.selectionStart;
     const end = this.selectionEnd;
     const length = this.value.length;
@@ -435,7 +452,7 @@ document.getElementById('paymentAmount').addEventListener('input', function(e) {
 });
 
 // ===== CONFIRM CHECKOUT =====
-document.getElementById('confirmCheckout').addEventListener('click', function() {
+document.getElementById('confirmCheckout').addEventListener('click', function () {
     const total = getCartTotal();
     const method = document.getElementById('paymentMethod').value;
     const rawValue = document.getElementById('paymentAmount').value.replace(/\D/g, '');
@@ -505,7 +522,6 @@ function deleteTransaction(id) {
     }
 }
 
-// ===== RENDER HISTORY (Grand Total di Bawah) =====
 function renderHistory() {
     const container = document.getElementById('historyContent');
     const stored = localStorage.getItem('transactionHistory');
@@ -527,6 +543,17 @@ function renderHistory() {
     const grandTotal = transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
 
     let html = '';
+
+    // ===== GRAND TOTAL DI ATAS (sebelum daftar transaksi) =====
+    html += `
+        <div class="history-grand-total">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
+                <span class="total">Rp ${formatRupiah(grandTotal)}</span>
+            </div>
+        </div>
+        <hr />
+    `;
 
     // Tampilkan transaksi dari yang terbaru (reverse)
     const reversed = [...transactionHistory].reverse();
@@ -557,16 +584,6 @@ function renderHistory() {
         `;
     });
 
-    // Tambahkan Grand Total di Bawah (setelah semua transaksi)
-    html += `
-        <div class="history-grand-total">
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
-                <span class="total">Rp ${formatRupiah(grandTotal)}</span>
-            </div>
-        </div>
-    `;
-
     container.innerHTML = html;
 
     container.querySelectorAll('.delete-history-btn').forEach(btn => {
@@ -578,7 +595,7 @@ function renderHistory() {
 }
 
 // ===== CLEAR ALL HISTORY =====
-document.getElementById('clearHistoryBtn').addEventListener('click', function() {
+document.getElementById('clearHistoryBtn').addEventListener('click', function () {
     if (confirm('Yakin ingin menghapus semua history transaksi?')) {
         transactionHistory = [];
         localStorage.removeItem('transactionHistory');
@@ -588,14 +605,14 @@ document.getElementById('clearHistoryBtn').addEventListener('click', function() 
 });
 
 // ===== MANUAL ADD ITEM =====
-document.getElementById('manualImage').addEventListener('change', function(e) {
+document.getElementById('manualImage').addEventListener('change', function (e) {
     const file = e.target.files[0];
     const previewContainer = document.getElementById('imagePreviewContainer');
     const preview = document.getElementById('imagePreview');
 
     if (file) {
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             preview.src = event.target.result;
             previewContainer.style.display = 'block';
         };
@@ -606,7 +623,7 @@ document.getElementById('manualImage').addEventListener('change', function(e) {
     }
 });
 
-document.getElementById('manualPrice').addEventListener('input', function(e) {
+document.getElementById('manualPrice').addEventListener('input', function (e) {
     const start = this.selectionStart;
     const end = this.selectionEnd;
     const length = this.value.length;
@@ -617,7 +634,29 @@ document.getElementById('manualPrice').addEventListener('input', function(e) {
     this.setSelectionRange(newLength, newLength);
 });
 
-document.getElementById('saveManualItem').addEventListener('click', function() {
+// Preview gambar edit
+document.getElementById('editImage').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('editImagePreview');
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+        preview.src = '#';
+    }
+});
+
+// Format harga edit
+document.getElementById('editPrice').addEventListener('input', function (e) {
+    formatRupiahInput(this);
+});
+
+document.getElementById('saveManualItem').addEventListener('click', function () {
     const name = document.getElementById('manualName').value.trim();
     const rawPrice = document.getElementById('manualPrice').value.replace(/\D/g, '');
     const price = parseInt(rawPrice) || 0;
@@ -638,7 +677,7 @@ document.getElementById('saveManualItem').addEventListener('click', function() {
     let imageData = null;
     if (imageFile) {
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = function (event) {
             imageData = event.target.result;
             saveNewItem(name, price, category, status, icon, imageData);
         };
@@ -668,31 +707,136 @@ function saveNewItem(name, price, category, status, icon, imageData) {
     document.getElementById('imagePreview').src = '#';
 }
 
-$('#addItemModal').on('shown.bs.modal', function() {
+function openEditMenu(id) {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) {
+        showToast('❌ Menu tidak ditemukan!');
+        return;
+    }
+
+    document.getElementById('editItemId').value = item.id;
+    document.getElementById('editName').value = item.name;
+    document.getElementById('editPrice').value = formatRupiah(item.price);
+    document.getElementById('editCategory').value = item.category;
+    document.getElementById('editStatus').value = item.status;
+    document.getElementById('editIcon').value = item.icon || '🍽️';
+
+    const preview = document.getElementById('editImagePreview');
+    if (item.image) {
+        preview.src = item.image;
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+        preview.src = '#';
+    }
+    document.getElementById('editImage').value = '';
+
+    const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+    editModal.show();
+
+    setTimeout(() => {
+        $('#editCategory, #editStatus').select2('destroy');
+        $('#editCategory, #editStatus').select2({
+            theme: 'default',
+            width: '100%',
+            dropdownParent: $('#editItemModal'),
+            dropdownAutoWidth: true,
+            placeholder: 'Pilih...',
+            allowClear: false
+        });
+    }, 100);
+}
+
+document.getElementById('saveEditItem').addEventListener('click', function () {
+    const id = parseInt(document.getElementById('editItemId').value);
+    const name = document.getElementById('editName').value.trim();
+    const rawPrice = document.getElementById('editPrice').value.replace(/\D/g, '');
+    const price = parseInt(rawPrice) || 0;
+    const category = document.getElementById('editCategory').value;
+    const status = document.getElementById('editStatus').value;
+    const icon = document.getElementById('editIcon').value.trim() || '🍽️';
+    const imageFile = document.getElementById('editImage').files[0];
+
+    if (!name) {
+        showToast('❌ Nama menu wajib diisi!');
+        return;
+    }
+    if (price <= 0) {
+        showToast('❌ Harga harus diisi dengan angka positif!');
+        return;
+    }
+
+    const index = menuItems.findIndex(i => i.id === id);
+    if (index === -1) {
+        showToast('❌ Menu tidak ditemukan!');
+        return;
+    }
+
+    function applyEdit(imageData) {
+        menuItems[index] = {
+            ...menuItems[index],
+            name: name,
+            price: price,
+            category: category,
+            status: status,
+            icon: icon,
+            image: imageData !== undefined ? imageData : menuItems[index].image
+        };
+
+        // Perbarui juga item di keranjang jika ada
+        cart.forEach(cartItem => {
+            if (cartItem.id === id) {
+                cartItem.name = name;
+                cartItem.price = price;
+                cartItem.icon = icon;
+            }
+        });
+
+        renderMenu();
+        updateCartUI();
+        bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
+        showToast(`✅ Menu "${name}" berhasil diperbarui!`);
+    }
+
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            applyEdit(event.target.result);
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        applyEdit();
+    }
+});
+
+$('#addItemModal').on('shown.bs.modal', function () {
     document.getElementById('manualPrice').value = '';
 });
 
 // ===== MOBILE CART TOGGLE =====
-function toggleMobileCart(open) {
-    if (open) {
-        mobileCartSidebar.classList.add('open');
-    } else {
-        mobileCartSidebar.classList.remove('open');
-    }
+function toggleMobileCart() {
+    // toggle class 'open'
+    mobileCartSidebar.classList.toggle('open');
 }
 
-toggleCartBtn.addEventListener('click', () => toggleMobileCart(true));
-mobileCartToggle.addEventListener('click', () => toggleMobileCart(true));
-closeCartBtn.addEventListener('click', () => toggleMobileCart(false));
+// Event listener untuk tombol di navbar (ikon keranjang)
+toggleCartBtn.addEventListener('click', toggleMobileCart);
 
-document.addEventListener('click', function(e) {
+// Event listener untuk tombol floating bawah
+mobileCartToggle.addEventListener('click', toggleMobileCart);
+
+// Event listener untuk tombol close (×)
+closeCartBtn.addEventListener('click', toggleMobileCart);
+
+// Tutup keranjang jika klik di luar area
+document.addEventListener('click', function (e) {
     if (window.innerWidth < 992) {
         const sidebar = mobileCartSidebar;
         const toggle = mobileCartToggle;
         const toggleBtn = toggleCartBtn;
         if (sidebar.classList.contains('open')) {
             if (!sidebar.contains(e.target) && !toggle.contains(e.target) && !toggleBtn.contains(e.target)) {
-                toggleMobileCart(false);
+                sidebar.classList.remove('open');
             }
         }
     }
@@ -708,7 +852,7 @@ function updateCalcDisplayModal() {
 }
 
 document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
         const val = this.dataset.val;
         if (calcJustEvaluated) {
             if (['+', '−', '×', '÷'].includes(val)) {
@@ -729,7 +873,7 @@ document.querySelectorAll('#calcModal .calc-btn[data-val]').forEach(btn => {
 });
 
 document.querySelectorAll('#calcModal .calc-btn.op').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
         const op = this.dataset.val;
         const lastChar = calcExpression.slice(-1);
         if (['+', '−', '×', '÷'].includes(lastChar)) {
@@ -742,7 +886,7 @@ document.querySelectorAll('#calcModal .calc-btn.op').forEach(btn => {
     });
 });
 
-document.getElementById('calcEqualsModal').addEventListener('click', function() {
+document.getElementById('calcEqualsModal').addEventListener('click', function () {
     try {
         let expr = calcExpression;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
@@ -754,24 +898,28 @@ document.getElementById('calcEqualsModal').addEventListener('click', function() 
         } else {
             calcExpression = 'Error';
             updateCalcDisplayModal();
-            setTimeout(() => { calcExpression = '0';
-                updateCalcDisplayModal(); }, 800);
+            setTimeout(() => {
+                calcExpression = '0';
+                updateCalcDisplayModal();
+            }, 800);
         }
     } catch (e) {
         calcExpression = 'Error';
         updateCalcDisplayModal();
-        setTimeout(() => { calcExpression = '0';
-            updateCalcDisplayModal(); }, 800);
+        setTimeout(() => {
+            calcExpression = '0';
+            updateCalcDisplayModal();
+        }, 800);
     }
 });
 
-document.getElementById('calcClearModal').addEventListener('click', function() {
+document.getElementById('calcClearModal').addEventListener('click', function () {
     calcExpression = '0';
     calcJustEvaluated = false;
     updateCalcDisplayModal();
 });
 
-document.getElementById('calcBackspaceModal').addEventListener('click', function() {
+document.getElementById('calcBackspaceModal').addEventListener('click', function () {
     if (calcJustEvaluated) {
         calcExpression = '0';
         calcJustEvaluated = false;
@@ -783,7 +931,7 @@ document.getElementById('calcBackspaceModal').addEventListener('click', function
     updateCalcDisplayModal();
 });
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     const modalOpen = document.getElementById('calcModal').classList.contains('show');
     if (!modalOpen) return;
     const key = e.key;
@@ -829,7 +977,7 @@ function updateFooterYear() {
 // ================================================================
 // ===== INISIALISASI SELECT2 =====
 // ================================================================
-$(document).ready(function() {
+$(document).ready(function () {
     function initSelect2() {
         $('.select2-custom').select2({
             theme: 'default',
@@ -842,7 +990,7 @@ $(document).ready(function() {
 
     initSelect2();
 
-    $('#addItemModal').on('shown.bs.modal', function() {
+    $('#addItemModal').on('shown.bs.modal', function () {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -854,7 +1002,30 @@ $(document).ready(function() {
         });
     });
 
-    $('#checkoutModal').on('shown.bs.modal', function() {
+    $('#editItemModal').on('shown.bs.modal', function () {
+        $('#editCategory, #editStatus').select2('destroy');
+        $('#editCategory, #editStatus').select2({
+            theme: 'default',
+            width: '100%',
+            dropdownParent: $('#editItemModal'),
+            dropdownAutoWidth: true,
+            placeholder: 'Pilih...',
+            allowClear: false
+        });
+    });
+
+    $('#editItemModal').on('hidden.bs.modal', function () {
+        $('#editCategory, #editStatus').select2('destroy');
+        $('#editCategory, #editStatus').select2({
+            theme: 'default',
+            width: '100%',
+            dropdownAutoWidth: true,
+            placeholder: 'Pilih...',
+            allowClear: false
+        });
+    });
+
+    $('#checkoutModal').on('shown.bs.modal', function () {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -866,7 +1037,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#addItemModal').on('hidden.bs.modal', function() {
+    $('#addItemModal').on('hidden.bs.modal', function () {
         $('#manualCategory, #manualStatus').select2('destroy');
         $('#manualCategory, #manualStatus').select2({
             theme: 'default',
@@ -877,7 +1048,7 @@ $(document).ready(function() {
         });
     });
 
-    $('#checkoutModal').on('hidden.bs.modal', function() {
+    $('#checkoutModal').on('hidden.bs.modal', function () {
         $('#paymentMethod').select2('destroy');
         $('#paymentMethod').select2({
             theme: 'default',
@@ -889,6 +1060,16 @@ $(document).ready(function() {
     });
 });
 
+const historyModalEl = document.getElementById('historyModal');
+historyModalEl.addEventListener('show.bs.modal', function() {
+    const toggleBtn = document.getElementById('mobileCartToggle');
+    if (toggleBtn) toggleBtn.style.display = 'none';
+});
+historyModalEl.addEventListener('hidden.bs.modal', function() {
+    const toggleBtn = document.getElementById('mobileCartToggle');
+    if (toggleBtn) toggleBtn.style.display = 'flex';
+});
+
 // ===== INIT =====
 updateFooterYear();
 loadMenuData();
@@ -898,7 +1079,7 @@ if (storedHistory) {
     transactionHistory = JSON.parse(storedHistory);
 }
 
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     if (window.innerWidth >= 992) {
         mobileCartSidebar.classList.remove('open');
     }
