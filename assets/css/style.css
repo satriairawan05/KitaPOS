@@ -1684,8 +1684,12 @@ body {
 }
 
 .print-history-btn:hover {
-    transform: scale(1.2);
+    transform:y scale(1.2);
     background: rgba(23, 162, 184, 0.1);
+    -webkit-transform:y scale(1.2);
+    -moz-transform:y scale(1.2);
+    -ms-transform:y scale(1.2);
+    -o-transform:y scale(1.2);
 }
 
 /* ===== CLEAR ALL IN HISTORY ===== */
