@@ -2,7 +2,6 @@
 // assets/js/script.js - KitaPOS with Alpine.js
 // ================================================================
 
-// Wrap the app to be safe on GitHub Pages (standard Alpine v3)
 document.addEventListener('alpine:init', () => {
     Alpine.data('posApp', () => ({
         // ===== STATE =====
@@ -14,12 +13,9 @@ document.addEventListener('alpine:init', () => {
         currentCategory: 'all',
         searchQuery: '',
         mobileCartOpen: false,
-        mobileCartVisible: true,
         toastMessage: 'Notification',
         // Calculator
         calcExpression: '',
-        calcResult: '',
-        calcJustEvaluated: false,
         calcDisplay: '0',
         // New/Edit item
         newItem: { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null },
@@ -31,15 +27,13 @@ document.addEventListener('alpine:init', () => {
         paymentAmount: '',
         paymentAmountRaw: 0,
         changeAmount: 0,
-        quickPayOptions: [],
         // Discount
         discountType: 'rp',          // 'rp' or 'percent'
-        discountValue: 0,            // raw numeric value (Rp amount or percentage)
-        discountDisplay: '0',        // formatted display for input
+        discountValue: 0,
+        discountDisplay: '0',
         // Printer & Cashier
         defaultPrinterSize: '58mm',
         cashierName: 'May',
-        // Fallback data for users
         strukData: { id: '', timestamp: '', items: [], total: 0, totalQty: 0, paid: 0, change: 0, method: 'Cash', discount: 0, subtotal: 0 },
         toast: null,
 
@@ -72,7 +66,7 @@ document.addEventListener('alpine:init', () => {
             const now = new Date().getFullYear();
             return now === start ? start : start + ' - ' + now;
         },
-        // Discount calculations
+        // Discount
         get discountAmount() {
             const total = this.cartTotal;
             if (this.discountType === 'rp') {
@@ -87,6 +81,31 @@ document.addEventListener('alpine:init', () => {
         get discountedTotal() {
             return Math.max(this.cartTotal - this.discountAmount, 0);
         },
+        // Quick Pay Options - computed, otomatis update
+        get quickPayOptions() {
+            const total = this.discountedTotal;
+            if (total <= 0) return [0];
+            const increment = 50000;
+            let options = [total]; // exact amount always first
+            let base = Math.ceil(total / increment) * increment;
+            let next = base;
+            while (options.length < 4) {
+                if (next !== total && next > 0) {
+                    options.push(next);
+                }
+                next += increment;
+            }
+            options = [...new Set(options)].sort((a, b) => a - b);
+            if (total > 0) {
+                options = options.filter(v => v !== total);
+                options.unshift(total);
+            }
+            return options.slice(0, 4);
+        },
+        // Show mobile cart toggle only when cart has items (on mobile)
+        get showMobileCart() {
+            return window.innerWidth < 992 && this.cartCount > 0;
+        },
 
         // ===== INIT =====
         init() {
@@ -94,7 +113,7 @@ document.addEventListener('alpine:init', () => {
             this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
             localStorage.setItem('openingBalance', this.openingBalance.toString());
 
-            // Load default menu items
+            // Default menu items
             this.menuItems = [
                 { id: 1, name: 'Ayam Geprek', price: 12000, category: 'food', status: 'available', icon: '🍗', image: null },
                 { id: 2, name: 'Ayam Geprek Keju', price: 15000, category: 'food', status: 'available', icon: '🧀', image: null },
@@ -132,31 +151,23 @@ document.addEventListener('alpine:init', () => {
 
             this.toast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 2500 });
             this.initSelect2();
+            this.updateCalcDisplay();
 
-            if (window.innerWidth >= 992) this.mobileCartVisible = false;
-
+            // Watch for window resize to update mobile cart visibility
             window.addEventListener('resize', () => {
-                if (window.innerWidth >= 992) {
-                    this.mobileCartOpen = false;
-                    this.mobileCartVisible = false;
-                } else {
-                    this.mobileCartVisible = true;
-                }
+                // Computed will recalc on access, but Alpine needs a trigger
+                // We'll just use a dummy variable to force re-render if needed
             });
 
-            this.updateCalcDisplay();
             console.log('✅ KitaPOS with Alpine.js ready!');
         },
 
         // ===== SMART CASHIER PRINT MODULE =====
-        
-        // Helper to format receipt lines (left-right alignment)
         formatReceiptLine(leftText, rightText, is80mm = false) {
-            const lineLength = is80mm ? 48 : 32; // 80mm = 48 chars, 58mm = 32 chars
+            const lineLength = is80mm ? 48 : 32;
             let left = leftText.toString();
             let right = rightText.toString();
             let spaceLength = lineLength - left.length - right.length;
-            
             if (spaceLength < 1) {
                 left = left.substring(0, lineLength - right.length - 2) + '..';
                 spaceLength = 0;
@@ -164,31 +175,22 @@ document.addEventListener('alpine:init', () => {
             return left + ' '.repeat(spaceLength) + right;
         },
 
-        // 1. Device dispatcher
         printStrukMobile(transaction) {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-            // iPhone/iPad -> Web Bluetooth via Bluefy browser
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 this.printStrukWebBluetoothiOS(transaction);
-            } 
-            // Android -> RawBT app
-            else if (/android/i.test(userAgent)) {
+            } else if (/android/i.test(userAgent)) {
                 this.printStrukRawBT(transaction);
-            } 
-            // PC/Laptop -> browser print dialog (auto CSS)
-            else {
-                this.printStrukBrowser(transaction); 
+            } else {
+                this.printStrukBrowser(transaction);
             }
         },
 
-        // 2. Android: Send data to RawBT app
         printStrukRawBT(transaction) {
             try {
                 const is80mm = this.defaultPrinterSize === '80mm';
                 const encoder = new EscPosEncoder();
                 let receipt = encoder.initialize();
-                
                 receipt.align('center')
                     .bold(true).text('KITA POS - PUSAT').newline().bold(false)
                     .text('Jl. Raya Sukses No. 123').newline()
@@ -205,7 +207,6 @@ document.addEventListener('alpine:init', () => {
                     receipt.text(this.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
                 });
 
-                // Discount line if any
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
                            .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
@@ -220,8 +221,6 @@ document.addEventListener('alpine:init', () => {
                 const resultData = receipt.encode();
                 let binary = '';
                 resultData.forEach(b => binary += String.fromCharCode(b));
-                
-                // Invoke RawBT intent
                 window.location.href = "rawbt:base64," + btoa(binary);
             } catch (error) {
                 this.showToast('⚠️ RawBT failed, switching to normal print');
@@ -229,10 +228,9 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // 3. iPhone: Web Bluetooth print (requires Bluefy browser)
         async printStrukWebBluetoothiOS(transaction) {
             if (!navigator.bluetooth) {
-                alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser (download from App Store) to enable Bluetooth printing.");
+                alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser.");
                 return;
             }
             try {
@@ -272,44 +270,31 @@ document.addEventListener('alpine:init', () => {
                 const resultData = receipt.encode();
                 for (let i = 0; i < resultData.length; i += 50) {
                     await characteristic.writeValue(resultData.slice(i, i + 50));
-                    await new Promise(r => setTimeout(r, 20)); 
+                    await new Promise(r => setTimeout(r, 20));
                 }
                 device.gatt.disconnect();
-                this.showToast('🖨️ Successfully printed from iPhone!');
+                this.showToast('🖨️ Printed from iPhone!');
             } catch (error) {
                 this.showToast('⚠️ Bluetooth failed. Switching to normal print...');
                 this.printStrukBrowser(transaction);
             }
         },
 
-        // 4. PC / Fallback: Browser HTML print (supports dynamic 58/80)
         printStrukBrowser(transaction) {
             if (!transaction || !transaction.items || transaction.items.length === 0) return;
-            
-            // Inject dynamic CSS for print with correct paper size
+
             let style = document.getElementById('printPageStyle');
             if (!style) {
                 style = document.createElement('style');
                 style.id = 'printPageStyle';
                 document.head.appendChild(style);
             }
-            
-            const paperSize = this.defaultPrinterSize; // '58mm' or '80mm'
-            // Build CSS rules to force the page size and content width
+            const paperSize = this.defaultPrinterSize;
             style.innerHTML = `
                 @media print {
-                    @page {
-                        size: ${paperSize} auto;
-                        margin: 0;
-                    }
-                    * {
-                        box-sizing: border-box;
-                    }
-                    body {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background: #fff !important;
-                    }
+                    @page { size: ${paperSize} auto; margin: 0; }
+                    * { box-sizing: border-box; }
+                    body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
                     #strukContainer {
                         display: block !important;
                         width: ${paperSize} !important;
@@ -330,21 +315,13 @@ document.addEventListener('alpine:init', () => {
                         page-break-inside: avoid !important;
                         page-break-after: avoid !important;
                     }
-                    /* Override any existing width from classes */
                     .struk-content.paper-58mm,
                     .struk-content.paper-80mm {
                         width: ${paperSize} !important;
                         max-width: ${paperSize} !important;
                     }
-                    /* Ensure no extra spacing */
-                    html, body {
-                        margin: 0 !important;
-                        padding: 0 !important;
-                    }
-                    /* Hide all other content */
-                    body > *:not(#strukContainer) {
-                        display: none !important;
-                    }
+                    html, body { margin: 0 !important; padding: 0 !important; }
+                    body > *:not(#strukContainer) { display: none !important; }
                 }
             `;
 
@@ -361,20 +338,13 @@ document.addEventListener('alpine:init', () => {
                 discount: transaction.discount || 0,
                 subtotal: transaction.subtotal || transaction.total + (transaction.discount || 0)
             };
-            
+
             const container = document.getElementById('strukContainer');
             container.style.display = 'block';
-            
-            // Give time for DOM update then print
-            setTimeout(() => {
-                window.print();
-            }, 400);
-            
+            setTimeout(() => window.print(), 400);
             window.onafterprint = () => {
                 container.style.display = 'none';
                 window.onafterprint = null;
-                // Remove the injected style after print to avoid affecting the main page
-                // (optional)
             };
         },
 
@@ -433,7 +403,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // ===== CHECKOUT (with discount) =====
+        // ===== CHECKOUT =====
         openCheckout() {
             if (this.cart.length === 0) return;
             this.paymentMethod = 'cash';
@@ -444,35 +414,23 @@ document.addEventListener('alpine:init', () => {
             this.discountType = 'rp';
             this.discountValue = 0;
             this.discountDisplay = '0';
-            this.generateQuickPayOptions();
             const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
             modal.show();
         },
-        generateQuickPayOptions() {
-            const total = this.discountedTotal;
-            let options = [];
-            if (total <= 50000) options = [50000, 75000, 100000];
-            else if (total <= 100000) options = [100000, 150000, 200000];
-            else options = [150000, 200000, 250000];
-            options = options.filter(v => v !== total);
-            while (options.length < 3) {
-                const last = options.length ? options[options.length - 1] : total;
-                options.push(last + 50000);
-            }
-            options = options.slice(0, 3);
-            this.quickPayOptions = [total, ...options];
-        },
+
         setQuickPay(val) {
             this.paymentAmountRaw = val;
             this.paymentAmount = this.formatRupiah(val);
             this.updateChange();
         },
+
         updateChange() {
             const raw = this.parseRupiah(this.paymentAmount);
             this.paymentAmountRaw = raw;
             const total = this.discountedTotal;
             this.changeAmount = raw - total;
         },
+
         confirmCheckout() {
             const total = this.discountedTotal;
             const method = this.paymentMethod;
@@ -498,6 +456,7 @@ document.addEventListener('alpine:init', () => {
             this.closeMobileCart();
             bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
         },
+
         saveTransaction(method, total, paid, change) {
             const now = new Date();
             const timestamp = this.formatTanggalIndonesia(now);
@@ -526,7 +485,7 @@ document.addEventListener('alpine:init', () => {
             return transaction;
         },
 
-        // ===== DISCOUNT INPUT HANDLING =====
+        // ===== DISCOUNT INPUT =====
         updateDiscount(event) {
             let raw = event.target.value.replace(/\D/g, '');
             if (this.discountType === 'rp') {
@@ -541,20 +500,20 @@ document.addEventListener('alpine:init', () => {
                 this.discountDisplay = pct.toString();
                 event.target.value = pct.toString();
             }
-            this.generateQuickPayOptions();
+            // update change because total changed (quickPayOptions is computed, auto-updated)
             this.updateChange();
         },
+
         reformatDiscountDisplay() {
             if (this.discountType === 'rp') {
                 this.discountDisplay = this.formatRupiah(this.discountValue);
             } else {
                 this.discountDisplay = this.discountValue.toString();
             }
-            this.generateQuickPayOptions();
             this.updateChange();
         },
 
-        // ===== UTILITY FUNCTIONS =====
+        // ===== UTILITY =====
         formatRupiah(angka) {
             if (!angka && angka !== 0) return '';
             return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -607,8 +566,11 @@ document.addEventListener('alpine:init', () => {
         // ===== MENU MANAGEMENT =====
         onCategoryChange() {
             if (this.newItem.category === 'additional') {
-                this.newItem.status = 'available'; this.newItem.icon = '➕';
-            } else if (!this.newItem.icon || this.newItem.icon === '➕') this.newItem.icon = '🍽️';
+                this.newItem.status = 'available';
+                this.newItem.icon = '➕';
+            } else if (!this.newItem.icon || this.newItem.icon === '➕') {
+                this.newItem.icon = '🍽️';
+            }
         },
         openAddMenu(category = 'food') {
             this.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️' };
@@ -666,14 +628,18 @@ document.addEventListener('alpine:init', () => {
             this.toast.show();
         },
 
-        // ===== CALCULATOR (unchanged) =====
+        // ===== CALCULATOR =====
         openCalculator() { new bootstrap.Modal(document.getElementById('calcModal')).show(); },
         calcAppend(val) { this.calcExpression += val; this.updateCalcDisplay(); },
         calcClear() { this.calcExpression = ''; this.updateCalcDisplay(); },
         calcBackspace() { this.calcExpression = this.calcExpression.slice(0, -1); this.updateCalcDisplay(); },
         calcEvaluate() {
-            try { this.calcExpression = eval(this.calcExpression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')).toString(); }
-            catch { this.calcExpression = 'Error'; setTimeout(() => this.calcClear(), 800); }
+            try {
+                this.calcExpression = eval(this.calcExpression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')).toString();
+            } catch {
+                this.calcExpression = 'Error';
+                setTimeout(() => this.calcClear(), 800);
+            }
             this.updateCalcDisplay();
         },
         updateCalcDisplay() { this.calcDisplay = this.calcExpression || '0'; }

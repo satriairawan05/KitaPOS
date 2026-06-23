@@ -183,7 +183,7 @@
         </div>
     </div>
 
-    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="mobileCartVisible" @click="toggleMobileCart()" style="display:none;">
+    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="showMobileCart" @click="toggleMobileCart()" style="display:none;">
         <i class="bi bi-cart3"></i> Cart
         <span class="badge" x-text="cartCount">0</span>
     </button>
@@ -608,12 +608,12 @@
                                 <div class="detail">
                                     <span><i class="bi bi-tag"></i> <span x-text="trx.method"></span></span>
                                     <span><i class="bi bi-cash-stack"></i> Paid: <span x-text="'Rp ' + formatRupiah(trx.paid)"></span></span>
-                                    <template x-if="trx.method === 'Cash'">
-                                        <span><i class="bi bi-arrow-return-left"></i> Change: <span x-text="'Rp ' + formatRupiah(trx.change)"></span></span>
-                                    </template>
                                     <!-- Show discount if any -->
                                     <template x-if="trx.discount && trx.discount > 0">
                                         <span><i class="bi bi-percent"></i> Discount: <span x-text="'-Rp ' + formatRupiah(trx.discount)"></span></span>
+                                    </template>
+                                    <template x-if="trx.method === 'Cash'">
+                                        <span><i class="bi bi-arrow-return-left"></i> Change: <span x-text="'Rp ' + formatRupiah(trx.change)"></span></span>
                                     </template>
                                 </div>
                                 <div class="detail" style="font-size:0.8rem;color:#888;">
