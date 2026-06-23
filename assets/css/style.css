@@ -273,7 +273,7 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
 }
 
-/* Card khusus additional - lebih sederhana dengan label di kanan bawah gambar */
+/* Additional card - simpler with label at bottom-right of image */
 .menu-card.additional-card {
     position: relative;
     overflow: visible;
@@ -299,7 +299,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* Label Additional di kanan bawah gambar, mentok ke ujung */
+/* Additional label at bottom-right of image */
 .menu-card.additional-card .additional-label {
     position: absolute;
     bottom: 0;
@@ -426,12 +426,10 @@ body {
     margin-top: 8px;
 }
 
-/* Tombol edit di kanan */
 .menu-card .menu-actions .btn-edit-action {
     flex-shrink: 0;
 }
 
-/* Qty control di kiri */
 .menu-card .menu-actions .qty-control {
     display: flex;
     align-items: center;
@@ -486,7 +484,7 @@ body {
     box-shadow: 0 0 0 2px var(--pos-red-glow);
 }
 
-/* Hilangkan tombol panah di input number */
+/* Hide spin buttons in number input */
 .menu-card .menu-actions .qty-control .qty-input::-webkit-inner-spin-button,
 .menu-card .menu-actions .qty-control .qty-input::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -497,7 +495,7 @@ body {
     -moz-appearance: textfield;
 }
 
-/* Responsif mobile: ukuran lebih kecil */
+/* Responsive mobile: smaller size */
 @media (max-width: 575px) {
     .menu-card .menu-actions .qty-control .btn-qty {
         width: 24px;
@@ -628,7 +626,7 @@ body {
     -moz-appearance: textfield;
 }
 
-/* sesuaikan tata letak menu-actions */
+/* Adjust menu-actions layout */
 .menu-card .menu-actions {
     display: flex;
     gap: 8px;
@@ -721,7 +719,7 @@ body {
     color: #fff;
 }
 
-/* Tombol Add Additional Menu */
+/* Add Additional Menu button */
 .cart-sidebar .additional-btn {
     background: #6c757d;
     border-color: #6c757d;
@@ -736,7 +734,7 @@ body {
     color: #ffc107;
 }
 
-/* Tambahan di bagian .cart-item */
+/* Additional style for .cart-item */
 .cart-item .clear-btn {
     background: transparent;
     border: none;
@@ -1578,57 +1576,49 @@ body {
 }
 
 /* ================================================================
-   PERBAIKAN UTAMA: MEDIA PRINT KHUSUS STRUK
+   RECEIPT PRINT STYLES (including discount line)
    ================================================================ */
 @media print {
-    body * {
-        visibility: hidden !important;
+    @page {
+        margin: 0;
     }
 
-    #strukContainer,
-    #strukContainer * {
-        visibility: visible !important;
+    body > *:not(#strukContainer) {
+        display: none !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
     }
 
     #strukContainer {
         display: block !important;
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
+        position: static !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #fff !important;
-        z-index: 99999 !important;
         box-shadow: none !important;
         width: auto !important;
         height: auto !important;
-        overflow: visible !important;
         border: none !important;
     }
 
     .struk-content {
         margin: 0 auto !important;
         background: #fff !important;
-    }
-
-    @page {
-        margin: 0 !important;
-        size: auto !important;
-    }
-
-    .struk-content {
         page-break-inside: avoid !important;
         page-break-after: avoid !important;
     }
 }
 
-/* ===== RECEIPT PRINT STYLES ===== */
 #strukContainer {
     display: none;
 }
 
 .struk-content {
-    font-family: 'Courier New', monospace;
+    font-family: 'Courier New', Courier, monospace;
     background: #fff;
     color: #000;
     margin: 0 auto;
@@ -1666,22 +1656,22 @@ body {
     margin: 4px 0;
 }
 
-/* --- UTILITY & SETTING SIZES FOR PRINTER --- */
+/* --- Printer size settings --- */
 .struk-content.paper-58mm {
     width: 58mm;
     max-width: 58mm;
     padding: 2mm;
-    font-size: 9px !important;
+    font-size: 11px !important;
 }
 
 .struk-content.paper-80mm {
     width: 80mm;
     max-width: 80mm;
     padding: 4mm;
-    font-size: 12px !important;
+    font-size: 14px !important;
 }
 
-/* Style tombol aksi cetak di dalam riwayat */
+/* Print history button */
 .print-history-btn {
     background: transparent;
     border: none;
