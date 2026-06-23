@@ -453,6 +453,7 @@
         </div>
     </div>
 
+    <!-- ===== CHECKOUT MODAL ===== -->
     <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -538,11 +539,23 @@
 
                     <div class="mt-2 text-center text-success fw-600" x-show="paymentMethod === 'qris'">
                         <i class="bi bi-qr-code me-1"></i> Please scan QR Code to complete payment.
+                        <div class="mt-1 small">
+                            Total: Rp <span x-text="formatRupiah(discountedTotal)"></span>
+                        </div>
+                    </div>
+
+                    <!-- ===== TOMBOL CONFIRM DENGAN DISABLE ===== -->
+                    <div class="mt-2" x-show="paymentMethod === 'cash' && paymentAmountRaw < discountedTotal">
+                        <div class="text-danger small">
+                            <i class="bi bi-exclamation-circle"></i> 
+                            <span x-text="'Payment amount (Rp ' + formatRupiah(paymentAmountRaw) + ') is less than total (Rp ' + formatRupiah(discountedTotal) + ')'"></span>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" @click="confirmCheckout()">
+                    <button type="button" class="btn btn-success" @click="confirmCheckout()"
+                        :disabled="paymentMethod === 'cash' && paymentAmountRaw < discountedTotal">
                         <i class="bi bi-check-lg me-1"></i> Confirm & Finish
                     </button>
                 </div>

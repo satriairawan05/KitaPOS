@@ -352,7 +352,7 @@ document.addEventListener('alpine:init', () => {
                         margin: 0 auto !important;
                         padding: 2mm 2mm !important;
                         background: #fff !important;
-                        font-size: ${paperSize === '58mm' ? '11px' : '14px'} !important;
+                        font-size: ${paperSize === '58mm' ? '6px' : '11px'} !important;
                         box-sizing: border-box !important;
                         page-break-inside: avoid !important;
                         page-break-after: avoid !important;
@@ -461,7 +461,7 @@ document.addEventListener('alpine:init', () => {
             this.discountValue = 0;
             this.discountDisplay = '0';
 
-            // PERBAIKAN: Sync state default Alpine (Cash) ke Select2 UI saat modal dibuka
+            // Sync state default Alpine (Cash) ke Select2 UI
             setTimeout(() => {
                 $('#paymentMethod').val('cash').trigger('change.select2');
             }, 50);
@@ -614,7 +614,7 @@ document.addEventListener('alpine:init', () => {
             try {
                 $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
 
-                // PERBAIKAN: Bridge Event jQuery -> Alpine.js
+                // Bridge Event jQuery -> Alpine.js
                 $('#paymentMethod').on('change', (e) => {
                     this.paymentMethod = e.target.value;
                     this.handlePaymentMethodChange();
@@ -662,7 +662,6 @@ document.addEventListener('alpine:init', () => {
         },
         openAddMenu(category = 'food') {
             this.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️' };
-            // PERBAIKAN: Sync Alpine state ke UI Select2 agar pilihan "Add Additional Menu" berjalan mulus
             setTimeout(() => {
                 $('#manualCategory').val(category).trigger('change.select2');
                 $('#manualStatus').val('available').trigger('change.select2');
@@ -740,11 +739,11 @@ document.addEventListener('alpine:init', () => {
                     allowClear: false
                 });
 
-                // PERBAIKAN: Bridge Event jQuery -> Alpine.js untuk Edit Modal
+                // Bridge Event jQuery -> Alpine.js untuk Edit Modal
                 $('#editCategory').on('change', (e) => { this.editItem.category = e.target.value; });
                 $('#editStatus').on('change', (e) => { this.editItem.status = e.target.value; });
 
-                // Update UI UI Select2 dari state Alpine
+                // Update UI Select2 dari state Alpine
                 $('#editCategory').val(this.editItem.category).trigger('change.select2');
                 $('#editStatus').val(this.editItem.status).trigger('change.select2');
             }, 100);
