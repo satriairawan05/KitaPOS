@@ -1,7 +1,3 @@
-<!-- ================================================================
-     index.html - KitaPOS
-     Main theme color: #ED020E
-     ================================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,7 +23,7 @@
                 </div>
                 <div class="col-md-4 d-none d-md-flex justify-content-md-start">
                     <input type="text" class="search-box" id="searchMenuDesktop" placeholder="Search menu..."
-                           x-model="searchQuery" @input.debounce="filterMenu()" />
+                        x-model="searchQuery" @input.debounce="filterMenu()" />
                 </div>
                 <div class="col-md-5 d-none d-md-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
@@ -59,7 +55,7 @@
                 </div>
                 <div class="col-12 d-md-none mt-1">
                     <input type="text" class="search-box w-100" id="searchMenuMobile" placeholder="Search menu..."
-                           x-model="searchQuery" @input.debounce="filterMenu()" />
+                        x-model="searchQuery" @input.debounce="filterMenu()" />
                 </div>
             </div>
         </div>
@@ -71,8 +67,9 @@
                 <div class="cat-filter" id="categoryFilter">
                     <template x-for="cat in ['all', 'food', 'drink', 'snack', 'additional']" :key="cat">
                         <button class="btn-cat" :class="{ 'active': currentCategory === cat }"
-                                @click="setCategory(cat)">
-                            <span x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
+                            @click="setCategory(cat)">
+                            <span
+                                x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
                         </button>
                     </template>
                 </div>
@@ -100,24 +97,26 @@
                             <div class="menu-price" x-text="'Rp ' + formatRupiah(item.price)"></div>
                             <template x-if="item.category !== 'additional'">
                                 <span class="menu-status" :class="item.status"
-                                      x-text="item.status === 'available' ? '✅ Available' : item.status === 'low' ? '⚠️ Low Stock' : '❌ Out of Stock'"></span>
+                                    x-text="item.status === 'available' ? '✅ Available' : item.status === 'low' ? '⚠️ Low Stock' : '❌ Out of Stock'"></span>
                             </template>
-                            
+
                             <div class="menu-actions">
                                 <div class="qty-control">
-                                    <button class="btn-qty btn-qty-minus" @click="decrementQty(item.id)" 
-                                            x-show="getCartQty(item.id) > 0" title="Decrease">
+                                    <button class="btn-qty btn-qty-minus" @click="decrementQty(item.id)"
+                                        x-show="getCartQty(item.id) > 0" title="Decrease">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <input type="number" class="qty-input" 
-                                           :value="getDisplayQty(item.id)" 
-                                           @change="updateQtyFromInput(item.id, $event)" 
-                                           min="0" />
-                                    <button class="btn-qty btn-qty-plus" @click="incrementQty(item.id)" title="Increase">
+                                    <input type="number" class="qty-input" :value="getDisplayQty(item.id)"
+                                        @change="updateQtyFromInput(item.id, $event)" :readonly="item.status === 'out'"
+                                        min="0" />
+                                    <button class="btn-qty btn-qty-plus" @click="incrementQty(item.id)"
+                                        :disabled="item.status === 'out'"
+                                        :title="item.status === 'out' ? 'Out of Stock' : 'Increase'">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
-                                <button class="btn-action btn-edit-action" @click="openEditMenu(item.id)" title="Edit menu">
+                                <button class="btn-action btn-edit-action" @click="openEditMenu(item.id)"
+                                    title="Edit menu">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                             </div>
@@ -138,7 +137,8 @@
                             <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                             <span>
                                 <span x-text="'Rp ' + formatRupiah(openingBalance)"></span>
-                                <button class="btn btn-sm btn-link p-0 ms-1" @click="openEditOpeningBalance()" title="Edit Opening Balance">
+                                <button class="btn btn-sm btn-link p-0 ms-1" @click="openEditOpeningBalance()"
+                                    title="Edit Opening Balance">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                             </span>
@@ -157,8 +157,10 @@
                                 <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                                 <span>
                                     <span x-text="'Rp ' + formatRupiah(item.price * item.qty)"></span>
-                                    <button class="remove-btn" @click="removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
-                                    <button class="clear-btn" x-show="item.qty > 2" @click="resetTo(item.id, 2)" title="Reset to 2">
+                                    <button class="remove-btn" @click="removeFromCart(item.id)"><i
+                                            class="bi bi-dash-circle"></i></button>
+                                    <button class="clear-btn" x-show="item.qty > 2" @click="resetTo(item.id, 2)"
+                                        title="Reset to 2">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </span>
@@ -183,7 +185,8 @@
         </div>
     </div>
 
-    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="showMobileCart" @click="toggleMobileCart()" style="display:none;">
+    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="showMobileCart" @click="toggleMobileCart()"
+        style="display:none;">
         <i class="bi bi-cart3"></i> Cart
         <span class="badge" x-text="cartCount">0</span>
     </button>
@@ -194,7 +197,8 @@
                 <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                 <span>
                     <span x-text="'Rp ' + formatRupiah(openingBalance)"></span>
-                    <button class="btn btn-sm btn-link p-0 ms-1" @click="openEditOpeningBalance()" title="Edit Opening Balance">
+                    <button class="btn btn-sm btn-link p-0 ms-1" @click="openEditOpeningBalance()"
+                        title="Edit Opening Balance">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </span>
@@ -213,7 +217,8 @@
                     <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                     <span>
                         <span x-text="'Rp ' + formatRupiah(item.price * item.qty)"></span>
-                        <button class="remove-btn" @click="removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
+                        <button class="remove-btn" @click="removeFromCart(item.id)"><i
+                                class="bi bi-dash-circle"></i></button>
                         <button class="clear-btn" x-show="item.qty > 2" @click="resetTo(item.id, 2)" title="Reset to 2">
                             <i class="bi bi-x-circle"></i>
                         </button>
@@ -225,11 +230,13 @@
             <span>Total</span>
             <span x-text="'Rp ' + formatRupiah(cartTotal)"></span>
         </div>
-        <button class="btn-checkout" :disabled="cartCount === 0" @click="openCheckout()">Checkout <i class="bi bi-arrow-right"></i></button>
+        <button class="btn-checkout" :disabled="cartCount === 0" @click="openCheckout()">Checkout <i
+                class="bi bi-arrow-right"></i></button>
         <button class="btn-add-manual additional-btn" @click="openAddMenu('additional')">
             <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
         </button>
-        <button class="btn-add-manual" @click="openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add Manual Menu</button>
+        <button class="btn-add-manual" @click="openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add Manual
+            Menu</button>
     </div>
 
     <button class="calc-fab" id="openCalcMobile" @click="openCalculator()" title="Calculator">
@@ -297,15 +304,18 @@
                     <form id="addItemForm" @submit.prevent="saveNewItem()">
                         <div class="mb-3">
                             <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="Example: Fried Rice" x-model="newItem.name" required />
+                            <input type="text" class="form-control" placeholder="Example: Fried Rice"
+                                x-model="newItem.name" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="Example: 25.000" x-model="newItem.price" @input="formatPriceInput($event)" />
+                            <input type="text" class="form-control" placeholder="Example: 25.000"
+                                x-model="newItem.price" @input="formatPriceInput($event)" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Category</label>
-                            <select class="form-select select2-custom" id="manualCategory" x-model="newItem.category" @change="onCategoryChange()">
+                            <select class="form-select select2-custom" id="manualCategory" x-model="newItem.category"
+                                @change="onCategoryChange()">
                                 <option value="food">🍔 Food</option>
                                 <option value="drink">🥤 Drinks</option>
                                 <option value="snack">🍿 Snacks</option>
@@ -316,7 +326,8 @@
                             <div>
                                 <div class="mb-3">
                                     <label class="form-label fw-600">Stock Status</label>
-                                    <select class="form-select select2-custom" id="manualStatus" x-model="newItem.status">
+                                    <select class="form-select select2-custom" id="manualStatus"
+                                        x-model="newItem.status">
                                         <option value="available">✅ Available</option>
                                         <option value="low">⚠️ Low Stock</option>
                                         <option value="out">❌ Out of Stock</option>
@@ -324,15 +335,17 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-600">Menu Image</label>
-                                    <input type="file" class="form-control" id="manualImage" accept="image/*" @change="handleImageUpload($event)" />
+                                    <input type="file" class="form-control" id="manualImage" accept="image/*"
+                                        @change="handleImageUpload($event)" />
                                     <div class="mt-2" x-show="newItem.imagePreview">
                                         <img :src="newItem.imagePreview" alt="Preview" loading="lazy"
-                                             style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;" />
+                                            style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;" />
                                     </div>
                                 </div>
                                 <div class="mb-0">
                                     <label class="form-label fw-600">Emoji (alternative)</label>
-                                    <input type="text" class="form-control" placeholder="🍔" maxlength="2" x-model="newItem.icon" />
+                                    <input type="text" class="form-control" placeholder="🍔" maxlength="2"
+                                        x-model="newItem.icon" />
                                 </div>
                             </div>
                         </template>
@@ -353,17 +366,20 @@
             <div class="modal-content">
                 <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
                     <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Menu</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:brightness(0) invert(1);"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="saveEditItem()">
                         <div class="mb-3">
                             <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="Example: Fried Rice" x-model="editItem.name" required />
+                            <input type="text" class="form-control" placeholder="Example: Fried Rice"
+                                x-model="editItem.name" required />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" placeholder="Example: 25.000" x-model="editItem.price" @input="formatPriceInput($event)" />
+                            <input type="text" class="form-control" placeholder="Example: 25.000"
+                                x-model="editItem.price" @input="formatPriceInput($event)" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Category</label>
@@ -384,15 +400,18 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Menu Image</label>
-                            <input type="file" class="form-control" accept="image/*" @change="handleEditImageUpload($event)" />
+                            <input type="file" class="form-control" accept="image/*"
+                                @change="handleEditImageUpload($event)" />
                             <div class="mt-2">
                                 <img :src="editItem.imagePreview || '#'" alt="Preview" loading="lazy"
-                                     style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;display:block;" x-show="editItem.imagePreview" />
+                                    style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;display:block;"
+                                    x-show="editItem.imagePreview" />
                             </div>
                         </div>
                         <div class="mb-0">
                             <label class="form-label fw-600">Emoji</label>
-                            <input type="text" class="form-control" placeholder="🍔" maxlength="2" x-model="editItem.icon" />
+                            <input type="text" class="form-control" placeholder="🍔" maxlength="2"
+                                x-model="editItem.icon" />
                         </div>
                     </form>
                 </div>
@@ -411,13 +430,14 @@
             <div class="modal-content">
                 <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
                     <h5 class="modal-title"><i class="bi bi-wallet2 me-2"></i>Edit Opening Balance</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:brightness(0) invert(1);"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-600">Opening Balance (Rp)</label>
                         <input type="text" class="form-control" placeholder="Example: 150.000"
-                               x-model="editOpeningBalance" @input="formatPriceInput($event)" />
+                            x-model="editOpeningBalance" @input="formatPriceInput($event)" />
                     </div>
                     <div class="mb-0 text-muted small">
                         <i class="bi bi-info-circle"></i> This balance will be added to Grand Total in History.
@@ -433,13 +453,13 @@
         </div>
     </div>
 
-    <!-- ===== CHECKOUT MODAL with DISCOUNT FEATURE ===== -->
     <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background:#28a745;color:#fff;">
                     <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Confirm Checkout</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" style="filter:brightness(0) invert(1);"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
                 </div>
                 <div class="modal-body">
                     <div class="checkout-summary" id="checkoutSummary">
@@ -450,35 +470,32 @@
                                 <span x-text="'Rp ' + formatRupiah(item.price * item.qty)"></span>
                             </div>
                         </template>
-                        <!-- Subtotal (original total) -->
                         <div class="total-row" style="border-top: 1px solid #ddd; margin-top: 4px; padding-top: 8px;">
                             <span>Subtotal</span>
                             <span x-text="'Rp ' + formatRupiah(cartTotal)"></span>
                         </div>
-                        <!-- Discount row -->
-                        <div class="row mt-2 align-items-center" style="background: #f8f9fa; border-radius: 6px; padding: 6px 0;">
+                        <div class="row mt-2 align-items-center"
+                            style="background: #f8f9fa; border-radius: 6px; padding: 6px 0;">
                             <div class="col-4">
                                 <span class="fw-600">Discount</span>
                             </div>
                             <div class="col-8 d-flex align-items-center gap-1">
-                                <input type="text" class="form-control form-control-sm" 
-                                       :value="discountDisplay" 
-                                       @input="updateDiscount($event)" 
-                                       placeholder="0" 
-                                       style="min-width: 80px; text-align: right;" />
-                                <select class="form-select form-select-sm" style="width: auto;" x-model="discountType" @change="reformatDiscountDisplay()">
+                                <input type="text" class="form-control form-control-sm" :value="discountDisplay"
+                                    @input="updateDiscount($event)" placeholder="0"
+                                    style="min-width: 80px; text-align: right;" />
+                                <select class="form-select form-select-sm" style="width: auto;" x-model="discountType"
+                                    @change="reformatDiscountDisplay()">
                                     <option value="rp">Rp</option>
                                     <option value="percent">%</option>
                                 </select>
                             </div>
                         </div>
-                        <!-- Discount amount (if > 0) -->
                         <div x-show="discountAmount > 0" class="d-flex justify-content-between text-danger fw-600 mt-1">
                             <span>Discount Amount</span>
                             <span x-text="'- Rp ' + formatRupiah(discountAmount)"></span>
                         </div>
-                        <!-- Grand total (after discount) -->
-                        <div class="total-row" style="border-top: 2px solid var(--pos-accent); margin-top: 6px; padding-top: 8px; font-size: 1.1rem;">
+                        <div class="total-row"
+                            style="border-top: 2px solid var(--pos-accent); margin-top: 6px; padding-top: 8px; font-size: 1.1rem;">
                             <span class="fw-700">Total</span>
                             <span class="fw-700 text-accent" x-text="'Rp ' + formatRupiah(discountedTotal)"></span>
                         </div>
@@ -490,31 +507,35 @@
                     </div>
                     <div class="mt-3">
                         <label class="form-label fw-600">Payment Method</label>
-                        <select class="form-select select2-custom" id="paymentMethod" x-model="paymentMethod">
+                        <select class="form-select select2-custom" id="paymentMethod" x-model="paymentMethod"
+                            @change="handlePaymentMethodChange()">
                             <option value="cash">💵 Cash</option>
                             <option value="qris">📱 QRIS</option>
                         </select>
                     </div>
-                    <div class="mt-3" id="paymentInputSection">
-                        <label class="form-label fw-600" x-text="paymentMethod === 'cash' ? 'Pay (Rp)' : 'Total Paid (QRIS)'"></label>
+
+                    <div class="mt-3" id="paymentInputSection" x-show="paymentMethod === 'cash'">
+                        <label class="form-label fw-600">Pay (Rp)</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input type="text" class="form-control" placeholder="Enter amount"
-                                   x-model="paymentAmount" @input="updateChange()" :disabled="paymentMethod === 'qris'" />
+                            <input type="text" class="form-control" placeholder="Enter amount" x-model="paymentAmount"
+                                @input="updateChange()" />
                         </div>
-                        <div class="mt-2" x-show="paymentMethod === 'cash'">
+                        <div class="mt-2">
                             <template x-for="(val, idx) in quickPayOptions" :key="idx">
-                                <button class="quick-pay-btn" :class="{'btn-exact': val === discountedTotal, 'active-btn': parseInt(paymentAmountRaw) === val}"
-                                        @click="setQuickPay(val)">
+                                <button class="quick-pay-btn"
+                                    :class="{'btn-exact': val === discountedTotal, 'active-btn': parseInt(paymentAmountRaw) === val}"
+                                    @click="setQuickPay(val)">
                                     <span x-text="val === discountedTotal ? 'Exact' : 'Rp ' + formatRupiah(val)"></span>
                                 </button>
                             </template>
                         </div>
-                        <div class="mt-2 text-end" style="font-weight:700;font-size:1.1rem;" x-show="paymentMethod === 'cash'">
+                        <div class="mt-2 text-end" style="font-weight:700;font-size:1.1rem;">
                             Change: <span :style="{color: changeAmount >= 0 ? 'var(--pos-accent)' : '#e74c3c'}"
-                                          x-text="'Rp ' + formatRupiah(Math.abs(changeAmount)) + (changeAmount < 0 ? ' (insufficient)' : '')"></span>
+                                x-text="'Rp ' + formatRupiah(Math.abs(changeAmount)) + (changeAmount < 0 ? ' (insufficient)' : '')"></span>
                         </div>
                     </div>
+
                     <div class="mt-2 text-center text-success fw-600" x-show="paymentMethod === 'qris'">
                         <i class="bi bi-qr-code me-1"></i> Please scan QR Code to complete payment.
                     </div>
@@ -549,14 +570,16 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="form-check mb-0">
                                         <input class="form-check-input" type="radio" name="printerSizeSetting"
-                                               id="size58" value="58mm" x-model="defaultPrinterSize" @change="applyPrinterSize()">
+                                            id="size58" value="58mm" x-model="defaultPrinterSize"
+                                            @change="applyPrinterSize()">
                                         <label class="form-check-label fw-semibold text-secondary" for="size58">
                                             🖨️ Thermal 58mm
                                         </label>
                                     </div>
                                     <div class="form-check mb-0">
                                         <input class="form-check-input" type="radio" name="printerSizeSetting"
-                                               id="size80" value="80mm" x-model="defaultPrinterSize" @change="applyPrinterSize()">
+                                            id="size80" value="80mm" x-model="defaultPrinterSize"
+                                            @change="applyPrinterSize()">
                                         <label class="form-check-label fw-semibold text-secondary" for="size80">
                                             🖨️ Thermal 80mm
                                         </label>
@@ -597,28 +620,33 @@
                                     <span x-text="'#' + trx.id + ' - ' + trx.timestamp"></span>
                                     <div class="history-actions">
                                         <span class="text-accent" x-text="'Rp ' + formatRupiah(trx.total)"></span>
-                                        <button class="print-history-btn" @click="printStrukMobile(trx)" title="Print receipt">
+                                        <button class="print-history-btn" @click="printStrukMobile(trx)"
+                                            title="Print receipt">
                                             <i class="bi bi-printer"></i>
                                         </button>
-                                        <button class="delete-history-btn" @click="deleteTransaction(trx.id)" title="Delete transaction">
+                                        <button class="delete-history-btn" @click="deleteTransaction(trx.id)"
+                                            title="Delete transaction">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="detail">
                                     <span><i class="bi bi-tag"></i> <span x-text="trx.method"></span></span>
-                                    <span><i class="bi bi-cash-stack"></i> Paid: <span x-text="'Rp ' + formatRupiah(trx.paid)"></span></span>
-                                    <!-- Show discount if any -->
+                                    <span><i class="bi bi-cash-stack"></i> Paid: <span
+                                            x-text="'Rp ' + formatRupiah(trx.paid)"></span></span>
                                     <template x-if="trx.discount && trx.discount > 0">
-                                        <span><i class="bi bi-percent"></i> Discount: <span x-text="'-Rp ' + formatRupiah(trx.discount)"></span></span>
+                                        <span><i class="bi bi-percent"></i> Discount: <span
+                                                x-text="'-Rp ' + formatRupiah(trx.discount)"></span></span>
                                     </template>
                                     <template x-if="trx.method === 'Cash'">
-                                        <span><i class="bi bi-arrow-return-left"></i> Change: <span x-text="'Rp ' + formatRupiah(trx.change)"></span></span>
+                                        <span><i class="bi bi-arrow-return-left"></i> Change: <span
+                                                x-text="'Rp ' + formatRupiah(trx.change)"></span></span>
                                     </template>
                                 </div>
                                 <div class="detail" style="font-size:0.8rem;color:#888;">
                                     <i class="bi bi-list-ul"></i>
-                                    <span x-text="trx.items.map(item => item.name + ' (' + item.qty + '×Rp' + formatRupiah(item.price) + ')').join(', ')"></span>
+                                    <span
+                                        x-text="trx.items.map(item => item.name + ' (' + item.qty + '×Rp' + formatRupiah(item.price) + ')').join(', ')"></span>
                                 </div>
                             </div>
                         </template>
@@ -635,11 +663,14 @@
     <!-- ===== RECEIPT PRINT TEMPLATE ===== -->
     <div id="strukContainer" style="display:none;">
         <div class="struk-content" :class="'paper-' + defaultPrinterSize">
+            <!-- HEADER -->
             <div class="struk-header" style="text-align:center;">
                 <h3 style="margin:0;font-size:1.1rem;">My Fried Chicken</h3>
                 <p style="margin:0;font-size:0.8rem;">Pusat</p>
                 <hr style="margin:4px 0;">
             </div>
+
+            <!-- INFO -->
             <div class="struk-info" style="font-size:0.75rem;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
                     <strong>Kasir</strong> <span x-text="cashierName"></span>
@@ -655,10 +686,14 @@
                 </p>
                 <hr style="margin:4px 0;">
             </div>
+
+            <!-- STATUS LUNAS -->
             <div class="struk-status" style="text-align:center;font-weight:700;font-size:0.9rem;">
                 <p style="margin:2px 0;color:#28a745;">LUNAS</p>
                 <hr style="margin:4px 0;">
             </div>
+
+            <!-- ITEMS -->
             <div class="struk-items" style="font-size:0.7rem;">
                 <table style="width:100%;border-collapse:collapse;">
                     <thead>
@@ -672,29 +707,43 @@
                         <template x-for="item in strukData.items" :key="item.name">
                             <tr>
                                 <td style="text-align:left;" x-text="item.name"></td>
-                                <td style="text-align:center;" x-text="formatRupiah(item.price) + ' x ' + item.qty"></td>
+                                <td style="text-align:center;" x-text="formatRupiah(item.price) + ' x ' + item.qty">
+                                </td>
                                 <td style="text-align:right;" x-text="formatRupiah(item.subtotal)"></td>
                             </tr>
                         </template>
                     </tbody>
                 </table>
             </div>
-            <!-- Discount line (if any) -->
-            <div class="struk-discount" style="font-size:0.75rem;margin-top:2px;" x-show="strukData.discount && strukData.discount > 0">
-                <hr style="margin:4px 0;">
-                <p style="margin:2px 0;display:flex;justify-content:space-between;color:#e74c3c;">
-                    <strong>Diskon</strong> <span x-text="'-Rp ' + formatRupiah(strukData.discount)"></span>
-                </p>
-            </div>
-            <div class="struk-total" style="font-size:0.75rem;margin-top:4px;">
+
+            <!-- SUBTOTAL -->
+            <div class="struk-subtotal" style="font-size:0.75rem;margin-top:4px;">
                 <hr style="margin:4px 0;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
                     <strong>Subtotal</strong> <span x-text="'Rp' + formatRupiah(strukData.subtotal)"></span>
                 </p>
+            </div>
+
+            <!-- DISCOUNT (jika ada) – posisi setelah subtotal, sebelum total, warna hitam -->
+            <div class="struk-discount" style="font-size:0.75rem;"
+                x-show="strukData.discount && strukData.discount > 0">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;color:#000;">
+                    <strong>Diskon</strong> <span x-text="'-Rp ' + formatRupiah(strukData.discount)"></span>
+                </p>
+            </div>
+
+            <!-- TOTAL -->
+            <div class="struk-total" style="font-size:0.75rem;margin-top:2px;">
+                <hr style="margin:4px 0;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;font-weight:700;">
-                    <strong>Total (<span x-text="strukData.totalQty"></span>)</strong> <span x-text="'Rp' + formatRupiah(strukData.total)"></span>
+                    <strong>Total (<span x-text="strukData.totalQty"></span>)</strong> <span
+                        x-text="'Rp' + formatRupiah(strukData.total)"></span>
                 </p>
                 <hr style="margin:4px 0;">
+            </div>
+
+            <!-- BAYAR & KEMBALI -->
+            <div class="struk-payment" style="font-size:0.75rem;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
                     <strong>Bayar</strong> <span x-text="'Rp' + formatRupiah(strukData.paid)"></span>
                 </p>
@@ -702,6 +751,8 @@
                     <strong>Kembali</strong> <span x-text="'Rp' + formatRupiah(strukData.change)"></span>
                 </p>
             </div>
+
+            <!-- FOOTER -->
             <div class="struk-footer" style="text-align:center;font-size:0.7rem;margin-top:4px;">
                 <hr style="margin:4px 0;">
                 <p style="margin:2px 0;">Powered by KitaPOS</p>
@@ -711,12 +762,13 @@
     </div>
 
     <div class="toast-container position-fixed start-50 translate-middle-x top-0 p-3 top-md-0 start-md-auto translate-middle-x-md-none end-md-0"
-         style="z-index: 1080;">
+        style="z-index: 1080;">
         <div id="liveToast" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert"
-             aria-live="assertive" aria-atomic="true">
+            aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
                 <div class="toast-body" x-text="toastMessage">Notification message.</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
             </div>
         </div>
     </div>
@@ -727,7 +779,8 @@
                 <div class="col-12 col-sm-auto text-center text-sm-start">
                     <p class="mb-0 mt-2 mt-sm-0">
                         Created by &copy;
-                        <a class="mx-1 text-danger fw-bold" href="https://www.linkedin.com/in/satriai418" target="_blank">
+                        <a class="mx-1 text-danger fw-bold" href="https://www.linkedin.com/in/satriai418"
+                            target="_blank">
                             Deuwi Satriya Irawan
                         </a>
                         <span>|</span>
@@ -749,4 +802,5 @@
     <script src="https://cdn.jsdelivr.net/npm/escpos-encoder@1.2.0/dist/escpos-encoder.min.js"></script>
     <script src="assets/js/script.js"></script>
 </body>
+
 </html>

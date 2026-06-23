@@ -28,7 +28,7 @@ document.addEventListener('alpine:init', () => {
         paymentAmountRaw: 0,
         changeAmount: 0,
         // Discount
-        discountType: 'rp',          // 'rp' or 'percent'
+        discountType: 'rp',
         discountValue: 0,
         discountDisplay: '0',
         // Printer & Cashier
@@ -66,7 +66,6 @@ document.addEventListener('alpine:init', () => {
             const now = new Date().getFullYear();
             return now === start ? start : start + ' - ' + now;
         },
-        // Discount
         get discountAmount() {
             const total = this.cartTotal;
             if (this.discountType === 'rp') {
@@ -81,88 +80,127 @@ document.addEventListener('alpine:init', () => {
         get discountedTotal() {
             return Math.max(this.cartTotal - this.discountAmount, 0);
         },
-        // Quick Pay Options - computed, otomatis update
         get quickPayOptions() {
             const total = this.discountedTotal;
             if (total <= 0) return [0];
-            const increment = 50000;
-            let options = [total]; // exact amount always first
-            let base = Math.ceil(total / increment) * increment;
-            let next = base;
-            while (options.length < 4) {
-                if (next !== total && next > 0) {
-                    options.push(next);
-                }
-                next += increment;
+
+            // Opsi ke-4: minimal 100.000 atau kelipatan 100.000
+            let end = 100000;
+            if (total > 100000) {
+                end = Math.ceil(total / 100000) * 100000;
+                if (end <= total) end += 100000;
             }
-            options = [...new Set(options)].sort((a, b) => a - b);
-            if (total > 0) {
-                options = options.filter(v => v !== total);
-                options.unshift(total);
+
+            // Opsi ke-2: down
+            let down = Math.floor(total / 10000) * 10000;
+            if (down === total) down = Math.max(0, down - 10000);
+            if (total < 50000) down = 50000;
+            if (down <= 0) down = 10000;
+
+            // Opsi ke-3: up
+            let up = Math.ceil(total / 10000) * 10000;
+            if (up === total) up = up + 10000;
+            if (total < 50000) up = Math.max(down + 10000, 60000);
+            if (up <= down) up = down + 10000;
+            // Pastikan up tidak >= end jika total <= 100000
+            if (total <= 100000 && up >= end) up = Math.min(end - 10000, Math.ceil((total + end) / 2) / 10000 * 10000);
+            if (up <= down) up = down + 10000;
+
+            // Susun opsi: [exact, down, up, end] tapi exact di posisi pertama, lalu sisanya ascending
+            let others = [down, up, end].filter(v => v > 0 && v !== total);
+            others = [...new Set(others)].sort((a, b) => a - b);
+            let options = [total, ...others];
+            // Pastikan end ada di posisi terakhir
+            const endIndex = options.indexOf(end);
+            if (endIndex !== -1 && endIndex !== options.length - 1) {
+                options.splice(endIndex, 1);
+                options.push(end);
             }
-            return options.slice(0, 4);
+            return options;
         },
-        // Show mobile cart toggle only when cart has items (on mobile)
         get showMobileCart() {
             return window.innerWidth < 992 && this.cartCount > 0;
         },
 
         // ===== INIT =====
         init() {
-            const storedOB = localStorage.getItem('openingBalance');
-            this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
-            localStorage.setItem('openingBalance', this.openingBalance.toString());
+            try {
+                const storedOB = localStorage.getItem('openingBalance');
+                this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
+                localStorage.setItem('openingBalance', this.openingBalance.toString());
 
-            // Default menu items
-            this.menuItems = [
-                { id: 1, name: 'Ayam Geprek', price: 12000, category: 'food', status: 'available', icon: '🍗', image: null },
-                { id: 2, name: 'Ayam Geprek Keju', price: 15000, category: 'food', status: 'available', icon: '🧀', image: null },
-                { id: 3, name: 'Ayam Lada Hitam', price: 13000, category: 'food', status: 'available', icon: '🍗', image: null },
-                { id: 4, name: 'Ayam Saus BBQ', price: 13000, category: 'food', status: 'available', icon: '🍗', image: null },
-                { id: 5, name: 'Ayam Keju', price: 15000, category: 'food', status: 'available', icon: '🧀', image: null },
-                { id: 6, name: 'Lele Goreng', price: 13000, category: 'food', status: 'available', icon: '🐟', image: null },
-                { id: 7, name: 'Ikan Nila Goreng', price: 15000, category: 'food', status: 'available', icon: '🐟', image: null },
-                { id: 8, name: 'Ikan Mas Goreng', price: 15000, category: 'food', status: 'available', icon: '🐟', image: null },
-                { id: 9, name: 'Kentang Goreng Kecil', price: 8000, category: 'snack', status: 'available', icon: '🍟', image: null },
-                { id: 10, name: 'Kentang Goreng Besar', price: 12000, category: 'snack', status: 'available', icon: '🍟', image: null },
-                { id: 11, name: 'Nugget Kecil', price: 8000, category: 'snack', status: 'available', icon: '🍘', image: null },
-                { id: 12, name: 'Nugget Besar', price: 12000, category: 'snack', status: 'available', icon: '🍘', image: null },
-                { id: 13, name: 'Es Teh', price: 5000, category: 'drink', status: 'available', icon: '🧊', image: null },
-                { id: 14, name: 'Es Teh Manis', price: 5000, category: 'drink', status: 'available', icon: '🧋', image: null },
-                { id: 15, name: 'Es Jeruk', price: 8000, category: 'drink', status: 'available', icon: '🍊', image: null },
-                { id: 16, name: 'Kopi Hitam', price: 10000, category: 'drink', status: 'available', icon: '☕', image: null },
-                { id: 17, name: 'Saus BBQ', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
-                { id: 18, name: 'Saus Lada Hitam', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
-                { id: 19, name: 'Saus Keju', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
-                { id: 20, name: 'Chili Oil', price: 5000, category: 'additional', status: 'available', icon: '🌶️', image: null }
-            ];
-            this.nextId = 21;
+                this.menuItems = [
+                    { id: 1, name: 'Ayam Geprek', price: 12000, category: 'food', status: 'available', icon: '🍗', image: null },
+                    { id: 2, name: 'Ayam Geprek Keju', price: 15000, category: 'food', status: 'available', icon: '🧀', image: null },
+                    { id: 3, name: 'Ayam Lada Hitam', price: 13000, category: 'food', status: 'available', icon: '🍗', image: null },
+                    { id: 4, name: 'Ayam Saus BBQ', price: 13000, category: 'food', status: 'available', icon: '🍗', image: null },
+                    { id: 5, name: 'Ayam Keju', price: 15000, category: 'food', status: 'available', icon: '🧀', image: null },
+                    { id: 6, name: 'Lele Goreng', price: 13000, category: 'food', status: 'out', icon: '🐟', image: null },
+                    { id: 7, name: 'Nila Goreng', price: 15000, category: 'food', status: 'available', icon: '🐟', image: null },
+                    { id: 8, name: 'Mas Goreng', price: 15000, category: 'food', status: 'low', icon: '🐟', image: null },
+                    { id: 9, name: 'Kentang Goreng Kecil', price: 8000, category: 'snack', status: 'low', icon: '🍟', image: null },
+                    { id: 10, name: 'Kentang Goreng Besar', price: 12000, category: 'snack', status: 'available', icon: '🍟', image: null },
+                    { id: 11, name: 'Nugget Kecil', price: 8000, category: 'snack', status: 'low', icon: '🍘', image: null },
+                    { id: 12, name: 'Nugget Besar', price: 12000, category: 'snack', status: 'available', icon: '🍘', image: null },
+                    { id: 13, name: 'Es Teh', price: 5000, category: 'drink', status: 'available', icon: '🧊', image: null },
+                    { id: 14, name: 'Es Teh Manis', price: 5000, category: 'drink', status: 'available', icon: '🧋', image: null },
+                    { id: 15, name: 'Es Jeruk', price: 8000, category: 'drink', status: 'available', icon: '🍊', image: null },
+                    { id: 16, name: 'Kopi Hitam', price: 10000, category: 'drink', status: 'available', icon: '☕', image: null },
+                    { id: 17, name: 'Saus BBQ', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
+                    { id: 18, name: 'Saus Lada Hitam', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
+                    { id: 19, name: 'Saus Keju', price: 5000, category: 'additional', status: 'available', icon: '➕', image: null },
+                    { id: 20, name: 'Chili Oil', price: 5000, category: 'additional', status: 'available', icon: '🌶️', image: null }
+                ];
+                this.nextId = 21;
 
-            const storedHistory = localStorage.getItem('transactionHistory');
-            if (storedHistory) this.transactionHistory = JSON.parse(storedHistory);
+                const storedHistory = localStorage.getItem('transactionHistory');
+                if (storedHistory) {
+                    this.transactionHistory = JSON.parse(storedHistory);
+                }
 
-            const savedSize = localStorage.getItem('defaultPrinterSize');
-            if (savedSize) {
-                this.defaultPrinterSize = savedSize;
-            } else {
-                this.defaultPrinterSize = '58mm';
-                localStorage.setItem('defaultPrinterSize', '58mm');
+                const savedSize = localStorage.getItem('defaultPrinterSize');
+                if (savedSize) {
+                    this.defaultPrinterSize = savedSize;
+                } else {
+                    this.defaultPrinterSize = '58mm';
+                    localStorage.setItem('defaultPrinterSize', '58mm');
+                }
+
+                this.toast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 2500 });
+                this.initSelect2();
+                this.updateCalcDisplay();
+
+                console.log('✅ KitaPOS with Alpine.js ready!');
+            } catch (error) {
+                console.error('❌ Error during initialization:', error);
+                if (this.menuItems.length === 0) {
+                    this.menuItems = [
+                        { id: 1, name: 'Ayam Geprek', price: 12000, category: 'food', status: 'available', icon: '🍗', image: null },
+                    ];
+                    this.nextId = 2;
+                }
             }
-
-            this.toast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 2500 });
-            this.initSelect2();
-            this.updateCalcDisplay();
-
-            // Watch for window resize to update mobile cart visibility
-            window.addEventListener('resize', () => {
-                // Computed will recalc on access, but Alpine needs a trigger
-                // We'll just use a dummy variable to force re-render if needed
-            });
-
-            console.log('✅ KitaPOS with Alpine.js ready!');
         },
 
-        // ===== SMART CASHIER PRINT MODULE =====
+        // ===== PAYMENT METHOD HANDLER =====
+        handlePaymentMethodChange() {
+            try {
+                if (this.paymentMethod === 'qris') {
+                    const total = this.discountedTotal;
+                    this.paymentAmount = this.formatRupiah(total);
+                    this.paymentAmountRaw = total;
+                    this.changeAmount = 0;
+                } else {
+                    this.paymentAmount = '';
+                    this.paymentAmountRaw = 0;
+                    this.changeAmount = 0;
+                }
+            } catch (error) {
+                console.error('Error in handlePaymentMethodChange:', error);
+            }
+        },
+
+        // ===== PRINT MODULE =====
         formatReceiptLine(leftText, rightText, is80mm = false) {
             const lineLength = is80mm ? 48 : 32;
             let left = leftText.toString();
@@ -176,6 +214,10 @@ document.addEventListener('alpine:init', () => {
         },
 
         printStrukMobile(transaction) {
+            if (!transaction || !transaction.items || transaction.items.length === 0) {
+                this.showToast('❌ No transaction data to print!');
+                return;
+            }
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                 this.printStrukWebBluetoothiOS(transaction);
@@ -209,7 +251,7 @@ document.addEventListener('alpine:init', () => {
 
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
-                           .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
+                        .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
                 }
 
                 receipt.line('-'.repeat(is80mm ? 48 : 32))
@@ -260,12 +302,12 @@ document.addEventListener('alpine:init', () => {
 
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
-                           .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
+                        .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
                 }
 
                 receipt.line('-'.repeat(is80mm ? 48 : 32))
-                       .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
-                       .newline().newline().newline();
+                    .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
+                    .newline().newline().newline();
 
                 const resultData = receipt.encode();
                 for (let i = 0; i < resultData.length; i += 50) {
@@ -358,11 +400,16 @@ document.addEventListener('alpine:init', () => {
             return qty > 0 ? qty : 1;
         },
         incrementQty(id) {
+            const menuItem = this.menuItems.find(i => i.id === id);
+            if (!menuItem) return;
+            if (menuItem.status === 'out') {
+                this.showToast('❌ ' + menuItem.name + ' is out of stock!');
+                return;
+            }
             const existing = this.cart.find(c => c.id === id);
             if (existing) existing.qty += 1;
             else {
-                const menuItem = this.menuItems.find(i => i.id === id);
-                if (menuItem) this.cart.push({ ...menuItem, qty: 1 });
+                this.cart.push({ ...menuItem, qty: 1 });
             }
         },
         decrementQty(id) {
@@ -410,10 +457,16 @@ document.addEventListener('alpine:init', () => {
             this.paymentAmount = '';
             this.paymentAmountRaw = 0;
             this.changeAmount = 0;
-            // Reset discount
             this.discountType = 'rp';
             this.discountValue = 0;
             this.discountDisplay = '0';
+
+            // PERBAIKAN: Sync state default Alpine (Cash) ke Select2 UI saat modal dibuka
+            setTimeout(() => {
+                $('#paymentMethod').val('cash').trigger('change.select2');
+            }, 50);
+
+            this.handlePaymentMethodChange();
             const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
             modal.show();
         },
@@ -425,36 +478,52 @@ document.addEventListener('alpine:init', () => {
         },
 
         updateChange() {
-            const raw = this.parseRupiah(this.paymentAmount);
-            this.paymentAmountRaw = raw;
-            const total = this.discountedTotal;
-            this.changeAmount = raw - total;
+            try {
+                if (this.paymentMethod === 'cash') {
+                    const raw = this.parseRupiah(this.paymentAmount);
+                    this.paymentAmountRaw = raw;
+                    const total = this.discountedTotal;
+                    this.changeAmount = raw - total;
+                } else {
+                    const total = this.discountedTotal;
+                    this.paymentAmount = this.formatRupiah(total);
+                    this.paymentAmountRaw = total;
+                    this.changeAmount = 0;
+                }
+            } catch (error) {
+                console.error('Error in updateChange:', error);
+            }
         },
 
         confirmCheckout() {
-            const total = this.discountedTotal;
-            const method = this.paymentMethod;
-            let paid = this.paymentAmountRaw;
-            if (method === 'cash') {
-                if (paid < total) {
-                    this.showToast('❌ Payment insufficient!');
-                    return;
+            try {
+                const total = this.discountedTotal;
+                const method = this.paymentMethod;
+                let paid = this.paymentAmountRaw;
+                if (method === 'cash') {
+                    if (paid < total) {
+                        this.showToast('❌ Payment insufficient!');
+                        return;
+                    }
+                    const change = paid - total;
+                    const transaction = this.saveTransaction('Cash', total, paid, change);
+                    this.showToast('✅ Checkout successful!');
+                    this.printStrukMobile(transaction);
+                } else {
+                    paid = total;
+                    this.paymentAmount = this.formatRupiah(paid);
+                    this.paymentAmountRaw = paid;
+                    const transaction = this.saveTransaction('QRIS', total, paid, 0);
+                    this.showToast('✅ Checkout successful! Method: QRIS.');
+                    this.printStrukMobile(transaction);
                 }
-                const change = paid - total;
-                const transaction = this.saveTransaction('Cash', total, paid, change);
-                this.showToast('✅ Checkout successful!');
-                this.printStrukMobile(transaction);
-            } else {
-                paid = total;
-                this.paymentAmount = this.formatRupiah(paid);
-                this.paymentAmountRaw = paid;
-                const transaction = this.saveTransaction('QRIS', total, paid, 0);
-                this.showToast('✅ Checkout successful! Method: QRIS.');
-                this.printStrukMobile(transaction);
+                this.cart = [];
+                this.closeMobileCart();
+                bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
+            } catch (error) {
+                console.error('Error in confirmCheckout:', error);
+                this.showToast('❌ Checkout failed!');
             }
-            this.cart = [];
-            this.closeMobileCart();
-            bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
         },
 
         saveTransaction(method, total, paid, change) {
@@ -500,7 +569,6 @@ document.addEventListener('alpine:init', () => {
                 this.discountDisplay = pct.toString();
                 event.target.value = pct.toString();
             }
-            // update change because total changed (quickPayOptions is computed, auto-updated)
             this.updateChange();
         },
 
@@ -541,8 +609,28 @@ document.addEventListener('alpine:init', () => {
         },
         toggleMobileCart() { this.mobileCartOpen = !this.mobileCartOpen; },
         closeMobileCart() { this.mobileCartOpen = false; },
+
         initSelect2() {
-            $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
+            try {
+                $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
+
+                // PERBAIKAN: Bridge Event jQuery -> Alpine.js
+                $('#paymentMethod').on('change', (e) => {
+                    this.paymentMethod = e.target.value;
+                    this.handlePaymentMethodChange();
+                });
+
+                $('#manualCategory').on('change', (e) => {
+                    this.newItem.category = e.target.value;
+                    this.onCategoryChange();
+                });
+
+                $('#manualStatus').on('change', (e) => {
+                    this.newItem.status = e.target.value;
+                });
+            } catch (e) {
+                console.warn('Select2 init error:', e);
+            }
         },
 
         // ===== HISTORY =====
@@ -574,6 +662,11 @@ document.addEventListener('alpine:init', () => {
         },
         openAddMenu(category = 'food') {
             this.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️' };
+            // PERBAIKAN: Sync Alpine state ke UI Select2 agar pilihan "Add Additional Menu" berjalan mulus
+            setTimeout(() => {
+                $('#manualCategory').val(category).trigger('change.select2');
+                $('#manualStatus').val('available').trigger('change.select2');
+            }, 50);
             new bootstrap.Modal(document.getElementById('addItemModal')).show();
         },
         saveNewItem() {
@@ -588,25 +681,123 @@ document.addEventListener('alpine:init', () => {
             this.menuItems.push(item);
             bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
         },
+        handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.newItem.imagePreview = null;
+                this.newItem.imageData = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.newItem.imagePreview = e.target.result;
+                this.newItem.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+        handleEditImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.editItem.imagePreview = null;
+                this.editItem.imageData = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.editItem.imagePreview = e.target.result;
+                this.editItem.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
         openEditMenu(id) {
             const item = this.menuItems.find(i => i.id === id);
-            if (!item) return;
+            if (!item) {
+                this.showToast('❌ Menu not found!');
+                return;
+            }
             this.editItemId = id;
-            this.editItem = { ...item, price: this.formatRupiah(item.price) };
-            new bootstrap.Modal(document.getElementById('editItemModal')).show();
+            this.editItem = {
+                ...item,
+                price: this.formatRupiah(item.price),
+                imagePreview: item.image || null,
+                imageData: null
+            };
+
+            const fileInput = document.getElementById('editImage');
+            if (fileInput) fileInput.value = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('editItemModal'));
+            modal.show();
+
+            setTimeout(() => {
+                $('#editCategory, #editStatus').select2('destroy');
+                $('#editCategory, #editStatus').select2({
+                    theme: 'default',
+                    width: '100%',
+                    dropdownParent: $('#editItemModal'),
+                    dropdownAutoWidth: true,
+                    placeholder: 'Select...',
+                    allowClear: false
+                });
+
+                // PERBAIKAN: Bridge Event jQuery -> Alpine.js untuk Edit Modal
+                $('#editCategory').on('change', (e) => { this.editItem.category = e.target.value; });
+                $('#editStatus').on('change', (e) => { this.editItem.status = e.target.value; });
+
+                // Update UI UI Select2 dari state Alpine
+                $('#editCategory').val(this.editItem.category).trigger('change.select2');
+                $('#editStatus').val(this.editItem.status).trigger('change.select2');
+            }, 100);
         },
         saveEditItem() {
             const id = this.editItemId;
+            if (id === null || id === undefined) {
+                this.showToast('❌ No item selected to edit!');
+                return;
+            }
             const index = this.menuItems.findIndex(i => i.id === id);
+            if (index === -1) {
+                this.showToast('❌ Menu not found!');
+                return;
+            }
+
+            const name = this.editItem.name.trim();
+            const rawPrice = this.editItem.price.replace(/\D/g, '');
+            const price = parseInt(rawPrice, 10) || 0;
+
+            if (!name) {
+                this.showToast('❌ Menu name is required!');
+                return;
+            }
+            if (price <= 0) {
+                this.showToast('❌ Price must be a positive number!');
+                return;
+            }
+
             this.menuItems[index] = {
                 ...this.menuItems[index],
-                name: this.editItem.name.trim(),
-                price: parseInt(this.editItem.price.replace(/\D/g, ''), 10) || 0,
+                name: name,
+                price: price,
                 category: this.editItem.category,
                 status: this.editItem.status,
-                icon: this.editItem.icon || '🍽️'
+                icon: this.editItem.icon || '🍽️',
+                image: this.editItem.imageData || this.menuItems[index].image
             };
+
+            this.cart.forEach(cartItem => {
+                if (cartItem.id === id) {
+                    cartItem.name = name;
+                    cartItem.price = price;
+                    cartItem.icon = this.editItem.icon || '🍽️';
+                }
+            });
+
             bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
+
+            this.editItemId = null;
+            this.editItem = { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null };
+
+            this.showToast('✅ Menu "' + name + '" updated successfully!');
         },
         openEditOpeningBalance() {
             this.editOpeningBalance = this.formatRupiah(this.openingBalance);

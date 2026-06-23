@@ -5,115 +5,69 @@
 ![Alpine.js](https://img.shields.io/badge/Alpine.js-3.14-green?style=flat-square&logo=alpine.js)
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)
 
-**KitaPOS** adalah aplikasi Point of Sales (POS) berbasis web untuk restoran, kafe, dan usaha kuliner. Dibangun dengan Alpine.js untuk reaktivitas yang ringan dan cepat, serta Bootstrap 5 untuk tampilan responsif.
+**KitaPOS** adalah sistem aplikasi *Point of Sales* (POS) berbasis web yang dirancang khusus untuk mempermudah operasional restoran, kafe, dan berbagai jenis usaha kuliner. Dengan memanfaatkan arsitektur reaktif dari Alpine.js dan desain antarmuka responsif dari Bootstrap 5, KitaPOS memberikan pengalaman pengguna yang cepat, ringan, dan intuitif tanpa mengorbankan performa.
 
 ---
 
 ## 📋 Daftar Isi
 
-- [Fitur](#-fitur)
-- [Teknologi](#-teknologi)
-- [Instalasi](#-instalasi)
-- [Cara Pakai](#-cara-pakai)
+- [Fitur Unggulan](#-fitur-unggulan)
+- [Teknologi yang Digunakan](#-teknologi-yang-digunakan)
+- [Panduan Instalasi](#-panduan-instalasi)
+- [Panduan Penggunaan](#-panduan-penggunaan)
 - [Struktur Proyek](#-struktur-proyek)
 - [Kontribusi](#-kontribusi)
 - [Lisensi](#-lisensi)
-- [Author & Kontributor](#-author--kontributor)
+- [Pengembang & Kontak](#-pengembang--kontak)
 
 ---
 
-## ✨ Fitur
+## ✨ Fitur Unggulan
 
 | Fitur | Deskripsi |
-|-------|-----------|
-| 🍽️ **Manajemen Menu** | Tambah, edit, filter kategori, status stok, dan pencarian real-time dengan Alpine reactive. |
-| 🛒 **Keranjang** | Tambah/kurangi item, subtotal, total, dan badge notifikasi. Tombol "Reset to 2" untuk item > 2. |
-| 💳 **Checkout** | Cash & QRIS, hitung kembalian otomatis, format Rupiah. Quick Pay buttons untuk pembayaran cepat. |
-| 🧮 **Kalkulator** | Layout fisik, format ribuan, support keyboard. |
-| 📜 **History** | Riwayat transaksi, Grand Total (Opening Balance + Total Transaksi), hapus individual/semua. |
-| 🖨️ **Print Struk** | Cetak struk ukuran 58mm atau 80mm, sesuai pengaturan. |
-| 📱 **Responsif** | Tampilan optimal di desktop dan mobile dengan floating buttons dan mobile cart slide-up. |
-| ⚡ **Alpine.js Reactive** | Semua state dan logic di-handle oleh Alpine, kode JavaScript minimal dan terstruktur. |
+| :--- | :--- |
+| 🍽️ **Manajemen Menu Terpadu** | Penambahan, pembaruan, dan pemfilteran kategori secara dinamis. Dilengkapi manajemen status stok dan pencarian *real-time* dengan kapabilitas reaktif Alpine.js. |
+| 🛒 **Keranjang Belanja Dinamis** | Kontrol kuantitas item, perhitungan subtotal dan total otomatis, serta notifikasi berbasis *badge*. Tersedia fitur "Reset to 2" untuk item berjumlah lebih dari dua. |
+| 💳 **Sistem Checkout Fleksibel** | Mendukung metode pembayaran Tunai (*Cash*) dan QRIS. Otomatisasi perhitungan kembalian dengan format mata uang Rupiah. Dilengkapi tombol *Quick Pay* untuk transaksi instan. |
+| 🧮 **Kalkulator Terintegrasi** | Antarmuka tata letak fisik dengan dukungan format ribuan dan input dari *keyboard*, memudahkan staf kasir dalam perhitungan cepat. |
+| 📜 **Riwayat Transaksi** | Dokumentasi lengkap riwayat penjualan, perhitungan *Grand Total* (*Opening Balance* + Total Transaksi), dan manajemen data history (hapus individual/semua). |
+| 🖨️ **Dukungan Pencetakan Struk** | Fleksibilitas pencetakan struk transaksi untuk ukuran printer termal 58mm maupun 80mm yang dapat disesuaikan melalui pengaturan. |
+| 📱 **Desain Antarmuka Responsif** | Optimalisasi tata letak untuk perangkat desktop dan *mobile*, didukung *floating buttons* dan menu keranjang *slide-up* untuk layar kecil. |
+| ⚡ **Performa Reaktif** | Pengelolaan *state* dan logika secara menyeluruh menggunakan Alpine.js, memastikan basis kode JavaScript yang minimalis, terstruktur, dan efisien. |
 
 ---
 
-## 🛠️ Teknologi
+## 🛠️ Teknologi yang Digunakan
 
-| Teknologi | Fungsi |
-|-----------|--------|
-| HTML5, CSS3 | Struktur & styling |
-| Bootstrap 5.3 | Framework CSS responsif |
-| Alpine.js 3.14 | Reactive JavaScript framework |
-| jQuery & Select2 | Dropdown stylish untuk modals |
-| localStorage | Penyimpanan data (menu, history, opening balance, printer setting) |
+| Teknologi | Peran & Fungsi |
+| :--- | :--- |
+| **HTML5 & CSS3** | Struktur kerangka dan penataan gaya dasar antarmuka. |
+| **Bootstrap 5.3** | *Framework* CSS utama untuk memastikan desain yang responsif dan modern. |
+| **Alpine.js 3.14** | *Framework* JavaScript reaktif untuk menangani *state management* dan interaksi UI. |
+| **jQuery & Select2** | Implementasi *dropdown* yang lebih interaktif dan estetis pada elemen modal. |
+| **localStorage API** | Penyimpanan basis data sisi klien (katalog menu, riwayat transaksi, saldo awal, dan pengaturan printer). |
 
 ---
 
-## 🚀 Instalasi
+## 🚀 Panduan Instalasi
 
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/satriairawan05/KitaPOS.git
+Anda dapat menjalankan KitaPOS di mesin lokal Anda dengan mengikuti langkah-langkah berikut:
+
+1. **Kloning Repositori**
+   Buka terminal atau *command prompt*, lalu jalankan perintah berikut:
+```bash
+   git clone [https://github.com/satriairawan05/KitaPOS.git](https://github.com/satriairawan05/KitaPOS.git)
    cd KitaPOS
-Buka di browser
 
-Jalankan dengan Live Server (VSCode), atau
-
-Buka index.html langsung, atau
-
-Gunakan XAMPP/Laragon di localhost/KitaPOS
-
-Aplikasi siap digunakan! 🎉
-
-📖 Cara Pakai
-Aksi	Langkah
-🍽️ Tambah Menu	Klik tombol Tambah di navbar → isi form → Simpan
-✏️ Edit Menu	Klik ✏️ pada kartu menu → ubah data → Simpan Perubahan
-🛒 Transaksi	Klik ➕ pada menu → item masuk keranjang → Checkout → pilih metode → Konfirmasi & Selesai
-📜 History	Klik History di navbar → lihat semua transaksi
-🧮 Kalkulator	Klik Kalkulator di navbar (desktop) atau floating button (mobile)
-🏠 Kembali ke Menu	Klik ikon 🏠 di navbar atau floating button
-📁 Struktur Proyek
-text
-KitaPOS/
-├── 📄 index.html                 # Halaman utama dengan Alpine.js
+Jalankan AplikasiKarena KitaPOS adalah aplikasi front-end berbasis web, Anda memiliki beberapa opsi untuk menjalankannya:Opsi 1: Gunakan ekstensi Live Server di Visual Studio Code.Opsi 2: Buka file index.html secara langsung melalui peramban web (browser) Anda.Opsi 3: Pindahkan folder KitaPOS ke direktori server lokal Anda (seperti htdocs pada XAMPP atau www pada Laragon), lalu akses melalui http://localhost/KitaPOS.Aplikasi siap digunakan! 🎉📖 Panduan PenggunaanAksiPanduan Langkah🍽️ Tambah Menu BaruKlik tombol Tambah pada bilah navigasi (navbar) → Isi formulir data menu → Klik Simpan.✏️ Edit Data MenuKlik ikon ✏️ (Edit) pada kartu menu yang diinginkan → Lakukan perubahan data → Klik Simpan Perubahan.🛒 Proses TransaksiKlik ikon ➕ pada menu pilihan → Item akan masuk ke keranjang → Klik Checkout → Pilih metode pembayaran → Konfirmasi & Selesai.📜 Lihat RiwayatNavigasikan ke menu History di navbar untuk meninjau seluruh catatan transaksi.🧮 Gunakan KalkulatorKlik menu Kalkulator di navbar (pada Desktop) atau ketuk floating button (pada Mobile).🏠 Kembali ke BerandaKlik ikon 🏠 di navbar atau gunakan floating button untuk kembali ke tampilan utama menu.📁 Struktur ProyekPlaintextKitaPOS/
+├── 📄 index.html             # Berkas utama aplikasi yang memuat antarmuka & Alpine.js
 ├── 📁 assets/
 │   ├── 📁 css/
-│   │   └── 🎨 style.css         # Custom CSS (tema #ED020E)
+│   │   └── 🎨 style.css      # Custom CSS (menggunakan tema utama merah #ED020E)
 │   ├── 📁 js/
-│   │   └── ⚡ script.js         # Alpine app dan fungsi pendukung
+│   │   └── ⚡ script.js      # Logika Alpine app dan fungsi utilitas pendukung
 │   └── 📁 data/
-│       └── 📊 data.js          # Data menu contoh (default)
-├── 📄 README.md                 # Dokumentasi proyek
-└── 📄 LICENSE                   # Lisensi MIT
-🤝 Kontribusi
-Kami sangat terbuka untuk kontribusi dari siapa pun! Ikuti langkah-langkah berikut:
-
-Fork repository ini
-
-Clone hasil fork ke lokal Anda
-
-Buat branch untuk fitur baru
-
-Commit perubahan Anda
-
-Push ke branch
-
-Buat Pull Request di GitHub
-
-📋 Panduan Kontribusi
-Hal	Panduan
-Kode	Gunakan format yang konsisten dengan kode yang sudah ada
-Commit	Tulis pesan commit yang jelas dan deskriptif
-Dokumentasi	Perbarui README.md jika diperlukan
-Testing	Pastikan fitur berjalan dengan baik sebelum pull request
-Jika menemukan bug atau memiliki saran fitur, silakan buat Issue terlebih dahulu di GitHub.
-
-📄 Lisensi
-MIT License – Bebas digunakan, termasuk komersial.
-
-👨‍💻 Author & Kontributor
-Deuwi Satriya Irawan
-Pengembang utama dan penggagas proyek KitaPOS.
-
-<p align="center"> <a href="https://github.com/satriairawan05" target="_blank"> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"> </a> <a href="https://www.linkedin.com/in/satriai418" target="_blank"> <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"> </a> <a href="https://instagram.com/satriairawan05_" target="_blank"> <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"> </a> <a href="https://wa.me/6282253332802" target="_blank"> <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"> </a> </p>
+│       └── 📊 data.js        # Data dummy/katalog menu bawaan aplikasi
+├── 📄 README.md              # Dokumentasi lengkap proyek
+└── 📄 LICENSE                # Berkas lisensi (MIT License)
+🤝 KontribusiKami sangat mengapresiasi dan terbuka terhadap kontribusi dari komunitas! Jika Anda ingin berkontribusi, silakan ikuti alur kerja berikut:Lakukan Fork pada repositori ini.Kloning repositori hasil fork ke mesin lokal Anda.Buat branch baru untuk fitur atau perbaikan Anda (git checkout -b fitur-baru-saya).Lakukan Commit pada perubahan Anda (git commit -m 'Menambahkan fitur XYZ').Push ke branch tersebut (git push origin fitur-baru-saya).Buat Pull Request (PR) di repositori utama GitHub.Panduan Standar KontribusiAspekPanduanGaya KodePastikan format dan gaya penulisan konsisten dengan basis kode yang sudah ada.CommitTulis pesan commit yang deskriptif, ringkas, dan jelas.DokumentasiHarap perbarui file README.md jika perubahan Anda mencakup fitur atau langkah instalasi baru.PengujianPastikan aplikasi berjalan dengan baik dan bebas dari galat (bug) sebelum mengajukan Pull Request.Catatan: Jika Anda menemukan bug atau memiliki ide penambahan fitur, silakan buat laporan pada tab Issues di GitHub terlebih dahulu sebelum menulis kode.📄 LisensiProyek ini didistribusikan di bawah lisensi MIT License. Anda bebas untuk menggunakan, memodifikasi, dan mendistribusikan aplikasi ini, termasuk untuk keperluan komersial. Selengkapnya dapat dilihat pada file LICENSE.👨‍💻 Pengembang & KontakDeuwi Satriya IrawanPengembang utama dan inisiator proyek KitaPOS.

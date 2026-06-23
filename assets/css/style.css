@@ -273,6 +273,19 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
 }
 
+.menu-card .qty-control .btn-qty-plus:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #95a5a6;
+    transform: none !important;
+}
+
+.menu-card .qty-control .qty-input:read-only {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 /* Additional card - simpler with label at bottom-right of image */
 .menu-card.additional-card {
     position: relative;
@@ -1671,25 +1684,33 @@ body {
     font-size: 14px !important;
 }
 
-/* Print history button */
+/* ===== PRINT HISTORY BUTTON ===== */
 .print-history-btn {
-    background: transparent;
+    background: #343a40;
+    color: #fff;
     border: none;
-    color: #17a2b8;
-    font-size: 1.2rem;
-    padding: 0 4px;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: 0.2s;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    line-height: 1;
+    min-width: 30px;
+    min-height: 30px;
 }
 
 .print-history-btn:hover {
-    transform:y scale(1.2);
-    background: rgba(23, 162, 184, 0.1);
-    -webkit-transform:y scale(1.2);
-    -moz-transform:y scale(1.2);
-    -ms-transform:y scale(1.2);
-    -o-transform:y scale(1.2);
+    background: #23272b;
+    transform: scale(1.05);
+}
+
+.print-history-btn i {
+    font-size: 1rem;
+    color: #fff;
 }
 
 /* ===== CLEAR ALL IN HISTORY ===== */
