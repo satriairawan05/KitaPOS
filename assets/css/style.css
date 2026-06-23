@@ -273,6 +273,59 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
 }
 
+/* Card khusus additional - lebih sederhana dengan label di kanan bawah gambar */
+.menu-card.additional-card {
+    position: relative;
+    overflow: visible;
+}
+
+.menu-card.additional-card .menu-img {
+    background: #f0f0f0;
+    min-height: 60px;
+    max-height: 80px;
+    font-size: 1.8rem;
+    position: relative;
+}
+
+.menu-card.additional-card .menu-img .no-image {
+    font-size: 1.8rem;
+}
+
+.menu-card.additional-card .menu-name {
+    font-size: 0.85rem;
+}
+
+.menu-card.additional-card .menu-price {
+    font-size: 0.9rem;
+}
+
+/* Label Additional di kanan bawah gambar, mentok ke ujung */
+.menu-card.additional-card .additional-label {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #e60000;
+    color: #ffffff;
+    padding: 2px 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 4px 0 0 0;
+    z-index: 5;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    white-space: nowrap;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.15);
+    line-height: 1.4;
+    border: none;
+    backdrop-filter: blur(2px);
+}
+
+.menu-card.additional-card .additional-label:hover {
+    transform: scale(1.02);
+    background: #cc0000;
+}
+
 .menu-card .menu-img {
     width: 100%;
     aspect-ratio: 1/1;
@@ -364,12 +417,105 @@ body {
     background: #95a5a6;
 }
 
-/* Action buttons below image (Add & Edit) */
+/* ===== MENU ACTIONS ===== */
 .menu-card .menu-actions {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 8px;
     margin-top: 8px;
+}
+
+/* Tombol edit di kanan */
+.menu-card .menu-actions .btn-edit-action {
+    flex-shrink: 0;
+}
+
+/* Qty control di kiri */
+.menu-card .menu-actions .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.menu-card .menu-actions .qty-control .btn-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+    background: var(--pos-accent);
+    color: #fff;
+}
+
+.menu-card .menu-actions .qty-control .btn-qty:hover {
+    transform: scale(1.05);
+}
+
+.menu-card .menu-actions .qty-control .btn-qty-minus {
+    background: #dc3545;
+}
+
+.menu-card .menu-actions .qty-control .btn-qty-minus:hover {
+    background: #b02a37;
+}
+
+.menu-card .menu-actions .qty-control .qty-input {
+    width: 32px;
+    height: 28px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0 2px;
+    background: #fff;
+    color: #333;
+}
+
+.menu-card .menu-actions .qty-control .qty-input:focus {
+    outline: none;
+    border-color: var(--pos-accent);
+    box-shadow: 0 0 0 2px var(--pos-red-glow);
+}
+
+/* Hilangkan tombol panah di input number */
+.menu-card .menu-actions .qty-control .qty-input::-webkit-inner-spin-button,
+.menu-card .menu-actions .qty-control .qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.menu-card .menu-actions .qty-control .qty-input {
+    -moz-appearance: textfield;
+}
+
+/* Responsif mobile: ukuran lebih kecil */
+@media (max-width: 575px) {
+    .menu-card .menu-actions .qty-control .btn-qty {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .menu-card .menu-actions .qty-control .qty-input {
+        width: 28px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+
+    .menu-card .menu-actions .btn-action {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
 }
 
 .menu-card .menu-actions .btn-action {
@@ -414,6 +560,89 @@ body {
 .menu-card .menu-actions .btn-edit-action:hover {
     background: #e0a800;
     color: #5a1a1a;
+}
+
+/* ===== QTY CONTROL ===== */
+.menu-card .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.menu-card .qty-control .btn-qty {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: var(--pos-accent);
+    color: #fff;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+}
+
+.menu-card .qty-control .btn-qty:hover {
+    transform: scale(1.1);
+    background: var(--pos-accent-hover);
+}
+
+.menu-card .qty-control .btn-qty-minus {
+    background: #dc3545;
+}
+
+.menu-card .qty-control .btn-qty-minus:hover {
+    background: #b02a37;
+}
+
+.menu-card .qty-control .qty-input {
+    width: 40px;
+    height: 28px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 2px;
+    background: #fff;
+    color: #333;
+}
+
+.menu-card .qty-control .qty-input:focus {
+    outline: none;
+    border-color: var(--pos-accent);
+    box-shadow: 0 0 0 2px var(--pos-red-glow);
+}
+
+.menu-card .qty-control .qty-input::-webkit-inner-spin-button,
+.menu-card .qty-control .qty-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.menu-card .qty-control .qty-input {
+    -moz-appearance: textfield;
+}
+
+/* sesuaikan tata letak menu-actions */
+.menu-card .menu-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.menu-card .menu-actions .btn-edit-action {
+    flex-shrink: 0;
+}
+
+.menu-card .menu-actions .qty-control {
+    flex-shrink: 0;
 }
 
 /* Hide old text-based add button (now replaced by icon button) */
@@ -492,6 +721,21 @@ body {
     color: #fff;
 }
 
+/* Tombol Add Additional Menu */
+.cart-sidebar .additional-btn {
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+.cart-sidebar .additional-btn:hover {
+    background: #5a6268;
+    border-color: #5a6268;
+}
+
+.cart-sidebar .additional-btn i {
+    color: #ffc107;
+}
+
 /* Tambahan di bagian .cart-item */
 .cart-item .clear-btn {
     background: transparent;
@@ -503,6 +747,7 @@ body {
     transition: 0.2s;
     margin-left: 4px;
 }
+
 .cart-item .clear-btn:hover {
     transform: scale(1.2);
     color: #a71d2a;
@@ -1447,6 +1692,7 @@ body {
     transition: 0.2s;
     border-radius: 4px;
 }
+
 .print-history-btn:hover {
     transform: scale(1.2);
     background: rgba(23, 162, 184, 0.1);

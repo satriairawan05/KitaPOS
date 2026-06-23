@@ -2,10 +2,10 @@
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?style=flat-square)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?style=flat-square&logo=bootstrap)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow?style=flat-square&logo=javascript)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-3.14-green?style=flat-square&logo=alpine.js)
 ![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)
 
-**KitaPOS** adalah aplikasi Point of Sales (POS) berbasis web untuk restoran, kafe, dan usaha kuliner. Responsif, mobile-first, dan siap digunakan.
+**KitaPOS** adalah aplikasi Point of Sales (POS) berbasis web untuk restoran, kafe, dan usaha kuliner. Dibangun dengan Alpine.js untuk reaktivitas yang ringan dan cepat, serta Bootstrap 5 untuk tampilan responsif.
 
 ---
 
@@ -26,12 +26,14 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| 🍽️ **Manajemen Menu** | Tambah, edit, filter kategori, status stok, dan pencarian real-time |
-| 🛒 **Keranjang** | Tambah/kurangi item, subtotal, total, dan badge notifikasi |
-| 💳 **Checkout** | Cash & QRIS, hitung kembalian otomatis, format Rupiah |
-| 🧮 **Kalkulator** | Layout fisik, format ribuan, support keyboard |
-| 📜 **History** | Riwayat transaksi, Grand Total, hapus individual/semua |
-| 📱 **Responsif** | Tampilan optimal di desktop dan mobile dengan floating buttons |
+| 🍽️ **Manajemen Menu** | Tambah, edit, filter kategori, status stok, dan pencarian real-time dengan Alpine reactive. |
+| 🛒 **Keranjang** | Tambah/kurangi item, subtotal, total, dan badge notifikasi. Tombol "Reset to 2" untuk item > 2. |
+| 💳 **Checkout** | Cash & QRIS, hitung kembalian otomatis, format Rupiah. Quick Pay buttons untuk pembayaran cepat. |
+| 🧮 **Kalkulator** | Layout fisik, format ribuan, support keyboard. |
+| 📜 **History** | Riwayat transaksi, Grand Total (Opening Balance + Total Transaksi), hapus individual/semua. |
+| 🖨️ **Print Struk** | Cetak struk ukuran 58mm atau 80mm, sesuai pengaturan. |
+| 📱 **Responsif** | Tampilan optimal di desktop dan mobile dengan floating buttons dan mobile cart slide-up. |
+| ⚡ **Alpine.js Reactive** | Semua state dan logic di-handle oleh Alpine, kode JavaScript minimal dan terstruktur. |
 
 ---
 
@@ -40,10 +42,10 @@
 | Teknologi | Fungsi |
 |-----------|--------|
 | HTML5, CSS3 | Struktur & styling |
-| Bootstrap 5.3 | Framework CSS |
-| JavaScript (ES6) | Logika aplikasi |
-| jQuery & Select2 | Dropdown stylish |
-| localStorage | Penyimpanan history |
+| Bootstrap 5.3 | Framework CSS responsif |
+| Alpine.js 3.14 | Reactive JavaScript framework |
+| jQuery & Select2 | Dropdown stylish untuk modals |
+| localStorage | Penyimpanan data (menu, history, opening balance, printer setting) |
 
 ---
 
@@ -53,7 +55,6 @@
    ```bash
    git clone https://github.com/satriairawan05/KitaPOS.git
    cd KitaPOS
-
 Buka di browser
 
 Jalankan dengan Live Server (VSCode), atau
@@ -65,53 +66,39 @@ Gunakan XAMPP/Laragon di localhost/KitaPOS
 Aplikasi siap digunakan! 🎉
 
 📖 Cara Pakai
-
-| Aksi | Langkah |
-|------|---------|
-| 🍽️ **Tambah Menu** | Klik tombol **Tambah** di navbar → isi form → **Simpan** |
-| ✏️ **Edit Menu** | Klik ✏️ pada kartu menu → ubah data → **Simpan Perubahan** |
-| 🛒 **Transaksi** | Klik ➕ pada menu → item masuk keranjang → **Checkout** → pilih metode → **Konfirmasi & Selesai** |
-| 📜 **History** | Klik **History** di navbar → lihat semua transaksi |
-| 🧮 **Kalkulator** | Klik **Kalkulator** di navbar (desktop) atau floating button (mobile) |
-| 🏠 **Kembali ke Menu** | Klik ikon 🏠 di navbar atau floating button |
-
-
-## 📁 Struktur Proyek
-
-
+Aksi	Langkah
+🍽️ Tambah Menu	Klik tombol Tambah di navbar → isi form → Simpan
+✏️ Edit Menu	Klik ✏️ pada kartu menu → ubah data → Simpan Perubahan
+🛒 Transaksi	Klik ➕ pada menu → item masuk keranjang → Checkout → pilih metode → Konfirmasi & Selesai
+📜 History	Klik History di navbar → lihat semua transaksi
+🧮 Kalkulator	Klik Kalkulator di navbar (desktop) atau floating button (mobile)
+🏠 Kembali ke Menu	Klik ikon 🏠 di navbar atau floating button
+📁 Struktur Proyek
+text
 KitaPOS/
-├── 📄 index.html                 # Halaman utama aplikasi
+├── 📄 index.html                 # Halaman utama dengan Alpine.js
 ├── 📁 assets/
 │   ├── 📁 css/
 │   │   └── 🎨 style.css         # Custom CSS (tema #ED020E)
 │   ├── 📁 js/
-│   │   └── ⚡ script.js         # JavaScript utama (logika aplikasi)
+│   │   └── ⚡ script.js         # Alpine app dan fungsi pendukung
 │   └── 📁 data/
 │       └── 📊 data.js          # Data menu contoh (default)
-└── 📄 README.md                 # Dokumentasi proyek
-
-## 🤝 Kontribusi
-
+├── 📄 README.md                 # Dokumentasi proyek
+└── 📄 LICENSE                   # Lisensi MIT
+🤝 Kontribusi
 Kami sangat terbuka untuk kontribusi dari siapa pun! Ikuti langkah-langkah berikut:
 
-1. **Fork** repository ini
-2. **Clone** hasil fork ke lokal Anda
-   ```bash
-   git clone https://github.com/username/KitaPOS.git
-   cd KitaPOS
+Fork repository ini
+
+Clone hasil fork ke lokal Anda
+
 Buat branch untuk fitur baru
 
-bash
-git checkout -b fitur-keren
 Commit perubahan Anda
 
-bash
-git add .
-git commit -m 'Menambahkan fitur keren'
 Push ke branch
 
-bash
-git push origin fitur-keren
 Buat Pull Request di GitHub
 
 📋 Panduan Kontribusi
@@ -120,19 +107,13 @@ Kode	Gunakan format yang konsisten dengan kode yang sudah ada
 Commit	Tulis pesan commit yang jelas dan deskriptif
 Dokumentasi	Perbarui README.md jika diperlukan
 Testing	Pastikan fitur berjalan dengan baik sebelum pull request
-Catatan: Jika menemukan bug atau memiliki saran fitur, silakan buat Issue terlebih dahulu di GitHub.
+Jika menemukan bug atau memiliki saran fitur, silakan buat Issue terlebih dahulu di GitHub.
 
 📄 Lisensi
-
 MIT License – Bebas digunakan, termasuk komersial.
 
 👨‍💻 Author & Kontributor
-
 Deuwi Satriya Irawan
-
 Pengembang utama dan penggagas proyek KitaPOS.
 
 <p align="center"> <a href="https://github.com/satriairawan05" target="_blank"> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"> </a> <a href="https://www.linkedin.com/in/satriai418" target="_blank"> <img src="https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"> </a> <a href="https://instagram.com/satriairawan05_" target="_blank"> <img src="https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"> </a> <a href="https://wa.me/6282253332802" target="_blank"> <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"> </a> </p>
-
-KitaPOS – Solusi POS Modern untuk Usaha Kuliner Anda.
-Dibangun dengan ❤️ oleh tim Kernel of Inventory Talent and Asset.
