@@ -43,7 +43,8 @@
                     </div>
                     <!-- ===== CASHIER INDICATOR (Desktop) ===== -->
                     <div class="d-flex align-items-center gap-2">
-                        <span class="cashier-indicator" :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }">
+                        <span class="cashier-indicator"
+                            :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }">
                             <span class="indicator-dot"></span>
                             <span class="cashier-name" x-text="$store.pos.cashierName"></span>
                         </span>
@@ -51,7 +52,9 @@
                 </div>
                 <div class="col-6 d-md-none d-flex justify-content-between align-items-center gap-1">
                     <!-- ===== CASHIER INDICATOR (Mobile) ===== -->
-                    <span class="cashier-indicator mobile" :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }">
+                    <span class="cashier-indicator mobile"
+                        :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }"
+                        :data-cashier="$store.pos.cashierName" title="Kasir">
                         <span class="indicator-dot"></span>
                         <span class="cashier-name" x-text="$store.pos.cashierName"></span>
                     </span>
@@ -85,7 +88,8 @@
                     <template x-for="cat in ['all', 'food', 'drink', 'snack', 'additional']" :key="cat">
                         <button class="btn-cat" :class="{ 'active': $store.pos.currentCategory === cat }"
                             @click="$store.pos.setCategory(cat)">
-                            <span x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
+                            <span
+                                x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
                         </button>
                     </template>
                 </div>
@@ -143,7 +147,8 @@
                         </template>
                     </div>
 
-                    <div id="menuEmpty" class="text-center py-5" x-show="$store.pos.filteredMenu.length === 0" style="display:none;">
+                    <div id="menuEmpty" class="text-center py-5" x-show="$store.pos.filteredMenu.length === 0"
+                        style="display:none;">
                         <i class="bi bi-inbox fs-1 text-muted"></i>
                         <p class="text-muted mt-2">No menu found</p>
                     </div>
@@ -158,8 +163,8 @@
                             <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                             <span>
                                 <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
-                                <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()"
-                                    title="Edit Opening Balance">
+                                <button class="btn btn-sm btn-link p-0 ms-1"
+                                    @click="$store.pos.openEditOpeningBalance()" title="Edit Opening Balance">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                             </span>
@@ -178,8 +183,10 @@
                                 <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                                 <span>
                                     <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
-                                    <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
-                                    <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
+                                    <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i
+                                            class="bi bi-dash-circle"></i></button>
+                                    <button class="clear-btn" x-show="item.qty > 2"
+                                        @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
                                         <i class="bi bi-x-circle"></i>
                                     </button>
                                 </span>
@@ -190,7 +197,8 @@
                         <span>Total</span>
                         <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
                     </div>
-                    <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">
+                    <button class="btn-checkout" :disabled="$store.pos.cartCount === 0"
+                        @click="$store.pos.openCheckout()">
                         Checkout <i class="bi bi-arrow-right"></i>
                     </button>
                     <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
@@ -205,18 +213,21 @@
     </div>
 
     <!-- ===== MOBILE CART COMPONENT ===== -->
-    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="$store.pos.showMobileCart" @click="$store.pos.toggleMobileCart()" style="display:none;">
+    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="$store.pos.showMobileCart"
+        @click="$store.pos.toggleMobileCart()" style="display:none;">
         <i class="bi bi-cart3"></i> Cart
         <span class="badge" x-text="$store.pos.cartCount">0</span>
     </button>
-    <div class="cart-sidebar d-lg-none" id="mobileCartSidebar" :class="{ 'open': $store.pos.mobileCartOpen }" x-data="mobileCartComponent">
+    <div class="cart-sidebar d-lg-none" id="mobileCartSidebar" :class="{ 'open': $store.pos.mobileCartOpen }"
+        x-data="mobileCartComponent">
         <button class="cart-close" @click="$store.pos.closeMobileCart()"><i class="bi bi-x-lg"></i></button>
         <div class="opening-balance">
             <div class="d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-wallet2"></i> Opening Balance</span>
                 <span>
                     <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
-                    <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()" title="Edit Opening Balance">
+                    <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()"
+                        title="Edit Opening Balance">
                         <i class="bi bi-pencil"></i>
                     </button>
                 </span>
@@ -235,8 +246,10 @@
                     <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                     <span>
                         <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
-                        <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
-                        <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
+                        <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i
+                                class="bi bi-dash-circle"></i></button>
+                        <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)"
+                            title="Reset to 2">
                             <i class="bi bi-x-circle"></i>
                         </button>
                     </span>
@@ -247,11 +260,13 @@
             <span>Total</span>
             <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
         </div>
-        <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">Checkout <i class="bi bi-arrow-right"></i></button>
+        <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">Checkout
+            <i class="bi bi-arrow-right"></i></button>
         <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
             <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
         </button>
-        <button class="btn-add-manual" @click="$store.pos.openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add Manual Menu</button>
+        <button class="btn-add-manual" @click="$store.pos.openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add
+            Manual Menu</button>
     </div>
 
     <!-- ===== FLOATING BUTTONS ===== -->
@@ -274,32 +289,50 @@
                     <div class="calc-card">
                         <div class="calc-display" id="calcDisplayModal" x-text="$store.pos.calcDisplay">0</div>
                         <div class="row g-2 calc-row mb-2">
-                            <div class="col-6"><button class="calc-btn clr" @click="$store.pos.calcClear()">C</button></div>
-                            <div class="col-3"><button class="calc-btn bksp" @click="$store.pos.calcBackspace()">⌫</button></div>
-                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('÷')">÷</button></div>
+                            <div class="col-6"><button class="calc-btn clr" @click="$store.pos.calcClear()">C</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn bksp"
+                                    @click="$store.pos.calcBackspace()">⌫</button></div>
+                            <div class="col-3"><button class="calc-btn op"
+                                    @click="$store.pos.calcAppend('÷')">÷</button></div>
                         </div>
                         <div class="row g-2 calc-row mb-2">
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('7')">7</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('8')">8</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('9')">9</button></div>
-                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('×')">×</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('7')">7</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('8')">8</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('9')">9</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn op"
+                                    @click="$store.pos.calcAppend('×')">×</button></div>
                         </div>
                         <div class="row g-2 calc-row mb-2">
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('4')">4</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('5')">5</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('6')">6</button></div>
-                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('−')">−</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('4')">4</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('5')">5</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('6')">6</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn op"
+                                    @click="$store.pos.calcAppend('−')">−</button></div>
                         </div>
                         <div class="row g-2 calc-row mb-2">
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('1')">1</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('2')">2</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('3')">3</button></div>
-                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('+')">+</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('1')">1</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('2')">2</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('3')">3</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn op"
+                                    @click="$store.pos.calcAppend('+')">+</button></div>
                         </div>
                         <div class="row g-2 calc-row">
-                            <div class="col-6"><button class="calc-btn" @click="$store.pos.calcAppend('0')">0</button></div>
-                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('.')">.</button></div>
-                            <div class="col-3"><button class="calc-btn eq" @click="$store.pos.calcEvaluate()">=</button></div>
+                            <div class="col-6"><button class="calc-btn" @click="$store.pos.calcAppend('0')">0</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('.')">.</button>
+                            </div>
+                            <div class="col-3"><button class="calc-btn eq" @click="$store.pos.calcEvaluate()">=</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -314,7 +347,8 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-plus-circle me-2"></i>
-                        <span x-text="$store.pos.newItem.category === 'additional' ? 'Add Additional Menu' : 'Add Menu'"></span>
+                        <span
+                            x-text="$store.pos.newItem.category === 'additional' ? 'Add Additional Menu' : 'Add Menu'"></span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -332,8 +366,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Category</label>
-                            <select class="form-select select2-custom" id="manualCategory" x-model="$store.pos.newItem.category"
-                                @change="$store.pos.onCategoryChange()">
+                            <select class="form-select select2-custom" id="manualCategory"
+                                x-model="$store.pos.newItem.category" @change="$store.pos.onCategoryChange()">
                                 <option value="food">🍔 Food</option>
                                 <option value="drink">🥤 Drinks</option>
                                 <option value="snack">🍿 Snacks</option>
@@ -402,7 +436,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Category</label>
-                            <select class="form-select select2-custom" id="editCategory" x-model="$store.pos.editItem.category">
+                            <select class="form-select select2-custom" id="editCategory"
+                                x-model="$store.pos.editItem.category">
                                 <option value="food">🍔 Food</option>
                                 <option value="drink">🥤 Drinks</option>
                                 <option value="snack">🍿 Snacks</option>
@@ -411,7 +446,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-600">Stock Status</label>
-                            <select class="form-select select2-custom" id="editStatus" x-model="$store.pos.editItem.status">
+                            <select class="form-select select2-custom" id="editStatus"
+                                x-model="$store.pos.editItem.status">
                                 <option value="available">✅ Available</option>
                                 <option value="low">⚠️ Low Stock</option>
                                 <option value="out">❌ Out of Stock</option>
@@ -501,30 +537,33 @@
                                 <span class="fw-600">Discount</span>
                             </div>
                             <div class="col-8 d-flex align-items-center gap-1">
-                                <input type="text" class="form-control form-control-sm" :value="$store.pos.discountDisplay"
-                                    @input="$store.pos.updateDiscount($event)" placeholder="0"
-                                    style="min-width: 80px; text-align: right;" />
-                                <select class="form-select form-select-sm" style="width: auto;" x-model="$store.pos.discountType"
-                                    @change="$store.pos.reformatDiscountDisplay()">
+                                <input type="text" class="form-control form-control-sm"
+                                    :value="$store.pos.discountDisplay" @input="$store.pos.updateDiscount($event)"
+                                    placeholder="0" style="min-width: 80px; text-align: right;" />
+                                <select class="form-select form-select-sm" style="width: auto;"
+                                    x-model="$store.pos.discountType" @change="$store.pos.reformatDiscountDisplay()">
                                     <option value="rp">Rp</option>
                                     <option value="percent">%</option>
                                 </select>
                             </div>
                         </div>
-                        <div x-show="$store.pos.discountAmount > 0" class="d-flex justify-content-between text-danger fw-600 mt-1">
+                        <div x-show="$store.pos.discountAmount > 0"
+                            class="d-flex justify-content-between text-danger fw-600 mt-1">
                             <span>Discount Amount</span>
                             <span x-text="'- Rp ' + $store.pos.formatRupiah($store.pos.discountAmount)"></span>
                         </div>
                         <div class="total-row"
                             style="border-top: 2px solid var(--pos-accent); margin-top: 6px; padding-top: 8px; font-size: 1.1rem;">
                             <span class="fw-700">Total</span>
-                            <span class="fw-700 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                            <span class="fw-700 text-accent"
+                                x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
                         </div>
                     </div>
                     <hr />
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="fw-700 fs-5">Grand Total</span>
-                        <span class="fw-700 fs-4 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                        <span class="fw-700 fs-4 text-accent"
+                            x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
                     </div>
                     <div class="mt-3">
                         <label class="form-label fw-600">Payment Method</label>
@@ -539,20 +578,22 @@
                         <label class="form-label fw-600">Pay (Rp)</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
-                            <input type="text" class="form-control" placeholder="Enter amount" x-model="$store.pos.paymentAmount"
-                                @input="$store.pos.updateChange()" />
+                            <input type="text" class="form-control" placeholder="Enter amount"
+                                x-model="$store.pos.paymentAmount" @input="$store.pos.updateChange()" />
                         </div>
                         <div class="mt-2">
                             <template x-for="(val, idx) in $store.pos.quickPayOptions" :key="idx">
                                 <button class="quick-pay-btn"
                                     :class="{'btn-exact': val === $store.pos.discountedTotal, 'active-btn': parseInt($store.pos.paymentAmountRaw) === val}"
                                     @click="$store.pos.setQuickPay(val)">
-                                    <span x-text="val === $store.pos.discountedTotal ? 'Exact' : 'Rp ' + $store.pos.formatRupiah(val)"></span>
+                                    <span
+                                        x-text="val === $store.pos.discountedTotal ? 'Exact' : 'Rp ' + $store.pos.formatRupiah(val)"></span>
                                 </button>
                             </template>
                         </div>
                         <div class="mt-2 text-end" style="font-weight:700;font-size:1.1rem;">
-                            Change: <span :style="{color: $store.pos.changeAmount >= 0 ? 'var(--pos-accent)' : '#e74c3c'}"
+                            Change: <span
+                                :style="{color: $store.pos.changeAmount >= 0 ? 'var(--pos-accent)' : '#e74c3c'}"
                                 x-text="'Rp ' + $store.pos.formatRupiah(Math.abs($store.pos.changeAmount)) + ($store.pos.changeAmount < 0 ? ' (insufficient)' : '')"></span>
                         </div>
                     </div>
@@ -564,10 +605,12 @@
                         </div>
                     </div>
 
-                    <div class="mt-2" x-show="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
+                    <div class="mt-2"
+                        x-show="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
                         <div class="text-danger small">
-                            <i class="bi bi-exclamation-circle"></i> 
-                            <span x-text="'Payment amount (Rp ' + $store.pos.formatRupiah($store.pos.paymentAmountRaw) + ') is less than total (Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal) + ')'"></span>
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span
+                                x-text="'Payment amount (Rp ' + $store.pos.formatRupiah($store.pos.paymentAmountRaw) + ') is less than total (Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal) + ')'"></span>
                         </div>
                     </div>
                 </div>
@@ -583,7 +626,8 @@
     </div>
 
     <!-- ===== HISTORY MODAL ===== -->
-    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true" x-data="historyComponent">
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true"
+        x-data="historyComponent">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content" style="border-radius: var(--pos-radius);">
                 <div class="modal-header bg-dark">
@@ -625,19 +669,22 @@
                         <div class="history-opening-balance">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="label"><i class="bi bi-wallet2 me-2"></i>Opening Balance</span>
-                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
+                                <span class="total"
+                                    x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
                             </div>
                         </div>
                         <div class="history-total-transactions">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="label"><i class="bi bi-receipt me-2"></i>Total Transactions</span>
-                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.totalTransactions)"></span>
+                                <span class="total"
+                                    x-text="'Rp ' + $store.pos.formatRupiah($store.pos.totalTransactions)"></span>
                             </div>
                         </div>
                         <div class="history-grand-total">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
-                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.grandTotal)"></span>
+                                <span class="total"
+                                    x-text="'Rp ' + $store.pos.formatRupiah($store.pos.grandTotal)"></span>
                             </div>
                         </div>
                         <hr />
@@ -652,7 +699,8 @@
                                 <div class="header">
                                     <span x-text="'#' + trx.id + ' - ' + trx.timestamp"></span>
                                     <div class="history-actions">
-                                        <span class="text-accent" x-text="'Rp ' + $store.pos.formatRupiah(trx.total)"></span>
+                                        <span class="text-accent"
+                                            x-text="'Rp ' + $store.pos.formatRupiah(trx.total)"></span>
                                         <button class="print-history-btn" @click="$store.pos.printStrukMobile(trx)"
                                             title="Print receipt">
                                             <i class="bi bi-printer"></i>
@@ -713,7 +761,8 @@
                     <strong>No. Struk</strong> <span x-text="'#' + $store.pos.strukData.id"></span>
                 </p>
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                    <strong>Bayar</strong> <span x-text="$store.pos.strukData.method === 'Cash' ? 'Tunai' : 'QRIS'"></span>
+                    <strong>Bayar</strong> <span
+                        x-text="$store.pos.strukData.method === 'Cash' ? 'Tunai' : 'QRIS'"></span>
                 </p>
                 <hr style="margin:4px 0;">
             </div>
@@ -736,7 +785,8 @@
                         <template x-for="item in $store.pos.strukData.items" :key="item.name">
                             <tr>
                                 <td style="text-align:left;" x-text="item.name"></td>
-                                <td style="text-align:center;" x-text="$store.pos.formatRupiah(item.price) + ' x ' + item.qty"></td>
+                                <td style="text-align:center;"
+                                    x-text="$store.pos.formatRupiah(item.price) + ' x ' + item.qty"></td>
                                 <td style="text-align:right;" x-text="$store.pos.formatRupiah(item.subtotal)"></td>
                             </tr>
                         </template>
@@ -747,14 +797,16 @@
             <div class="struk-subtotal" style="font-size:0.75rem;margin-top:4px;">
                 <hr style="margin:4px 0;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                    <strong>Subtotal</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.subtotal)"></span>
+                    <strong>Subtotal</strong> <span
+                        x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.subtotal)"></span>
                 </p>
             </div>
 
             <div class="struk-discount" style="font-size:0.75rem;"
                 x-show="$store.pos.strukData.discount && $store.pos.strukData.discount > 0">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;color:#ff0000;">
-                    <strong>Diskon</strong> <span x-text="'-Rp ' + $store.pos.formatRupiah($store.pos.strukData.discount)"></span>
+                    <strong>Diskon</strong> <span
+                        x-text="'-Rp ' + $store.pos.formatRupiah($store.pos.strukData.discount)"></span>
                 </p>
             </div>
 
@@ -769,10 +821,12 @@
 
             <div class="struk-payment" style="font-size:0.75rem;">
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                    <strong>Bayar</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.paid)"></span>
+                    <strong>Bayar</strong> <span
+                        x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.paid)"></span>
                 </p>
                 <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                    <strong>Kembali</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.change)"></span>
+                    <strong>Kembali</strong> <span
+                        x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.change)"></span>
                 </p>
             </div>
 
