@@ -1561,8 +1561,12 @@ body {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #dc3545; /* default merah (offline) */
-    transition: 0.2s;
+    background: #dc3545;
+    /*defaultmerah(offline)*/transition: 0.2s;
+    -webkit-transition: 0.2s;
+    -moz-transition: 0.2s;
+    -ms-transition: 0.2s;
+    -o-transition: 0.2s;
 }
 .cashier-indicator.online .indicator-dot {
     background: #28a745; /* hijau */
