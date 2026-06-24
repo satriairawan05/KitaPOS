@@ -20,6 +20,10 @@ document.addEventListener('alpine:init', () => {
         mobileCartOpen: false,
         toastMessage: 'Notification',
 
+        // ===== CASHIER STATE =====
+        cashierName: 'Guest',
+        isCashierOnline: false,
+
         // Calculator
         calcExpression: '',
         calcDisplay: '0',
@@ -43,7 +47,7 @@ document.addEventListener('alpine:init', () => {
 
         // Printer & Cashier
         defaultPrinterSize: '58mm',
-        cashierName: 'May',
+        cashierNamePrint: 'May',  // kept for receipt
         strukData: { id: '', timestamp: '', items: [], total: 0, totalQty: 0, paid: 0, change: 0, method: 'Cash', discount: 0, subtotal: 0 },
 
         toast: null,
@@ -168,9 +172,26 @@ document.addEventListener('alpine:init', () => {
             return qty > 0 ? qty : 1;
         },
 
+        // ---- CASHIER MANAGEMENT ----
+        setCashier(name, online = true) {
+            this.cashierName = name || 'Guest';
+            this.isCashierOnline = online;
+            localStorage.setItem('cashierName', this.cashierName);
+            localStorage.setItem('isCashierOnline', JSON.stringify(this.isCashierOnline));
+        },
+        loadCashier() {
+            const name = localStorage.getItem('cashierName');
+            const online = localStorage.getItem('isCashierOnline');
+            if (name) this.cashierName = name;
+            if (online !== null) this.isCashierOnline = JSON.parse(online);
+        },
+
         // ---- INIT ----
         init() {
             try {
+                // Load cashier
+                this.loadCashier();
+
                 const storedOB = localStorage.getItem('openingBalance');
                 this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
                 localStorage.setItem('openingBalance', this.openingBalance.toString());
@@ -215,6 +236,7 @@ document.addEventListener('alpine:init', () => {
                 this.toast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 2500 });
 
                 console.log('✅ KitaPOS Store ready!');
+                console.log('👤 Cashier:', this.cashierName, '| Online:', this.isCashierOnline);
             } catch (error) {
                 console.error('❌ Error during initialization:', error);
                 if (this.menuItems.length === 0) {
@@ -774,7 +796,7 @@ document.addEventListener('alpine:init', () => {
                         margin: 0 auto !important;
                         padding: 2mm 2mm !important;
                         background: #fff !important;
-                        font-size: ${paperSize === '58mm' ? '6px' : '11px'} !important;
+                        font-size: ${paperSize === '58mm' ? '8px' : '12px'} !important;
                         box-sizing: border-box !important;
                         page-break-inside: avoid !important;
                         page-break-after: avoid !important;

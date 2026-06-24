@@ -41,18 +41,32 @@
                         <span class="fw-700" style="color:#fff;">Cart</span>
                         <span class="cart-badge" x-text="$store.pos.cartCount">0</span>
                     </div>
+                    <!-- ===== CASHIER INDICATOR (Desktop) ===== -->
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="cashier-indicator" :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }">
+                            <span class="indicator-dot"></span>
+                            <span class="cashier-name" x-text="$store.pos.cashierName"></span>
+                        </span>
+                    </div>
                 </div>
-                <div class="col-6 d-md-none d-flex justify-content-end gap-1">
-                    <button class="btn btn-sm btn-nav-icon" @click="$store.pos.toggleMobileCart()">
-                        <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
-                            style="color:#7a1a1a;" x-text="$store.pos.cartCount">0</span>
-                    </button>
-                    <button class="btn btn-sm btn-history-mobile" @click="$store.pos.openHistory()">
-                        <i class="bi bi-clock-history"></i>
-                    </button>
-                    <button class="btn btn-sm btn-add-menu" @click="$store.pos.openAddMenu()">
-                        <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
-                    </button>
+                <div class="col-6 d-md-none d-flex justify-content-between align-items-center gap-1">
+                    <!-- ===== CASHIER INDICATOR (Mobile) ===== -->
+                    <span class="cashier-indicator mobile" :class="{ 'online': $store.pos.isCashierOnline, 'offline': !$store.pos.isCashierOnline }">
+                        <span class="indicator-dot"></span>
+                        <span class="cashier-name" x-text="$store.pos.cashierName"></span>
+                    </span>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-nav-icon" @click="$store.pos.toggleMobileCart()">
+                            <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
+                                style="color:#7a1a1a;" x-text="$store.pos.cartCount">0</span>
+                        </button>
+                        <button class="btn btn-sm btn-history-mobile" @click="$store.pos.openHistory()">
+                            <i class="bi bi-clock-history"></i>
+                        </button>
+                        <button class="btn btn-sm btn-add-menu" @click="$store.pos.openAddMenu()">
+                            <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="col-12 d-md-none mt-1">
                     <input type="text" class="search-box w-100" id="searchMenuMobile" placeholder="Search menu..."
