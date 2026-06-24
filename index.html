@@ -12,814 +12,801 @@
     <link href="assets/css/style.css" rel="stylesheet" />
 </head>
 
-<body>
+<body x-data="posApp">
 
-    <!-- ===== ROOT COMPONENT ===== -->
-    <div x-data="posApp">
-        <!-- ===== NAVBAR COMPONENT ===== -->
-        <nav class="pos-navbar" x-data="navbarComponent">
-            <div class="container-fluid px-0 px-sm-2">
-                <div class="row g-2 align-items-center">
-                    <div class="col-6 col-md-3 d-flex align-items-center">
-                        <span class="brand"><i class="bi bi-shop"></i> Kita<span>POS</span></span>
-                        <span class="cart-badge d-md-none" x-text="$store.pos.cartCount">0</span>
-                    </div>
-                    <div class="col-md-4 d-none d-md-flex justify-content-md-start">
-                        <input type="text" class="search-box" id="searchMenuDesktop" placeholder="Search menu..."
-                            x-model="$store.pos.searchQuery" @input.debounce="$store.pos.filterMenu()" />
-                    </div>
-                    <div class="col-md-5 d-none d-md-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="home-nav-btn" @click="$store.pos.goHome()" title="Main Menu">
-                                <i class="bi bi-house-fill"></i>
-                            </button>
-                            <button class="calc-nav-btn" @click="$store.pos.openCalculator()" title="Calculator">
-                                <i class="bi bi-calculator"></i> Calculator
-                            </button>
-                            <button class="history-nav-btn" @click="$store.pos.openHistory()" title="History">
-                                <i class="bi bi-clock-history"></i> History
-                            </button>
-                            <i class="bi bi-cart3 fs-5" style="color:#ffc107;"></i>
-                            <span class="fw-700" style="color:#fff;">Cart</span>
-                            <span class="cart-badge" x-text="$store.pos.cartCount">0</span>
-                        </div>
-                    </div>
-                    <div class="col-6 d-md-none d-flex justify-content-end gap-1">
-                        <button class="btn btn-sm btn-nav-icon" @click="$store.pos.toggleMobileCart()">
-                            <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
-                                style="color:#7a1a1a;" x-text="$store.pos.cartCount">0</span>
+    <!-- ===== NAVBAR COMPONENT ===== -->
+    <nav class="pos-navbar" x-data="navbarComponent">
+        <div class="container-fluid px-0 px-sm-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-6 col-md-3 d-flex align-items-center">
+                    <span class="brand"><i class="bi bi-shop"></i> Kita<span>POS</span></span>
+                    <span class="cart-badge d-md-none" x-text="$store.pos.cartCount">0</span>
+                </div>
+                <div class="col-md-4 d-none d-md-flex justify-content-md-start">
+                    <input type="text" class="search-box" id="searchMenuDesktop" placeholder="Search menu..."
+                        x-model="$store.pos.searchQuery" @input.debounce="$store.pos.filterMenu()" />
+                </div>
+                <div class="col-md-5 d-none d-md-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="home-nav-btn" @click="$store.pos.goHome()" title="Main Menu">
+                            <i class="bi bi-house-fill"></i>
                         </button>
-                        <button class="btn btn-sm btn-history-mobile" @click="$store.pos.openHistory()">
-                            <i class="bi bi-clock-history"></i>
+                        <button class="calc-nav-btn" @click="$store.pos.openCalculator()" title="Calculator">
+                            <i class="bi bi-calculator"></i> Calculator
                         </button>
-                        <button class="btn btn-sm btn-add-menu" @click="$store.pos.openAddMenu()">
-                            <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
+                        <button class="history-nav-btn" @click="$store.pos.openHistory()" title="History">
+                            <i class="bi bi-clock-history"></i> History
                         </button>
-                    </div>
-                    <div class="col-12 d-md-none mt-1">
-                        <input type="text" class="search-box w-100" id="searchMenuMobile" placeholder="Search menu..."
-                            x-model="$store.pos.searchQuery" @input.debounce="$store.pos.filterMenu()" />
+                        <i class="bi bi-cart3 fs-5" style="color:#ffc107;"></i>
+                        <span class="fw-700" style="color:#fff;">Cart</span>
+                        <span class="cart-badge" x-text="$store.pos.cartCount">0</span>
                     </div>
                 </div>
+                <div class="col-6 d-md-none d-flex justify-content-end gap-1">
+                    <button class="btn btn-sm btn-nav-icon" @click="$store.pos.toggleMobileCart()">
+                        <i class="bi bi-cart3"></i> <span id="mobileCartBadge" class="badge bg-light"
+                            style="color:#7a1a1a;" x-text="$store.pos.cartCount">0</span>
+                    </button>
+                    <button class="btn btn-sm btn-history-mobile" @click="$store.pos.openHistory()">
+                        <i class="bi bi-clock-history"></i>
+                    </button>
+                    <button class="btn btn-sm btn-add-menu" @click="$store.pos.openAddMenu()">
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add</span>
+                    </button>
+                </div>
+                <div class="col-12 d-md-none mt-1">
+                    <input type="text" class="search-box w-100" id="searchMenuMobile" placeholder="Search menu..."
+                        x-model="$store.pos.searchQuery" @input.debounce="$store.pos.filterMenu()" />
+                </div>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <!-- ===== MAIN CONTENT ===== -->
-        <div class="container-fluid px-2 px-sm-3 px-lg-4 py-3" id="mainContent">
-            <div class="row g-3">
-                <div class="col-lg-8">
-                    <!-- ===== CATEGORY FILTER ===== -->
-                    <div class="cat-filter" id="categoryFilter">
-                        <template x-for="cat in ['all', 'food', 'drink', 'snack', 'additional']" :key="cat">
-                            <button class="btn-cat" :class="{ 'active': $store.pos.currentCategory === cat }"
-                                @click="$store.pos.setCategory(cat)">
-                                <span x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
-                            </button>
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container-fluid px-2 px-sm-3 px-lg-4 py-3" id="mainContent">
+        <div class="row g-3">
+            <div class="col-lg-8">
+                <!-- ===== CATEGORY FILTER ===== -->
+                <div class="cat-filter" id="categoryFilter">
+                    <template x-for="cat in ['all', 'food', 'drink', 'snack', 'additional']" :key="cat">
+                        <button class="btn-cat" :class="{ 'active': $store.pos.currentCategory === cat }"
+                            @click="$store.pos.setCategory(cat)">
+                            <span x-text="cat === 'all' ? 'All' : cat === 'food' ? '🍔 Food' : cat === 'drink' ? '🥤 Drinks' : cat === 'snack' ? '🍿 Snacks' : '➕ Additional'"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- ===== MENU GRID COMPONENT ===== -->
+                <div x-data="menuGridComponent">
+                    <div class="menu-grid" id="menuGrid">
+                        <template x-for="item in $store.pos.filteredMenu" :key="item.id">
+                            <div class="menu-card" :class="{ 'additional-card': item.category === 'additional' }">
+                                <template x-if="item.category !== 'additional'">
+                                    <div class="menu-img">
+                                        <template x-if="item.image">
+                                            <img :src="item.image" :alt="item.name" loading="lazy" />
+                                        </template>
+                                        <template x-if="!item.image">
+                                            <span class="no-image" x-text="item.icon || '🍽️'"></span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template x-if="item.category === 'additional'">
+                                    <div class="menu-img additional-placeholder">
+                                        <span class="no-image">➕</span>
+                                        <div class="additional-label">Additional</div>
+                                    </div>
+                                </template>
+                                <div class="menu-name" x-text="item.name"></div>
+                                <div class="menu-price" x-text="'Rp ' + $store.pos.formatRupiah(item.price)"></div>
+                                <template x-if="item.category !== 'additional'">
+                                    <span class="menu-status" :class="item.status"
+                                        x-text="item.status === 'available' ? '✅ Available' : item.status === 'low' ? '⚠️ Low Stock' : '❌ Out of Stock'"></span>
+                                </template>
+
+                                <div class="menu-actions">
+                                    <div class="qty-control">
+                                        <button class="btn-qty btn-qty-minus" @click="$store.pos.decrementQty(item.id)"
+                                            x-show="$store.pos.getCartQty(item.id) > 0" title="Decrease">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" class="qty-input"
+                                            :value="$store.pos.getDisplayQty(item.id)"
+                                            @change="$store.pos.updateQtyFromInput(item.id, $event)"
+                                            :readonly="item.status === 'out'" min="0" />
+                                        <button class="btn-qty btn-qty-plus" @click="$store.pos.incrementQty(item.id)"
+                                            :disabled="item.status === 'out'"
+                                            :title="item.status === 'out' ? 'Out of Stock' : 'Increase'">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                    <button class="btn-action btn-edit-action" @click="$store.pos.openEditMenu(item.id)"
+                                        title="Edit menu">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </template>
                     </div>
 
-                    <!-- ===== MENU GRID COMPONENT ===== -->
-                    <div x-data="menuGridComponent">
-                        <div class="menu-grid" id="menuGrid">
-                            <template x-for="item in $store.pos.filteredMenu" :key="item.id">
-                                <div class="menu-card" :class="{ 'additional-card': item.category === 'additional' }">
-                                    <template x-if="item.category !== 'additional'">
-                                        <div class="menu-img">
-                                            <template x-if="item.image">
-                                                <img :src="item.image" :alt="item.name" loading="lazy" />
-                                            </template>
-                                            <template x-if="!item.image">
-                                                <span class="no-image" x-text="item.icon || '🍽️'"></span>
-                                            </template>
-                                        </div>
-                                    </template>
-                                    <template x-if="item.category === 'additional'">
-                                        <div class="menu-img additional-placeholder">
-                                            <span class="no-image">➕</span>
-                                            <div class="additional-label">Additional</div>
-                                        </div>
-                                    </template>
-                                    <div class="menu-name" x-text="item.name"></div>
-                                    <div class="menu-price" x-text="'Rp ' + $store.pos.formatRupiah(item.price)"></div>
-                                    <template x-if="item.category !== 'additional'">
-                                        <span class="menu-status" :class="item.status"
-                                            x-text="item.status === 'available' ? '✅ Available' : item.status === 'low' ? '⚠️ Low Stock' : '❌ Out of Stock'"></span>
-                                    </template>
-
-                                    <div class="menu-actions">
-                                        <div class="qty-control">
-                                            <button class="btn-qty btn-qty-minus" @click="$store.pos.decrementQty(item.id)"
-                                                x-show="$store.pos.getCartQty(item.id) > 0" title="Decrease">
-                                                <i class="bi bi-dash"></i>
-                                            </button>
-                                            <input type="number" class="qty-input"
-                                                :value="$store.pos.getDisplayQty(item.id)"
-                                                @change="$store.pos.updateQtyFromInput(item.id, $event)"
-                                                :readonly="item.status === 'out'" min="0" />
-                                            <button class="btn-qty btn-qty-plus" @click="$store.pos.incrementQty(item.id)"
-                                                :disabled="item.status === 'out'"
-                                                :title="item.status === 'out' ? 'Out of Stock' : 'Increase'">
-                                                <i class="bi bi-plus"></i>
-                                            </button>
-                                        </div>
-                                        <button class="btn-action btn-edit-action" @click="$store.pos.openEditMenu(item.id)"
-                                            title="Edit menu">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-
-                        <div id="menuEmpty" class="text-center py-5" x-show="$store.pos.filteredMenu.length === 0" style="display:none;">
-                            <i class="bi bi-inbox fs-1 text-muted"></i>
-                            <p class="text-muted mt-2">No menu found</p>
-                        </div>
+                    <div id="menuEmpty" class="text-center py-5" x-show="$store.pos.filteredMenu.length === 0" style="display:none;">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No menu found</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- ===== CART SIDEBAR COMPONENT (Desktop) ===== -->
-                <div class="col-lg-4 d-none d-lg-block" x-data="cartSidebarComponent">
-                    <div class="cart-sidebar" id="cartSidebar">
-                        <div class="opening-balance">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-wallet2"></i> Opening Balance</span>
+            <!-- ===== CART SIDEBAR COMPONENT (Desktop) ===== -->
+            <div class="col-lg-4 d-none d-lg-block" x-data="cartSidebarComponent">
+                <div class="cart-sidebar" id="cartSidebar">
+                    <div class="opening-balance">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-wallet2"></i> Opening Balance</span>
+                            <span>
+                                <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
+                                <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()"
+                                    title="Edit Opening Balance">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="cart-title">
+                        <span><i class="bi bi-cart3 me-1"></i> Cart</span>
+                        <span class="badge" x-text="$store.pos.cartCount">0</span>
+                    </div>
+                    <div id="cartItems">
+                        <template x-if="$store.pos.cart.length === 0">
+                            <div class="cart-empty"><i class="bi bi-basket"></i> No items yet</div>
+                        </template>
+                        <template x-for="item in $store.pos.cart" :key="item.id">
+                            <div class="cart-item">
+                                <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                                 <span>
-                                    <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
-                                    <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()"
-                                        title="Edit Opening Balance">
-                                        <i class="bi bi-pencil"></i>
+                                    <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
+                                    <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
+                                    <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
+                                        <i class="bi bi-x-circle"></i>
                                     </button>
                                 </span>
                             </div>
-                        </div>
-                        <div class="cart-title">
-                            <span><i class="bi bi-cart3 me-1"></i> Cart</span>
-                            <span class="badge" x-text="$store.pos.cartCount">0</span>
-                        </div>
-                        <div id="cartItems">
-                            <template x-if="$store.pos.cart.length === 0">
-                                <div class="cart-empty"><i class="bi bi-basket"></i> No items yet</div>
-                            </template>
-                            <template x-for="item in $store.pos.cart" :key="item.id">
-                                <div class="cart-item">
-                                    <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
-                                    <span>
-                                        <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
-                                        <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
-                                        <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
-                                            <i class="bi bi-x-circle"></i>
-                                        </button>
-                                    </span>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="cart-total">
-                            <span>Total</span>
-                            <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
-                        </div>
-                        <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">
-                            Checkout <i class="bi bi-arrow-right"></i>
-                        </button>
-                        <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
-                            <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
-                        </button>
-                        <button class="btn-add-manual" @click="$store.pos.openAddMenu()">
-                            <i class="bi bi-plus-circle me-1"></i> Add Manual Menu
-                        </button>
+                        </template>
                     </div>
+                    <div class="cart-total">
+                        <span>Total</span>
+                        <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
+                    </div>
+                    <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">
+                        Checkout <i class="bi bi-arrow-right"></i>
+                    </button>
+                    <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
+                        <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
+                    </button>
+                    <button class="btn-add-manual" @click="$store.pos.openAddMenu()">
+                        <i class="bi bi-plus-circle me-1"></i> Add Manual Menu
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ===== MOBILE CART COMPONENT ===== -->
-        <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="$store.pos.showMobileCart" @click="$store.pos.toggleMobileCart()" style="display:none;">
-            <i class="bi bi-cart3"></i> Cart
+    <!-- ===== MOBILE CART COMPONENT ===== -->
+    <button class="mobile-cart-toggle" id="mobileCartToggle" x-show="$store.pos.showMobileCart" @click="$store.pos.toggleMobileCart()" style="display:none;">
+        <i class="bi bi-cart3"></i> Cart
+        <span class="badge" x-text="$store.pos.cartCount">0</span>
+    </button>
+    <div class="cart-sidebar d-lg-none" id="mobileCartSidebar" :class="{ 'open': $store.pos.mobileCartOpen }" x-data="mobileCartComponent">
+        <button class="cart-close" @click="$store.pos.closeMobileCart()"><i class="bi bi-x-lg"></i></button>
+        <div class="opening-balance">
+            <div class="d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-wallet2"></i> Opening Balance</span>
+                <span>
+                    <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
+                    <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()" title="Edit Opening Balance">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+        <div class="cart-title">
+            <span><i class="bi bi-cart3 me-1"></i> Cart</span>
             <span class="badge" x-text="$store.pos.cartCount">0</span>
-        </button>
-        <div class="cart-sidebar d-lg-none" id="mobileCartSidebar" :class="{ 'open': $store.pos.mobileCartOpen }" x-data="mobileCartComponent">
-            <button class="cart-close" @click="$store.pos.closeMobileCart()"><i class="bi bi-x-lg"></i></button>
-            <div class="opening-balance">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-wallet2"></i> Opening Balance</span>
+        </div>
+        <div id="mobileCartItems">
+            <template x-if="$store.pos.cart.length === 0">
+                <div class="cart-empty"><i class="bi bi-basket"></i> No items yet</div>
+            </template>
+            <template x-for="item in $store.pos.cart" :key="item.id">
+                <div class="cart-item">
+                    <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
                     <span>
-                        <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
-                        <button class="btn btn-sm btn-link p-0 ms-1" @click="$store.pos.openEditOpeningBalance()" title="Edit Opening Balance">
-                            <i class="bi bi-pencil"></i>
+                        <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
+                        <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
+                        <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
+                            <i class="bi bi-x-circle"></i>
                         </button>
                     </span>
                 </div>
-            </div>
-            <div class="cart-title">
-                <span><i class="bi bi-cart3 me-1"></i> Cart</span>
-                <span class="badge" x-text="$store.pos.cartCount">0</span>
-            </div>
-            <div id="mobileCartItems">
-                <template x-if="$store.pos.cart.length === 0">
-                    <div class="cart-empty"><i class="bi bi-basket"></i> No items yet</div>
-                </template>
-                <template x-for="item in $store.pos.cart" :key="item.id">
-                    <div class="cart-item">
-                        <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' ×' + item.qty"></span>
-                        <span>
-                            <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
-                            <button class="remove-btn" @click="$store.pos.removeFromCart(item.id)"><i class="bi bi-dash-circle"></i></button>
-                            <button class="clear-btn" x-show="item.qty > 2" @click="$store.pos.resetTo(item.id, 2)" title="Reset to 2">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
-                        </span>
-                    </div>
-                </template>
-            </div>
-            <div class="cart-total">
-                <span>Total</span>
-                <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
-            </div>
-            <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">Checkout <i class="bi bi-arrow-right"></i></button>
-            <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
-                <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
-            </button>
-            <button class="btn-add-manual" @click="$store.pos.openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add Manual Menu</button>
+            </template>
         </div>
-
-        <!-- ===== FLOATING BUTTONS ===== -->
-        <button class="calc-fab" id="openCalcMobile" @click="$store.pos.openCalculator()" title="Calculator">
-            <i class="bi bi-calculator"></i>
+        <div class="cart-total">
+            <span>Total</span>
+            <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
+        </div>
+        <button class="btn-checkout" :disabled="$store.pos.cartCount === 0" @click="$store.pos.openCheckout()">Checkout <i class="bi bi-arrow-right"></i></button>
+        <button class="btn-add-manual additional-btn" @click="$store.pos.openAddMenu('additional')">
+            <i class="bi bi-plus-circle me-1"></i> Add Additional Menu
         </button>
-        <button class="home-fab" id="goHomeFab" @click="$store.pos.goHome()" title="Main Menu">
-            <i class="bi bi-house-fill"></i>
-        </button>
+        <button class="btn-add-manual" @click="$store.pos.openAddMenu()"><i class="bi bi-plus-circle me-1"></i> Add Manual Menu</button>
+    </div>
 
-        <!-- ===== CALCULATOR MODAL COMPONENT ===== -->
-        <div class="modal fade calc-modal" id="calcModal" tabindex="-1" aria-hidden="true" x-data="calculatorComponent">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"><i class="bi bi-calculator me-2"></i>Calculator</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="calc-card">
-                            <div class="calc-display" id="calcDisplayModal" x-text="$store.pos.calcDisplay">0</div>
-                            <div class="row g-2 calc-row mb-2">
-                                <div class="col-6"><button class="calc-btn clr" @click="$store.pos.calcClear()">C</button></div>
-                                <div class="col-3"><button class="calc-btn bksp" @click="$store.pos.calcBackspace()">⌫</button></div>
-                                <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('÷')">÷</button></div>
-                            </div>
-                            <div class="row g-2 calc-row mb-2">
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('7')">7</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('8')">8</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('9')">9</button></div>
-                                <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('×')">×</button></div>
-                            </div>
-                            <div class="row g-2 calc-row mb-2">
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('4')">4</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('5')">5</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('6')">6</button></div>
-                                <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('−')">−</button></div>
-                            </div>
-                            <div class="row g-2 calc-row mb-2">
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('1')">1</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('2')">2</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('3')">3</button></div>
-                                <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('+')">+</button></div>
-                            </div>
-                            <div class="row g-2 calc-row">
-                                <div class="col-6"><button class="calc-btn" @click="$store.pos.calcAppend('0')">0</button></div>
-                                <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('.')">.</button></div>
-                                <div class="col-3"><button class="calc-btn eq" @click="$store.pos.calcEvaluate()">=</button></div>
-                            </div>
+    <!-- ===== FLOATING BUTTONS ===== -->
+    <button class="calc-fab" id="openCalcMobile" @click="$store.pos.openCalculator()" title="Calculator">
+        <i class="bi bi-calculator"></i>
+    </button>
+    <button class="home-fab" id="goHomeFab" @click="$store.pos.goHome()" title="Main Menu">
+        <i class="bi bi-house-fill"></i>
+    </button>
+
+    <!-- ===== CALCULATOR MODAL ===== -->
+    <div class="modal fade calc-modal" id="calcModal" tabindex="-1" aria-hidden="true" x-data="calculatorComponent">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-calculator me-2"></i>Calculator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="calc-card">
+                        <div class="calc-display" id="calcDisplayModal" x-text="$store.pos.calcDisplay">0</div>
+                        <div class="row g-2 calc-row mb-2">
+                            <div class="col-6"><button class="calc-btn clr" @click="$store.pos.calcClear()">C</button></div>
+                            <div class="col-3"><button class="calc-btn bksp" @click="$store.pos.calcBackspace()">⌫</button></div>
+                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('÷')">÷</button></div>
+                        </div>
+                        <div class="row g-2 calc-row mb-2">
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('7')">7</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('8')">8</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('9')">9</button></div>
+                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('×')">×</button></div>
+                        </div>
+                        <div class="row g-2 calc-row mb-2">
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('4')">4</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('5')">5</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('6')">6</button></div>
+                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('−')">−</button></div>
+                        </div>
+                        <div class="row g-2 calc-row mb-2">
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('1')">1</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('2')">2</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('3')">3</button></div>
+                            <div class="col-3"><button class="calc-btn op" @click="$store.pos.calcAppend('+')">+</button></div>
+                        </div>
+                        <div class="row g-2 calc-row">
+                            <div class="col-6"><button class="calc-btn" @click="$store.pos.calcAppend('0')">0</button></div>
+                            <div class="col-3"><button class="calc-btn" @click="$store.pos.calcAppend('.')">.</button></div>
+                            <div class="col-3"><button class="calc-btn eq" @click="$store.pos.calcEvaluate()">=</button></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ===== ADD MENU MODAL COMPONENT ===== -->
-        <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true" x-data="addEditMenuComponent">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            <span x-text="$store.pos.newItem.category === 'additional' ? 'Add Additional Menu' : 'Add Menu'"></span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="addItemForm" @submit.prevent="$store.pos.saveNewItem()">
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Example: Fried Rice"
-                                    x-model="$store.pos.newItem.name" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Example: 25.000"
-                                    x-model="$store.pos.newItem.price" @input="$store.pos.formatPriceInput($event)" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Category</label>
-                                <select class="form-select select2-custom" id="manualCategory" x-model="$store.pos.newItem.category"
-                                    @change="$store.pos.onCategoryChange()">
-                                    <option value="food">🍔 Food</option>
-                                    <option value="drink">🥤 Drinks</option>
-                                    <option value="snack">🍿 Snacks</option>
-                                    <option value="additional">➕ Additional</option>
-                                </select>
-                            </div>
-                            <template x-if="$store.pos.newItem.category !== 'additional'">
-                                <div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-600">Stock Status</label>
-                                        <select class="form-select select2-custom" id="manualStatus"
-                                            x-model="$store.pos.newItem.status">
-                                            <option value="available">✅ Available</option>
-                                            <option value="low">⚠️ Low Stock</option>
-                                            <option value="out">❌ Out of Stock</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-600">Menu Image</label>
-                                        <input type="file" class="form-control" id="manualImage" accept="image/*"
-                                            @change="$store.pos.handleImageUpload($event)" />
-                                        <div class="mt-2" x-show="$store.pos.newItem.imagePreview">
-                                            <img :src="$store.pos.newItem.imagePreview" alt="Preview" loading="lazy"
-                                                style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;" />
-                                        </div>
-                                    </div>
-                                    <div class="mb-0">
-                                        <label class="form-label fw-600">Emoji (alternative)</label>
-                                        <input type="text" class="form-control" placeholder="🍔" maxlength="2"
-                                            x-model="$store.pos.newItem.icon" />
-                                    </div>
-                                </div>
-                            </template>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-accent" @click="$store.pos.saveNewItem()">
-                            <i class="bi bi-save me-1"></i> Save Menu
-                        </button>
-                    </div>
+    <!-- ===== ADD MENU MODAL ===== -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true" x-data="addEditMenuComponent">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        <span x-text="$store.pos.newItem.category === 'additional' ? 'Add Additional Menu' : 'Add Menu'"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
-        </div>
-
-        <!-- ===== EDIT MENU MODAL COMPONENT ===== -->
-        <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true" x-data="addEditMenuComponent">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
-                        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Menu</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            style="filter:brightness(0) invert(1);"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form @submit.prevent="$store.pos.saveEditItem()">
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Example: Fried Rice"
-                                    x-model="$store.pos.editItem.name" required />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" placeholder="Example: 25.000"
-                                    x-model="$store.pos.editItem.price" @input="$store.pos.formatPriceInput($event)" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Category</label>
-                                <select class="form-select select2-custom" id="editCategory" x-model="$store.pos.editItem.category">
-                                    <option value="food">🍔 Food</option>
-                                    <option value="drink">🥤 Drinks</option>
-                                    <option value="snack">🍿 Snacks</option>
-                                    <option value="additional">➕ Additional</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Stock Status</label>
-                                <select class="form-select select2-custom" id="editStatus" x-model="$store.pos.editItem.status">
-                                    <option value="available">✅ Available</option>
-                                    <option value="low">⚠️ Low Stock</option>
-                                    <option value="out">❌ Out of Stock</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-600">Menu Image</label>
-                                <input type="file" class="form-control" accept="image/*"
-                                    @change="$store.pos.handleEditImageUpload($event)" />
-                                <div class="mt-2">
-                                    <img :src="$store.pos.editItem.imagePreview || '#'" alt="Preview" loading="lazy"
-                                        style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;display:block;"
-                                        x-show="$store.pos.editItem.imagePreview" />
-                                </div>
-                            </div>
-                            <div class="mb-0">
-                                <label class="form-label fw-600">Emoji</label>
-                                <input type="text" class="form-control" placeholder="🍔" maxlength="2"
-                                    x-model="$store.pos.editItem.icon" />
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-accent" @click="$store.pos.saveEditItem()">
-                            <i class="bi bi-save me-1"></i> Save Changes
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== EDIT OPENING BALANCE MODAL ===== -->
-        <div class="modal fade" id="editOpeningBalanceModal" tabindex="-1" aria-hidden="true" x-data="{}">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
-                        <h5 class="modal-title"><i class="bi bi-wallet2 me-2"></i>Edit Opening Balance</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            style="filter:brightness(0) invert(1);"></button>
-                    </div>
-                    <div class="modal-body">
+                <div class="modal-body">
+                    <form id="addItemForm" @submit.prevent="$store.pos.saveNewItem()">
                         <div class="mb-3">
-                            <label class="form-label fw-600">Opening Balance (Rp)</label>
-                            <input type="text" class="form-control" placeholder="Example: 150.000"
-                                x-model="$store.pos.editOpeningBalance" @input="$store.pos.formatPriceInput($event)" />
+                            <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="Example: Fried Rice"
+                                x-model="$store.pos.newItem.name" required />
                         </div>
-                        <div class="mb-0 text-muted small">
-                            <i class="bi bi-info-circle"></i> This balance will be added to Grand Total in History.
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="Example: 25.000"
+                                x-model="$store.pos.newItem.price" @input="$store.pos.formatPriceInput($event)" />
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-accent" @click="$store.pos.saveOpeningBalance()">
-                            <i class="bi bi-save me-1"></i> Save Balance
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== CHECKOUT MODAL COMPONENT ===== -->
-        <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true" x-data="checkoutComponent">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header" style="background:#28a745;color:#fff;">
-                        <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Confirm Checkout</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                            style="filter:brightness(0) invert(1);"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="checkout-summary" id="checkoutSummary">
-                            <p class="fw-600 mb-2">Ordered items:</p>
-                            <template x-for="item in $store.pos.cart" :key="item.id">
-                                <div class="item-row">
-                                    <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' × ' + item.qty"></span>
-                                    <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
-                                </div>
-                            </template>
-                            <div class="total-row" style="border-top: 1px solid #ddd; margin-top: 4px; padding-top: 8px;">
-                                <span>Subtotal</span>
-                                <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
-                            </div>
-                            <div class="row mt-2 align-items-center"
-                                style="background: #f8f9fa; border-radius: 6px; padding: 6px 0;">
-                                <div class="col-4">
-                                    <span class="fw-600">Discount</span>
-                                </div>
-                                <div class="col-8 d-flex align-items-center gap-1">
-                                    <input type="text" class="form-control form-control-sm" :value="$store.pos.discountDisplay"
-                                        @input="$store.pos.updateDiscount($event)" placeholder="0"
-                                        style="min-width: 80px; text-align: right;" />
-                                    <select class="form-select form-select-sm" style="width: auto;" x-model="$store.pos.discountType"
-                                        @change="$store.pos.reformatDiscountDisplay()">
-                                        <option value="rp">Rp</option>
-                                        <option value="percent">%</option>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Category</label>
+                            <select class="form-select select2-custom" id="manualCategory" x-model="$store.pos.newItem.category"
+                                @change="$store.pos.onCategoryChange()">
+                                <option value="food">🍔 Food</option>
+                                <option value="drink">🥤 Drinks</option>
+                                <option value="snack">🍿 Snacks</option>
+                                <option value="additional">➕ Additional</option>
+                            </select>
+                        </div>
+                        <template x-if="$store.pos.newItem.category !== 'additional'">
+                            <div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Stock Status</label>
+                                    <select class="form-select select2-custom" id="manualStatus"
+                                        x-model="$store.pos.newItem.status">
+                                        <option value="available">✅ Available</option>
+                                        <option value="low">⚠️ Low Stock</option>
+                                        <option value="out">❌ Out of Stock</option>
                                     </select>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-600">Menu Image</label>
+                                    <input type="file" class="form-control" id="manualImage" accept="image/*"
+                                        @change="$store.pos.handleImageUpload($event)" />
+                                    <div class="mt-2" x-show="$store.pos.newItem.imagePreview">
+                                        <img :src="$store.pos.newItem.imagePreview" alt="Preview" loading="lazy"
+                                            style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;" />
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label fw-600">Emoji (alternative)</label>
+                                    <input type="text" class="form-control" placeholder="🍔" maxlength="2"
+                                        x-model="$store.pos.newItem.icon" />
+                                </div>
                             </div>
-                            <div x-show="$store.pos.discountAmount > 0" class="d-flex justify-content-between text-danger fw-600 mt-1">
-                                <span>Discount Amount</span>
-                                <span x-text="'- Rp ' + $store.pos.formatRupiah($store.pos.discountAmount)"></span>
+                        </template>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-accent" @click="$store.pos.saveNewItem()">
+                        <i class="bi bi-save me-1"></i> Save Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT MENU MODAL ===== -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true" x-data="addEditMenuComponent">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
+                </div>
+                <div class="modal-body">
+                    <form @submit.prevent="$store.pos.saveEditItem()">
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Menu Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="Example: Fried Rice"
+                                x-model="$store.pos.editItem.name" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Price (Rp) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" placeholder="Example: 25.000"
+                                x-model="$store.pos.editItem.price" @input="$store.pos.formatPriceInput($event)" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Category</label>
+                            <select class="form-select select2-custom" id="editCategory" x-model="$store.pos.editItem.category">
+                                <option value="food">🍔 Food</option>
+                                <option value="drink">🥤 Drinks</option>
+                                <option value="snack">🍿 Snacks</option>
+                                <option value="additional">➕ Additional</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Stock Status</label>
+                            <select class="form-select select2-custom" id="editStatus" x-model="$store.pos.editItem.status">
+                                <option value="available">✅ Available</option>
+                                <option value="low">⚠️ Low Stock</option>
+                                <option value="out">❌ Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-600">Menu Image</label>
+                            <input type="file" class="form-control" accept="image/*"
+                                @change="$store.pos.handleEditImageUpload($event)" />
+                            <div class="mt-2">
+                                <img :src="$store.pos.editItem.imagePreview || '#'" alt="Preview" loading="lazy"
+                                    style="max-width:100%;max-height:150px;border-radius:8px;border:1px solid #ddd;display:block;"
+                                    x-show="$store.pos.editItem.imagePreview" />
                             </div>
-                            <div class="total-row"
-                                style="border-top: 2px solid var(--pos-accent); margin-top: 6px; padding-top: 8px; font-size: 1.1rem;">
-                                <span class="fw-700">Total</span>
-                                <span class="fw-700 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label fw-600">Emoji</label>
+                            <input type="text" class="form-control" placeholder="🍔" maxlength="2"
+                                x-model="$store.pos.editItem.icon" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-accent" @click="$store.pos.saveEditItem()">
+                        <i class="bi bi-save me-1"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== EDIT OPENING BALANCE MODAL ===== -->
+    <div class="modal fade" id="editOpeningBalanceModal" tabindex="-1" aria-hidden="true" x-data="{}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:var(--pos-primary);color:#fff;">
+                    <h5 class="modal-title"><i class="bi bi-wallet2 me-2"></i>Edit Opening Balance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-600">Opening Balance (Rp)</label>
+                        <input type="text" class="form-control" placeholder="Example: 150.000"
+                            x-model="$store.pos.editOpeningBalance" @input="$store.pos.formatPriceInput($event)" />
+                    </div>
+                    <div class="mb-0 text-muted small">
+                        <i class="bi bi-info-circle"></i> This balance will be added to Grand Total in History.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-accent" @click="$store.pos.saveOpeningBalance()">
+                        <i class="bi bi-save me-1"></i> Save Balance
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== CHECKOUT MODAL ===== -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true" x-data="checkoutComponent">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background:#28a745;color:#fff;">
+                    <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Confirm Checkout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        style="filter:brightness(0) invert(1);"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="checkout-summary" id="checkoutSummary">
+                        <p class="fw-600 mb-2">Ordered items:</p>
+                        <template x-for="item in $store.pos.cart" :key="item.id">
+                            <div class="item-row">
+                                <span x-text="(item.icon || '🍽️') + ' ' + item.name + ' × ' + item.qty"></span>
+                                <span x-text="'Rp ' + $store.pos.formatRupiah(item.price * item.qty)"></span>
+                            </div>
+                        </template>
+                        <div class="total-row" style="border-top: 1px solid #ddd; margin-top: 4px; padding-top: 8px;">
+                            <span>Subtotal</span>
+                            <span x-text="'Rp ' + $store.pos.formatRupiah($store.pos.cartTotal)"></span>
+                        </div>
+                        <div class="row mt-2 align-items-center"
+                            style="background: #f8f9fa; border-radius: 6px; padding: 6px 0;">
+                            <div class="col-4">
+                                <span class="fw-600">Discount</span>
+                            </div>
+                            <div class="col-8 d-flex align-items-center gap-1">
+                                <input type="text" class="form-control form-control-sm" :value="$store.pos.discountDisplay"
+                                    @input="$store.pos.updateDiscount($event)" placeholder="0"
+                                    style="min-width: 80px; text-align: right;" />
+                                <select class="form-select form-select-sm" style="width: auto;" x-model="$store.pos.discountType"
+                                    @change="$store.pos.reformatDiscountDisplay()">
+                                    <option value="rp">Rp</option>
+                                    <option value="percent">%</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div x-show="$store.pos.discountAmount > 0" class="d-flex justify-content-between text-danger fw-600 mt-1">
+                            <span>Discount Amount</span>
+                            <span x-text="'- Rp ' + $store.pos.formatRupiah($store.pos.discountAmount)"></span>
+                        </div>
+                        <div class="total-row"
+                            style="border-top: 2px solid var(--pos-accent); margin-top: 6px; padding-top: 8px; font-size: 1.1rem;">
+                            <span class="fw-700">Total</span>
+                            <span class="fw-700 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-700 fs-5">Grand Total</span>
+                        <span class="fw-700 fs-4 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-600">Payment Method</label>
+                        <select class="form-select select2-custom" id="paymentMethod" x-model="$store.pos.paymentMethod"
+                            @change="$store.pos.handlePaymentMethodChange()">
+                            <option value="cash">💵 Cash</option>
+                            <option value="qris">📱 QRIS</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-3" id="paymentInputSection" x-show="$store.pos.paymentMethod === 'cash'">
+                        <label class="form-label fw-600">Pay (Rp)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="text" class="form-control" placeholder="Enter amount" x-model="$store.pos.paymentAmount"
+                                @input="$store.pos.updateChange()" />
+                        </div>
+                        <div class="mt-2">
+                            <template x-for="(val, idx) in $store.pos.quickPayOptions" :key="idx">
+                                <button class="quick-pay-btn"
+                                    :class="{'btn-exact': val === $store.pos.discountedTotal, 'active-btn': parseInt($store.pos.paymentAmountRaw) === val}"
+                                    @click="$store.pos.setQuickPay(val)">
+                                    <span x-text="val === $store.pos.discountedTotal ? 'Exact' : 'Rp ' + $store.pos.formatRupiah(val)"></span>
+                                </button>
+                            </template>
+                        </div>
+                        <div class="mt-2 text-end" style="font-weight:700;font-size:1.1rem;">
+                            Change: <span :style="{color: $store.pos.changeAmount >= 0 ? 'var(--pos-accent)' : '#e74c3c'}"
+                                x-text="'Rp ' + $store.pos.formatRupiah(Math.abs($store.pos.changeAmount)) + ($store.pos.changeAmount < 0 ? ' (insufficient)' : '')"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2 text-center text-success fw-600" x-show="$store.pos.paymentMethod === 'qris'">
+                        <i class="bi bi-qr-code me-1"></i> Please scan QR Code to complete payment.
+                        <div class="mt-1 small">
+                            Total: Rp <span x-text="$store.pos.formatRupiah($store.pos.discountedTotal)"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-2" x-show="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
+                        <div class="text-danger small">
+                            <i class="bi bi-exclamation-circle"></i> 
+                            <span x-text="'Payment amount (Rp ' + $store.pos.formatRupiah($store.pos.paymentAmountRaw) + ') is less than total (Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal) + ')'"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" @click="$store.pos.confirmCheckout()"
+                        :disabled="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
+                        <i class="bi bi-check-lg me-1"></i> Confirm & Finish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HISTORY MODAL ===== -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true" x-data="historyComponent">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: var(--pos-radius);">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title fw-bold" id="historyModalLabel">
+                        <i class="bi bi-clock-history me-2 text-danger"></i>History Transaction
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card mb-4 border-0 bg-light-subtle shadow-sm">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-sliders text-danger me-2 fs-5"></i>
+                                    <span class="fw-bold text-dark">System Setting (Receipt Printer)</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="radio" name="printerSizeSetting"
+                                            id="size58" value="58mm" x-model="$store.pos.defaultPrinterSize"
+                                            @change="$store.pos.applyPrinterSize()">
+                                        <label class="form-check-label fw-semibold text-secondary" for="size58">
+                                            🖨️ Thermal 58mm
+                                        </label>
+                                    </div>
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="radio" name="printerSizeSetting"
+                                            id="size80" value="80mm" x-model="$store.pos.defaultPrinterSize"
+                                            @change="$store.pos.applyPrinterSize()">
+                                        <label class="form-check-label fw-semibold text-secondary" for="size80">
+                                            🖨️ Thermal 80mm
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="history-opening-balance">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="label"><i class="bi bi-wallet2 me-2"></i>Opening Balance</span>
+                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
+                            </div>
+                        </div>
+                        <div class="history-total-transactions">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="label"><i class="bi bi-receipt me-2"></i>Total Transactions</span>
+                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.totalTransactions)"></span>
+                            </div>
+                        </div>
+                        <div class="history-grand-total">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
+                                <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.grandTotal)"></span>
                             </div>
                         </div>
                         <hr />
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-700 fs-5">Grand Total</span>
-                            <span class="fw-700 fs-4 text-accent" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal)"></span>
-                        </div>
-                        <div class="mt-3">
-                            <label class="form-label fw-600">Payment Method</label>
-                            <select class="form-select select2-custom" id="paymentMethod" x-model="$store.pos.paymentMethod"
-                                @change="$store.pos.handlePaymentMethodChange()">
-                                <option value="cash">💵 Cash</option>
-                                <option value="qris">📱 QRIS</option>
-                            </select>
-                        </div>
-
-                        <div class="mt-3" id="paymentInputSection" x-show="$store.pos.paymentMethod === 'cash'">
-                            <label class="form-label fw-600">Pay (Rp)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">Rp</span>
-                                <input type="text" class="form-control" placeholder="Enter amount" x-model="$store.pos.paymentAmount"
-                                    @input="$store.pos.updateChange()" />
+                        <template x-if="$store.pos.transactionHistory.length === 0">
+                            <div class="history-empty">
+                                <i class="bi bi-inbox"></i>
+                                <p>No transactions yet</p>
                             </div>
-                            <div class="mt-2">
-                                <template x-for="(val, idx) in $store.pos.quickPayOptions" :key="idx">
-                                    <button class="quick-pay-btn"
-                                        :class="{'btn-exact': val === $store.pos.discountedTotal, 'active-btn': parseInt($store.pos.paymentAmountRaw) === val}"
-                                        @click="$store.pos.setQuickPay(val)">
-                                        <span x-text="val === $store.pos.discountedTotal ? 'Exact' : 'Rp ' + $store.pos.formatRupiah(val)"></span>
-                                    </button>
-                                </template>
+                        </template>
+                        <template x-for="trx in $store.pos.transactionHistory.slice().reverse()" :key="trx.id">
+                            <div class="history-item">
+                                <div class="header">
+                                    <span x-text="'#' + trx.id + ' - ' + trx.timestamp"></span>
+                                    <div class="history-actions">
+                                        <span class="text-accent" x-text="'Rp ' + $store.pos.formatRupiah(trx.total)"></span>
+                                        <button class="print-history-btn" @click="$store.pos.printStrukMobile(trx)"
+                                            title="Print receipt">
+                                            <i class="bi bi-printer"></i>
+                                        </button>
+                                        <button class="delete-history-btn" @click="$store.pos.deleteTransaction(trx.id)"
+                                            title="Delete transaction">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="detail">
+                                    <span><i class="bi bi-tag"></i> <span x-text="trx.method"></span></span>
+                                    <span><i class="bi bi-cash-stack"></i> Paid: <span
+                                            x-text="'Rp ' + $store.pos.formatRupiah(trx.paid)"></span></span>
+                                    <template x-if="trx.discount && trx.discount > 0">
+                                        <span><i class="bi bi-percent"></i> Discount: <span
+                                                x-text="'-Rp ' + $store.pos.formatRupiah(trx.discount)"></span></span>
+                                    </template>
+                                    <template x-if="trx.method === 'Cash'">
+                                        <span><i class="bi bi-arrow-return-left"></i> Change: <span
+                                                x-text="'Rp ' + $store.pos.formatRupiah(trx.change)"></span></span>
+                                    </template>
+                                </div>
+                                <div class="detail" style="font-size:0.8rem;color:#888;">
+                                    <i class="bi bi-list-ul"></i>
+                                    <span
+                                        x-text="trx.items.map(item => item.name + ' (' + item.qty + '×Rp' + $store.pos.formatRupiah(item.price) + ')').join(', ')"></span>
+                                </div>
                             </div>
-                            <div class="mt-2 text-end" style="font-weight:700;font-size:1.1rem;">
-                                Change: <span :style="{color: $store.pos.changeAmount >= 0 ? 'var(--pos-accent)' : '#e74c3c'}"
-                                    x-text="'Rp ' + $store.pos.formatRupiah(Math.abs($store.pos.changeAmount)) + ($store.pos.changeAmount < 0 ? ' (insufficient)' : '')"></span>
-                            </div>
-                        </div>
-
-                        <div class="mt-2 text-center text-success fw-600" x-show="$store.pos.paymentMethod === 'qris'">
-                            <i class="bi bi-qr-code me-1"></i> Please scan QR Code to complete payment.
-                            <div class="mt-1 small">
-                                Total: Rp <span x-text="$store.pos.formatRupiah($store.pos.discountedTotal)"></span>
-                            </div>
-                        </div>
-
-                        <div class="mt-2" x-show="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
-                            <div class="text-danger small">
-                                <i class="bi bi-exclamation-circle"></i> 
-                                <span x-text="'Payment amount (Rp ' + $store.pos.formatRupiah($store.pos.paymentAmountRaw) + ') is less than total (Rp ' + $store.pos.formatRupiah($store.pos.discountedTotal) + ')'"></span>
-                            </div>
-                        </div>
+                        </template>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-success" @click="$store.pos.confirmCheckout()"
-                            :disabled="$store.pos.paymentMethod === 'cash' && $store.pos.paymentAmountRaw < $store.pos.discountedTotal">
-                            <i class="bi bi-check-lg me-1"></i> Confirm & Finish
-                        </button>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-danger" @click="$store.pos.clearAllTransactions()">Clear All</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- ===== HISTORY MODAL COMPONENT ===== -->
-        <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true" x-data="historyComponent">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content" style="border-radius: var(--pos-radius);">
-                    <div class="modal-header bg-dark">
-                        <h5 class="modal-title fw-bold" id="historyModalLabel">
-                            <i class="bi bi-clock-history me-2 text-danger"></i>History Transaction
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="card mb-4 border-0 bg-light-subtle shadow-sm">
-                            <div class="card-body p-3">
-                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-sliders text-danger me-2 fs-5"></i>
-                                        <span class="fw-bold text-dark">System Setting (Receipt Printer)</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="form-check mb-0">
-                                            <input class="form-check-input" type="radio" name="printerSizeSetting"
-                                                id="size58" value="58mm" x-model="$store.pos.defaultPrinterSize"
-                                                @change="$store.pos.applyPrinterSize()">
-                                            <label class="form-check-label fw-semibold text-secondary" for="size58">
-                                                🖨️ Thermal 58mm
-                                            </label>
-                                        </div>
-                                        <div class="form-check mb-0">
-                                            <input class="form-check-input" type="radio" name="printerSizeSetting"
-                                                id="size80" value="80mm" x-model="$store.pos.defaultPrinterSize"
-                                                @change="$store.pos.applyPrinterSize()">
-                                            <label class="form-check-label fw-semibold text-secondary" for="size80">
-                                                🖨️ Thermal 80mm
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="history-opening-balance">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="label"><i class="bi bi-wallet2 me-2"></i>Opening Balance</span>
-                                    <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.openingBalance)"></span>
-                                </div>
-                            </div>
-                            <div class="history-total-transactions">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="label"><i class="bi bi-receipt me-2"></i>Total Transactions</span>
-                                    <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.totalTransactions)"></span>
-                                </div>
-                            </div>
-                            <div class="history-grand-total">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="label"><i class="bi bi-cash-stack me-2"></i>Grand Total</span>
-                                    <span class="total" x-text="'Rp ' + $store.pos.formatRupiah($store.pos.grandTotal)"></span>
-                                </div>
-                            </div>
-                            <hr />
-                            <template x-if="$store.pos.transactionHistory.length === 0">
-                                <div class="history-empty">
-                                    <i class="bi bi-inbox"></i>
-                                    <p>No transactions yet</p>
-                                </div>
-                            </template>
-                            <template x-for="trx in $store.pos.transactionHistory.slice().reverse()" :key="trx.id">
-                                <div class="history-item">
-                                    <div class="header">
-                                        <span x-text="'#' + trx.id + ' - ' + trx.timestamp"></span>
-                                        <div class="history-actions">
-                                            <span class="text-accent" x-text="'Rp ' + $store.pos.formatRupiah(trx.total)"></span>
-                                            <button class="print-history-btn" @click="$store.pos.printStrukMobile(trx)"
-                                                title="Print receipt">
-                                                <i class="bi bi-printer"></i>
-                                            </button>
-                                            <button class="delete-history-btn" @click="$store.pos.deleteTransaction(trx.id)"
-                                                title="Delete transaction">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="detail">
-                                        <span><i class="bi bi-tag"></i> <span x-text="trx.method"></span></span>
-                                        <span><i class="bi bi-cash-stack"></i> Paid: <span
-                                                x-text="'Rp ' + $store.pos.formatRupiah(trx.paid)"></span></span>
-                                        <template x-if="trx.discount && trx.discount > 0">
-                                            <span><i class="bi bi-percent"></i> Discount: <span
-                                                    x-text="'-Rp ' + $store.pos.formatRupiah(trx.discount)"></span></span>
-                                        </template>
-                                        <template x-if="trx.method === 'Cash'">
-                                            <span><i class="bi bi-arrow-return-left"></i> Change: <span
-                                                    x-text="'Rp ' + $store.pos.formatRupiah(trx.change)"></span></span>
-                                        </template>
-                                    </div>
-                                    <div class="detail" style="font-size:0.8rem;color:#888;">
-                                        <i class="bi bi-list-ul"></i>
-                                        <span
-                                            x-text="trx.items.map(item => item.name + ' (' + item.qty + '×Rp' + $store.pos.formatRupiah(item.price) + ')').join(', ')"></span>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2 mt-3">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button class="btn btn-danger" @click="$store.pos.clearAllTransactions()">Clear All</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== RECEIPT PRINT TEMPLATE ===== -->
-        <div id="strukContainer" style="display:none;">
-            <div class="struk-content" :class="'paper-' + $store.pos.defaultPrinterSize">
-                <!-- HEADER -->
-                <div class="struk-header" style="text-align:center;">
-                    <h3 style="margin:0;font-size:1.1rem;">My Fried Chicken</h3>
-                    <p style="margin:0;font-size:0.8rem;">Pusat</p>
-                    <hr style="margin:4px 0;">
-                </div>
-
-                <!-- INFO -->
-                <div class="struk-info" style="font-size:0.75rem;">
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Kasir</strong> <span x-text="$store.pos.cashierName"></span>
-                    </p>
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Waktu</strong> <span x-text="$store.pos.strukData.timestamp"></span>
-                    </p>
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>No. Struk</strong> <span x-text="'#' + $store.pos.strukData.id"></span>
-                    </p>
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Bayar</strong> <span x-text="$store.pos.strukData.method === 'Cash' ? 'Tunai' : 'QRIS'"></span>
-                    </p>
-                    <hr style="margin:4px 0;">
-                </div>
-
-                <!-- STATUS LUNAS -->
-                <div class="struk-status" style="text-align:center;font-weight:700;font-size:0.9rem;">
-                    <p style="margin:2px 0;color:#28a745;">LUNAS</p>
-                    <hr style="margin:4px 0;">
-                </div>
-
-                <!-- ITEMS -->
-                <div class="struk-items" style="font-size:0.7rem;">
-                    <table style="width:100%;border-collapse:collapse;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left;">Item</th>
-                                <th style="text-align:center;">Qty</th>
-                                <th style="text-align:right;">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template x-for="item in $store.pos.strukData.items" :key="item.name">
-                                <tr>
-                                    <td style="text-align:left;" x-text="item.name"></td>
-                                    <td style="text-align:center;" x-text="$store.pos.formatRupiah(item.price) + ' x ' + item.qty"></td>
-                                    <td style="text-align:right;" x-text="$store.pos.formatRupiah(item.subtotal)"></td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- SUBTOTAL -->
-                <div class="struk-subtotal" style="font-size:0.75rem;margin-top:4px;">
-                    <hr style="margin:4px 0;">
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Subtotal</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.subtotal)"></span>
-                    </p>
-                </div>
-
-                <!-- DISCOUNT -->
-                <div class="struk-discount" style="font-size:0.75rem;"
-                    x-show="$store.pos.strukData.discount && $store.pos.strukData.discount > 0">
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;color:#ff0000;">
-                        <strong>Diskon</strong> <span x-text="'-Rp ' + $store.pos.formatRupiah($store.pos.strukData.discount)"></span>
-                    </p>
-                </div>
-
-                <!-- TOTAL -->
-                <div class="struk-total" style="font-size:0.75rem;margin-top:2px;">
-                    <hr style="margin:4px 0;">
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;font-weight:700;">
-                        <strong>Total (<span x-text="$store.pos.strukData.totalQty"></span>)</strong> <span
-                            x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.total)"></span>
-                    </p>
-                    <hr style="margin:4px 0;">
-                </div>
-
-                <!-- BAYAR & KEMBALI -->
-                <div class="struk-payment" style="font-size:0.75rem;">
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Bayar</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.paid)"></span>
-                    </p>
-                    <p style="margin:2px 0;display:flex;justify-content:space-between;">
-                        <strong>Kembali</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.change)"></span>
-                    </p>
-                </div>
-
-                <!-- FOOTER -->
-                <div class="struk-footer" style="text-align:center;font-size:0.7rem;margin-top:4px;">
-                    <hr style="margin:4px 0;">
-                    <p style="margin:2px 0;">Powered by KitaPOS</p>
-                    <p style="margin:2px 0;font-size:0.6rem;color:#888;">Terima kasih</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== TOAST ===== -->
-        <div class="toast-container position-fixed start-50 translate-middle-x top-0 p-3 top-md-0 start-md-auto translate-middle-x-md-none end-md-0"
-            style="z-index: 1080;">
-            <div id="liveToast" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert"
-                aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body" x-text="$store.pos.toastMessage">Notification message.</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== FOOTER ===== -->
-        <footer class="footer">
-            <div class="container-fluid px-3">
-                <div class="row g-0 justify-content-between align-items-center">
-                    <div class="col-12 col-sm-auto text-center text-sm-start">
-                        <p class="mb-0 mt-2 mt-sm-0">
-                            Created by &copy;
-                            <a class="mx-1 text-danger fw-bold" href="https://www.linkedin.com/in/satriai418"
-                                target="_blank">
-                                Deuwi Satriya Irawan
-                            </a>
-                            <span>|</span>
-                            <span class="text-danger fw-bold">Kernel of Inventory Talent and Asset</span>
-                        </p>
-                    </div>
-                    <div class="col-12 col-sm-auto text-center text-sm-end">
-                        <p class="mb-0 text-body-tertiary text-opacity-85">
-                            KitaPOS v1.0.0-alpha1 | <span x-text="$store.pos.footerYear"></span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
+    <!-- ===== RECEIPT PRINT TEMPLATE ===== -->
+    <div id="strukContainer" style="display:none;">
+        <div class="struk-content" :class="'paper-' + $store.pos.defaultPrinterSize">
+            <div class="struk-header" style="text-align:center;">
+                <h3 style="margin:0;font-size:1.1rem;">My Fried Chicken</h3>
+                <p style="margin:0;font-size:0.8rem;">Pusat</p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <div class="struk-info" style="font-size:0.75rem;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Kasir</strong> <span x-text="$store.pos.cashierName"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Waktu</strong> <span x-text="$store.pos.strukData.timestamp"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>No. Struk</strong> <span x-text="'#' + $store.pos.strukData.id"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Bayar</strong> <span x-text="$store.pos.strukData.method === 'Cash' ? 'Tunai' : 'QRIS'"></span>
+                </p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <div class="struk-status" style="text-align:center;font-weight:700;font-size:0.9rem;">
+                <p style="margin:2px 0;color:#28a745;">LUNAS</p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <div class="struk-items" style="font-size:0.7rem;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Item</th>
+                            <th style="text-align:center;">Qty</th>
+                            <th style="text-align:right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template x-for="item in $store.pos.strukData.items" :key="item.name">
+                            <tr>
+                                <td style="text-align:left;" x-text="item.name"></td>
+                                <td style="text-align:center;" x-text="$store.pos.formatRupiah(item.price) + ' x ' + item.qty"></td>
+                                <td style="text-align:right;" x-text="$store.pos.formatRupiah(item.subtotal)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="struk-subtotal" style="font-size:0.75rem;margin-top:4px;">
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Subtotal</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.subtotal)"></span>
+                </p>
+            </div>
+
+            <div class="struk-discount" style="font-size:0.75rem;"
+                x-show="$store.pos.strukData.discount && $store.pos.strukData.discount > 0">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;color:#ff0000;">
+                    <strong>Diskon</strong> <span x-text="'-Rp ' + $store.pos.formatRupiah($store.pos.strukData.discount)"></span>
+                </p>
+            </div>
+
+            <div class="struk-total" style="font-size:0.75rem;margin-top:2px;">
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;font-weight:700;">
+                    <strong>Total (<span x-text="$store.pos.strukData.totalQty"></span>)</strong> <span
+                        x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.total)"></span>
+                </p>
+                <hr style="margin:4px 0;">
+            </div>
+
+            <div class="struk-payment" style="font-size:0.75rem;">
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Bayar</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.paid)"></span>
+                </p>
+                <p style="margin:2px 0;display:flex;justify-content:space-between;">
+                    <strong>Kembali</strong> <span x-text="'Rp' + $store.pos.formatRupiah($store.pos.strukData.change)"></span>
+                </p>
+            </div>
+
+            <div class="struk-footer" style="text-align:center;font-size:0.7rem;margin-top:4px;">
+                <hr style="margin:4px 0;">
+                <p style="margin:2px 0;">Powered by KitaPOS</p>
+                <p style="margin:2px 0;font-size:0.6rem;color:#888;">Terima kasih</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast-container position-fixed start-50 translate-middle-x top-0 p-3 top-md-0 start-md-auto translate-middle-x-md-none end-md-0"
+        style="z-index: 1080;">
+        <div id="liveToast" class="toast align-items-center text-white bg-dark border-0 shadow" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" x-text="$store.pos.toastMessage">Notification message.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container-fluid px-3">
+            <div class="row g-0 justify-content-between align-items-center">
+                <div class="col-12 col-sm-auto text-center text-sm-start">
+                    <p class="mb-0 mt-2 mt-sm-0">
+                        Created by &copy;
+                        <a class="mx-1 text-danger fw-bold" href="https://www.linkedin.com/in/satriai418"
+                            target="_blank">
+                            Deuwi Satriya Irawan
+                        </a>
+                        <span>|</span>
+                        <span class="text-danger fw-bold">Kernel of Inventory Talent and Asset</span>
+                    </p>
+                </div>
+                <div class="col-12 col-sm-auto text-center text-sm-end">
+                    <p class="mb-0 text-body-tertiary text-opacity-85">
+                        KitaPOS v1.0.0-alpha1 | <span x-text="$store.pos.footerYear"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

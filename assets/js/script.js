@@ -1,15 +1,15 @@
 // ================================================================
 // assets/js/script.js - KitaPOS with Alpine.js (Refactored)
-// Each component has its own logic, store for shared data only
+// All logic in store, components are minimal
 // ================================================================
 
 document.addEventListener('alpine:init', () => {
 
     // ================================================================
-    // 1. ALPINE STORE - Shared State Only
+    // 1. ALPINE STORE - All state, computed, and methods
     // ================================================================
     Alpine.store('pos', {
-        // ---- SHARED STATE ----
+        // ---- STATE ----
         menuItems: [],
         nextId: 1,
         openingBalance: 0,
@@ -20,21 +20,23 @@ document.addEventListener('alpine:init', () => {
         mobileCartOpen: false,
         toastMessage: 'Notification',
 
-        // Calculator state
+        // Calculator
         calcExpression: '',
         calcDisplay: '0',
 
-        // New/Edit item state
+        // New/Edit item
         newItem: { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null },
         editItemId: null,
         editItem: { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null },
         editOpeningBalance: '',
 
-        // Checkout state
+        // Checkout
         paymentMethod: 'cash',
         paymentAmount: '',
         paymentAmountRaw: 0,
         changeAmount: 0,
+
+        // Discount
         discountType: 'rp',
         discountValue: 0,
         discountDisplay: '0',
@@ -46,7 +48,7 @@ document.addEventListener('alpine:init', () => {
 
         toast: null,
 
-        // ---- COMPUTED (shared) ----
+        // ---- COMPUTED ----
         get filteredMenu() {
             let items = this.menuItems;
             if (this.currentCategory !== 'all') {
@@ -125,7 +127,7 @@ document.addEventListener('alpine:init', () => {
             return window.innerWidth < 992 && this.cartCount > 0;
         },
 
-        // ---- SHARED HELPERS (formatting) ----
+        // ---- HELPERS ----
         formatRupiah(angka) {
             if (!angka && angka !== 0) return '';
             return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -144,8 +146,29 @@ document.addEventListener('alpine:init', () => {
             const minute = String(date.getMinutes()).padStart(2, '0');
             return `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()} ${hour}:${minute}`;
         },
+        formatReceiptLine(leftText, rightText, is80mm = false) {
+            const lineLength = is80mm ? 48 : 32;
+            let left = leftText.toString();
+            let right = rightText.toString();
+            let spaceLength = lineLength - left.length - right.length;
+            if (spaceLength < 1) {
+                left = left.substring(0, lineLength - right.length - 2) + '..';
+                spaceLength = 0;
+            }
+            return left + ' '.repeat(spaceLength) + right;
+        },
 
-        // ---- SHARED INIT ----
+        // ---- CART QTY HELPERS ----
+        getCartQty(id) {
+            const item = this.cart.find(c => c.id === id);
+            return item ? item.qty : 0;
+        },
+        getDisplayQty(id) {
+            const qty = this.getCartQty(id);
+            return qty > 0 ? qty : 1;
+        },
+
+        // ---- INIT ----
         init() {
             try {
                 const storedOB = localStorage.getItem('openingBalance');
@@ -231,23 +254,19 @@ document.addEventListener('alpine:init', () => {
         },
         showToast(msg) {
             this.toastMessage = msg;
-            this.toast.show();
-        }
-    });
-
-    // ================================================================
-    // 2. NAVBAR COMPONENT
-    // ================================================================
-    Alpine.data('navbarComponent', () => ({
-        init() {
-            // No additional init needed
+            if (this.toast) this.toast.show();
         },
+
+        // ============================================================
+        // UI METHODS (called from templates via $store.pos.xxx)
+        // ============================================================
+
+        // ---- NAVIGATION ----
         goHome() {
-            const store = Alpine.store('pos');
-            store.currentCategory = 'all';
-            store.searchQuery = '';
+            this.currentCategory = 'all';
+            this.searchQuery = '';
             document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            store.showToast('🏠 Returned to main menu');
+            this.showToast('🏠 Returned to main menu');
         },
         openCalculator() {
             new bootstrap.Modal(document.getElementById('calcModal')).show();
@@ -256,75 +275,80 @@ document.addEventListener('alpine:init', () => {
             new bootstrap.Modal(document.getElementById('historyModal')).show();
         },
         toggleMobileCart() {
-            const store = Alpine.store('pos');
-            store.mobileCartOpen = !store.mobileCartOpen;
-        }
-    }));
+            this.mobileCartOpen = !this.mobileCartOpen;
+        },
+        closeMobileCart() {
+            this.mobileCartOpen = false;
+        },
 
-    // ================================================================
-    // 3. MENU GRID COMPONENT
-    // ================================================================
-    Alpine.data('menuGridComponent', () => ({
-        getCartQty(id) {
-            const store = Alpine.store('pos');
-            const item = store.cart.find(c => c.id === id);
-            return item ? item.qty : 0;
+        // ---- MENU MANAGEMENT ----
+        openAddMenu(category = 'food') {
+            this.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️', imagePreview: null, imageData: null };
+            setTimeout(() => {
+                $('#manualCategory').val(category).trigger('change.select2');
+                $('#manualStatus').val('available').trigger('change.select2');
+            }, 50);
+            new bootstrap.Modal(document.getElementById('addItemModal')).show();
         },
-        getDisplayQty(id) {
-            const qty = this.getCartQty(id);
-            return qty > 0 ? qty : 1;
+        onCategoryChange() {
+            if (this.newItem.category === 'additional') {
+                this.newItem.status = 'available';
+                this.newItem.icon = '➕';
+            } else if (!this.newItem.icon || this.newItem.icon === '➕') {
+                this.newItem.icon = '🍽️';
+            }
         },
-        incrementQty(id) {
-            const store = Alpine.store('pos');
-            const menuItem = store.menuItems.find(i => i.id === id);
-            if (!menuItem) return;
-            if (menuItem.status === 'out') {
-                store.showToast('❌ ' + menuItem.name + ' is out of stock!');
+        saveNewItem() {
+            const item = {
+                id: this.nextId++,
+                name: this.newItem.name.trim(),
+                price: parseInt(this.newItem.price.replace(/\D/g, ''), 10) || 0,
+                category: this.newItem.category,
+                status: this.newItem.status,
+                icon: this.newItem.icon || '🍽️'
+            };
+            this.menuItems.push(item);
+            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
+            this.showToast('✅ Menu "' + item.name + '" added successfully!');
+        },
+        handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.newItem.imagePreview = null;
+                this.newItem.imageData = null;
                 return;
             }
-            const existing = store.cart.find(c => c.id === id);
-            if (existing) existing.qty += 1;
-            else {
-                store.cart.push({ ...menuItem, qty: 1 });
-            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.newItem.imagePreview = e.target.result;
+                this.newItem.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
         },
-        decrementQty(id) {
-            const store = Alpine.store('pos');
-            const idx = store.cart.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            if (store.cart[idx].qty > 1) store.cart[idx].qty -= 1;
-            else store.cart.splice(idx, 1);
-        },
-        updateQtyFromInput(id, event) {
-            const store = Alpine.store('pos');
-            const val = parseInt(event.target.value, 10);
-            if (isNaN(val) || val < 0) {
-                event.target.value = this.getDisplayQty(id);
+        handleEditImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.editItem.imagePreview = null;
+                this.editItem.imageData = null;
                 return;
             }
-            if (val === 0) {
-                const idx = store.cart.findIndex(c => c.id === id);
-                if (idx !== -1) store.cart.splice(idx, 1);
-            } else {
-                const existing = store.cart.find(c => c.id === id);
-                if (existing) existing.qty = val;
-                else {
-                    const menuItem = store.menuItems.find(i => i.id === id);
-                    if (menuItem) store.cart.push({ ...menuItem, qty: val });
-                }
-            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.editItem.imagePreview = e.target.result;
+                this.editItem.imageData = e.target.result;
+            };
+            reader.readAsDataURL(file);
         },
         openEditMenu(id) {
-            const store = Alpine.store('pos');
-            const item = store.menuItems.find(i => i.id === id);
+            const item = this.menuItems.find(i => i.id === id);
             if (!item) {
-                store.showToast('❌ Menu not found!');
+                this.showToast('❌ Menu not found!');
                 return;
             }
-            store.editItemId = id;
-            store.editItem = {
+            this.editItemId = id;
+            this.editItem = {
                 ...item,
-                price: store.formatRupiah(item.price),
+                price: this.formatRupiah(item.price),
                 imagePreview: item.image || null,
                 imageData: null
             };
@@ -345,238 +369,278 @@ document.addEventListener('alpine:init', () => {
                     allowClear: false
                 });
 
-                $('#editCategory').on('change', (e) => { store.editItem.category = e.target.value; });
-                $('#editStatus').on('change', (e) => { store.editItem.status = e.target.value; });
+                $('#editCategory').on('change', (e) => { this.editItem.category = e.target.value; });
+                $('#editStatus').on('change', (e) => { this.editItem.status = e.target.value; });
 
-                $('#editCategory').val(store.editItem.category).trigger('change.select2');
-                $('#editStatus').val(store.editItem.status).trigger('change.select2');
+                $('#editCategory').val(this.editItem.category).trigger('change.select2');
+                $('#editStatus').val(this.editItem.status).trigger('change.select2');
             }, 100);
         },
         saveEditItem() {
-            const store = Alpine.store('pos');
-            const id = store.editItemId;
+            const id = this.editItemId;
             if (id === null || id === undefined) {
-                store.showToast('❌ No item selected to edit!');
+                this.showToast('❌ No item selected to edit!');
                 return;
             }
-            const index = store.menuItems.findIndex(i => i.id === id);
+            const index = this.menuItems.findIndex(i => i.id === id);
             if (index === -1) {
-                store.showToast('❌ Menu not found!');
+                this.showToast('❌ Menu not found!');
                 return;
             }
 
-            const name = store.editItem.name.trim();
-            const rawPrice = store.editItem.price.replace(/\D/g, '');
+            const name = this.editItem.name.trim();
+            const rawPrice = this.editItem.price.replace(/\D/g, '');
             const price = parseInt(rawPrice, 10) || 0;
 
             if (!name) {
-                store.showToast('❌ Menu name is required!');
+                this.showToast('❌ Menu name is required!');
                 return;
             }
             if (price <= 0) {
-                store.showToast('❌ Price must be a positive number!');
+                this.showToast('❌ Price must be a positive number!');
                 return;
             }
 
-            store.menuItems[index] = {
-                ...store.menuItems[index],
+            this.menuItems[index] = {
+                ...this.menuItems[index],
                 name: name,
                 price: price,
-                category: store.editItem.category,
-                status: store.editItem.status,
-                icon: store.editItem.icon || '🍽️',
-                image: store.editItem.imageData || store.menuItems[index].image
+                category: this.editItem.category,
+                status: this.editItem.status,
+                icon: this.editItem.icon || '🍽️',
+                image: this.editItem.imageData || this.menuItems[index].image
             };
 
-            store.cart.forEach(cartItem => {
+            this.cart.forEach(cartItem => {
                 if (cartItem.id === id) {
                     cartItem.name = name;
                     cartItem.price = price;
-                    cartItem.icon = store.editItem.icon || '🍽️';
+                    cartItem.icon = this.editItem.icon || '🍽️';
                 }
             });
 
             bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
 
-            store.editItemId = null;
-            store.editItem = { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null };
+            this.editItemId = null;
+            this.editItem = { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null };
 
-            store.showToast('✅ Menu "' + name + '" updated successfully!');
-        }
-    }));
-
-    // ================================================================
-    // 4. CART SIDEBAR COMPONENT
-    // ================================================================
-    Alpine.data('cartSidebarComponent', () => ({
-        removeFromCart(id) {
-            const store = Alpine.store('pos');
-            const idx = store.cart.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            if (store.cart[idx].qty > 1) store.cart[idx].qty -= 1;
-            else store.cart.splice(idx, 1);
+            this.showToast('✅ Menu "' + name + '" updated successfully!');
         },
-        resetTo(id, targetQty) {
-            const store = Alpine.store('pos');
-            const item = store.cart.find(c => c.id === id);
-            if (item && item.qty > targetQty) {
-                item.qty = targetQty;
-                store.showToast('✅ Qty reset to ' + targetQty);
+
+        // ---- CART ----
+        incrementQty(id) {
+            const menuItem = this.menuItems.find(i => i.id === id);
+            if (!menuItem) return;
+            if (menuItem.status === 'out') {
+                this.showToast('❌ ' + menuItem.name + ' is out of stock!');
+                return;
+            }
+            const existing = this.cart.find(c => c.id === id);
+            if (existing) existing.qty += 1;
+            else {
+                this.cart.push({ ...menuItem, qty: 1 });
             }
         },
-        openCheckout() {
-            const store = Alpine.store('pos');
-            if (store.cart.length === 0) return;
-            store.paymentMethod = 'cash';
-            store.paymentAmount = '';
-            store.paymentAmountRaw = 0;
-            store.changeAmount = 0;
-            store.discountType = 'rp';
-            store.discountValue = 0;
-            store.discountDisplay = '0';
-
-            setTimeout(() => {
-                $('#paymentMethod').val('cash').trigger('change.select2');
-            }, 50);
-
-            store.handlePaymentMethodChange();
-            const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-            modal.show();
+        decrementQty(id) {
+            const idx = this.cart.findIndex(c => c.id === id);
+            if (idx === -1) return;
+            if (this.cart[idx].qty > 1) this.cart[idx].qty -= 1;
+            else this.cart.splice(idx, 1);
         },
-        handlePaymentMethodChange() {
-            const store = Alpine.store('pos');
-            try {
-                if (store.paymentMethod === 'qris') {
-                    const total = store.discountedTotal;
-                    store.paymentAmount = store.formatRupiah(total);
-                    store.paymentAmountRaw = total;
-                    store.changeAmount = 0;
-                } else {
-                    store.paymentAmount = '';
-                    store.paymentAmountRaw = 0;
-                    store.changeAmount = 0;
+        updateQtyFromInput(id, event) {
+            const val = parseInt(event.target.value, 10);
+            if (isNaN(val) || val < 0) {
+                event.target.value = this.getDisplayQty(id);
+                return;
+            }
+            if (val === 0) {
+                const idx = this.cart.findIndex(c => c.id === id);
+                if (idx !== -1) this.cart.splice(idx, 1);
+            } else {
+                const existing = this.cart.find(c => c.id === id);
+                if (existing) existing.qty = val;
+                else {
+                    const menuItem = this.menuItems.find(i => i.id === id);
+                    if (menuItem) this.cart.push({ ...menuItem, qty: val });
                 }
-            } catch (error) {
-                console.error('Error in handlePaymentMethodChange:', error);
             }
-        }
-    }));
-
-    // ================================================================
-    // 5. MOBILE CART COMPONENT (similar to sidebar)
-    // ================================================================
-    Alpine.data('mobileCartComponent', () => ({
+        },
         removeFromCart(id) {
-            const store = Alpine.store('pos');
-            const idx = store.cart.findIndex(c => c.id === id);
+            const idx = this.cart.findIndex(c => c.id === id);
             if (idx === -1) return;
-            if (store.cart[idx].qty > 1) store.cart[idx].qty -= 1;
-            else store.cart.splice(idx, 1);
+            if (this.cart[idx].qty > 1) this.cart[idx].qty -= 1;
+            else this.cart.splice(idx, 1);
         },
         resetTo(id, targetQty) {
-            const store = Alpine.store('pos');
-            const item = store.cart.find(c => c.id === id);
+            const item = this.cart.find(c => c.id === id);
             if (item && item.qty > targetQty) {
                 item.qty = targetQty;
-                store.showToast('✅ Qty reset to ' + targetQty);
+                this.showToast('✅ Qty reset to ' + targetQty);
             }
         },
+
+        // ---- OPENING BALANCE ----
+        openEditOpeningBalance() {
+            this.editOpeningBalance = this.formatRupiah(this.openingBalance);
+            new bootstrap.Modal(document.getElementById('editOpeningBalanceModal')).show();
+        },
+        saveOpeningBalance() {
+            this.openingBalance = parseInt(this.editOpeningBalance.replace(/\D/g, ''), 10) || 0;
+            this.saveOpeningBalance(this.openingBalance);
+            bootstrap.Modal.getInstance(document.getElementById('editOpeningBalanceModal')).hide();
+        },
+
+        // ---- CHECKOUT ----
         openCheckout() {
-            const store = Alpine.store('pos');
-            if (store.cart.length === 0) return;
-            store.paymentMethod = 'cash';
-            store.paymentAmount = '';
-            store.paymentAmountRaw = 0;
-            store.changeAmount = 0;
-            store.discountType = 'rp';
-            store.discountValue = 0;
-            store.discountDisplay = '0';
+            if (this.cart.length === 0) return;
+            this.paymentMethod = 'cash';
+            this.paymentAmount = '';
+            this.paymentAmountRaw = 0;
+            this.changeAmount = 0;
+            this.discountType = 'rp';
+            this.discountValue = 0;
+            this.discountDisplay = '0';
 
             setTimeout(() => {
                 $('#paymentMethod').val('cash').trigger('change.select2');
             }, 50);
 
-            store.handlePaymentMethodChange();
+            this.handlePaymentMethodChange();
             const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
             modal.show();
-        }
-    }));
-
-    // ================================================================
-    // 6. CHECKOUT COMPONENT
-    // ================================================================
-    Alpine.data('checkoutComponent', () => ({
+        },
         setQuickPay(val) {
-            const store = Alpine.store('pos');
-            store.paymentAmountRaw = val;
-            store.paymentAmount = store.formatRupiah(val);
+            this.paymentAmountRaw = val;
+            this.paymentAmount = this.formatRupiah(val);
             this.updateChange();
         },
         updateChange() {
-            const store = Alpine.store('pos');
             try {
-                if (store.paymentMethod === 'cash') {
-                    const raw = store.parseRupiah(store.paymentAmount);
-                    store.paymentAmountRaw = raw;
-                    const total = store.discountedTotal;
-                    store.changeAmount = raw - total;
+                if (this.paymentMethod === 'cash') {
+                    const raw = this.parseRupiah(this.paymentAmount);
+                    this.paymentAmountRaw = raw;
+                    const total = this.discountedTotal;
+                    this.changeAmount = raw - total;
                 } else {
-                    const total = store.discountedTotal;
-                    store.paymentAmount = store.formatRupiah(total);
-                    store.paymentAmountRaw = total;
-                    store.changeAmount = 0;
+                    const total = this.discountedTotal;
+                    this.paymentAmount = this.formatRupiah(total);
+                    this.paymentAmountRaw = total;
+                    this.changeAmount = 0;
                 }
             } catch (error) {
                 console.error('Error in updateChange:', error);
             }
         },
-        confirmCheckout() {
-            const store = Alpine.store('pos');
+        handlePaymentMethodChange() {
             try {
-                const total = store.discountedTotal;
-                const method = store.paymentMethod;
-                let paid = store.paymentAmountRaw;
+                if (this.paymentMethod === 'qris') {
+                    const total = this.discountedTotal;
+                    this.paymentAmount = this.formatRupiah(total);
+                    this.paymentAmountRaw = total;
+                    this.changeAmount = 0;
+                } else {
+                    this.paymentAmount = '';
+                    this.paymentAmountRaw = 0;
+                    this.changeAmount = 0;
+                }
+            } catch (error) {
+                console.error('Error in handlePaymentMethodChange:', error);
+            }
+        },
+        confirmCheckout() {
+            try {
+                const total = this.discountedTotal;
+                const method = this.paymentMethod;
+                let paid = this.paymentAmountRaw;
                 if (method === 'cash') {
                     if (paid < total) {
-                        store.showToast('❌ Payment insufficient!');
+                        this.showToast('❌ Payment insufficient!');
                         return;
                     }
                     const change = paid - total;
-                    const items = store.cart.map(item => ({
+                    const items = this.cart.map(item => ({
                         name: item.name,
                         qty: item.qty,
                         price: item.price,
                         subtotal: item.price * item.qty
                     }));
-                    const transaction = store.saveTransaction('Cash', total, paid, change, items, store.discountAmount, store.discountType, store.discountValue, store.cartTotal);
-                    store.showToast('✅ Checkout successful!');
+                    const transaction = this.saveTransaction('Cash', total, paid, change, items, this.discountAmount, this.discountType, this.discountValue, this.cartTotal);
+                    this.showToast('✅ Checkout successful!');
                     this.printStrukMobile(transaction);
                 } else {
                     paid = total;
-                    store.paymentAmount = store.formatRupiah(paid);
-                    store.paymentAmountRaw = paid;
-                    const items = store.cart.map(item => ({
+                    this.paymentAmount = this.formatRupiah(paid);
+                    this.paymentAmountRaw = paid;
+                    const items = this.cart.map(item => ({
                         name: item.name,
                         qty: item.qty,
                         price: item.price,
                         subtotal: item.price * item.qty
                     }));
-                    const transaction = store.saveTransaction('QRIS', total, paid, 0, items, store.discountAmount, store.discountType, store.discountValue, store.cartTotal);
-                    store.showToast('✅ Checkout successful! Method: QRIS.');
+                    const transaction = this.saveTransaction('QRIS', total, paid, 0, items, this.discountAmount, this.discountType, this.discountValue, this.cartTotal);
+                    this.showToast('✅ Checkout successful! Method: QRIS.');
                     this.printStrukMobile(transaction);
                 }
-                store.cart = [];
-                store.mobileCartOpen = false;
+                this.cart = [];
+                this.mobileCartOpen = false;
                 bootstrap.Modal.getInstance(document.getElementById('checkoutModal')).hide();
             } catch (error) {
                 console.error('Error in confirmCheckout:', error);
-                store.showToast('❌ Checkout failed!');
+                this.showToast('❌ Checkout failed!');
             }
         },
+        updateDiscount(event) {
+            let raw = event.target.value.replace(/\D/g, '');
+            if (this.discountType === 'rp') {
+                const val = parseInt(raw, 10) || 0;
+                this.discountValue = val;
+                this.discountDisplay = this.formatRupiah(val);
+                event.target.value = this.formatRupiah(val);
+            } else {
+                let pct = parseInt(raw, 10) || 0;
+                if (pct > 100) pct = 100;
+                this.discountValue = pct;
+                this.discountDisplay = pct.toString();
+                event.target.value = pct.toString();
+            }
+            this.updateChange();
+        },
+        reformatDiscountDisplay() {
+            if (this.discountType === 'rp') {
+                this.discountDisplay = this.formatRupiah(this.discountValue);
+            } else {
+                this.discountDisplay = this.discountValue.toString();
+            }
+            this.updateChange();
+        },
+
+        // ---- HISTORY ----
+        deleteTransaction(id) {
+            if (confirm('Delete transaction #' + id + '?')) {
+                this.transactionHistory = this.transactionHistory.filter(trx => trx.id !== id);
+                this.transactionHistory.forEach((trx, index) => trx.id = index + 1);
+                this.saveTransactionHistory();
+                this.showToast('🗑️ Deleted');
+            }
+        },
+        clearAllTransactions() {
+            if (confirm('⚠️ Clear ALL?')) {
+                this.transactionHistory = [];
+                this.saveTransactionHistory();
+                this.showToast('🗑️ All cleared');
+            }
+        },
+
+        // ---- PRINTER ----
+        applyPrinterSize() {
+            localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
+            this.showToast('⚙️ Printer setting: ' + this.defaultPrinterSize);
+        },
+
+        // ---- PRINT MODULE ----
         printStrukMobile(transaction) {
-            const store = Alpine.store('pos');
             if (!transaction || !transaction.items || transaction.items.length === 0) {
-                store.showToast('❌ No transaction data to print!');
+                this.showToast('❌ No transaction data to print!');
                 return;
             }
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -588,11 +652,9 @@ document.addEventListener('alpine:init', () => {
                 this.printStrukBrowser(transaction);
             }
         },
-        // --- Print methods (keep from original) ---
         printStrukRawBT(transaction) {
-            const store = Alpine.store('pos');
             try {
-                const is80mm = store.defaultPrinterSize === '80mm';
+                const is80mm = this.defaultPrinterSize === '80mm';
                 const encoder = new EscPosEncoder();
                 let receipt = encoder.initialize();
                 receipt.align('center')
@@ -600,24 +662,24 @@ document.addEventListener('alpine:init', () => {
                     .text('Jl. Raya Sukses No. 123').newline()
                     .line('-'.repeat(is80mm ? 48 : 32))
                     .align('left')
-                    .text(`Kasir : ${store.cashierName}`).newline()
+                    .text(`Kasir : ${this.cashierName}`).newline()
                     .text(`No    : #${transaction.id}`).newline()
                     .line('-'.repeat(is80mm ? 48 : 32));
 
                 transaction.items.forEach(item => {
-                    const leftStr = `  ${item.qty} x ${store.formatRupiah(item.price)}`;
-                    const rightStr = store.formatRupiah(item.subtotal);
+                    const leftStr = `  ${item.qty} x ${this.formatRupiah(item.price)}`;
+                    const rightStr = this.formatRupiah(item.subtotal);
                     receipt.text(item.name).newline();
-                    receipt.text(store.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
+                    receipt.text(this.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
                 });
 
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
-                        .text(store.formatReceiptLine('Diskon', '-Rp ' + store.formatRupiah(transaction.discount), is80mm)).newline();
+                        .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
                 }
 
                 receipt.line('-'.repeat(is80mm ? 48 : 32))
-                    .text(store.formatReceiptLine('TOTAL', 'Rp ' + store.formatRupiah(transaction.total), is80mm)).newline()
+                    .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
                     .line('-'.repeat(is80mm ? 48 : 32))
                     .align('center').text('Terima kasih').newline()
                     .newline().newline().newline();
@@ -627,18 +689,17 @@ document.addEventListener('alpine:init', () => {
                 resultData.forEach(b => binary += String.fromCharCode(b));
                 window.location.href = "rawbt:base64," + btoa(binary);
             } catch (error) {
-                store.showToast('⚠️ RawBT failed, switching to normal print');
+                this.showToast('⚠️ RawBT failed, switching to normal print');
                 this.printStrukBrowser(transaction);
             }
         },
         async printStrukWebBluetoothiOS(transaction) {
-            const store = Alpine.store('pos');
             if (!navigator.bluetooth) {
                 alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser.");
                 return;
             }
             try {
-                const is80mm = store.defaultPrinterSize === '80mm';
+                const is80mm = this.defaultPrinterSize === '80mm';
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '49535343-fe7d-4ae5-8fa9-9fafd205e455']
@@ -656,19 +717,19 @@ document.addEventListener('alpine:init', () => {
                     .align('left');
 
                 transaction.items.forEach(item => {
-                    const leftStr = `  ${item.qty} x ${store.formatRupiah(item.price)}`;
-                    const rightStr = store.formatRupiah(item.subtotal);
+                    const leftStr = `  ${item.qty} x ${this.formatRupiah(item.price)}`;
+                    const rightStr = this.formatRupiah(item.subtotal);
                     receipt.text(item.name).newline();
-                    receipt.text(store.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
+                    receipt.text(this.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
                 });
 
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
-                        .text(store.formatReceiptLine('Diskon', '-Rp ' + store.formatRupiah(transaction.discount), is80mm)).newline();
+                        .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
                 }
 
                 receipt.line('-'.repeat(is80mm ? 48 : 32))
-                    .text(store.formatReceiptLine('TOTAL', 'Rp ' + store.formatRupiah(transaction.total), is80mm)).newline()
+                    .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
                     .newline().newline().newline();
 
                 const resultData = receipt.encode();
@@ -677,14 +738,13 @@ document.addEventListener('alpine:init', () => {
                     await new Promise(r => setTimeout(r, 20));
                 }
                 device.gatt.disconnect();
-                store.showToast('🖨️ Printed from iPhone!');
+                this.showToast('🖨️ Printed from iPhone!');
             } catch (error) {
-                store.showToast('⚠️ Bluetooth failed. Switching to normal print...');
+                this.showToast('⚠️ Bluetooth failed. Switching to normal print...');
                 this.printStrukBrowser(transaction);
             }
         },
         printStrukBrowser(transaction) {
-            const store = Alpine.store('pos');
             if (!transaction || !transaction.items || transaction.items.length === 0) return;
 
             let style = document.getElementById('printPageStyle');
@@ -693,7 +753,7 @@ document.addEventListener('alpine:init', () => {
                 style.id = 'printPageStyle';
                 document.head.appendChild(style);
             }
-            const paperSize = store.defaultPrinterSize;
+            const paperSize = this.defaultPrinterSize;
             style.innerHTML = `
                 @media print {
                     @page { size: ${paperSize} auto; margin: 0; }
@@ -730,7 +790,7 @@ document.addEventListener('alpine:init', () => {
             `;
 
             const totalQty = transaction.items.reduce((sum, item) => sum + item.qty, 0);
-            store.strukData = {
+            this.strukData = {
                 id: transaction.id,
                 timestamp: transaction.timestamp,
                 items: transaction.items,
@@ -751,200 +811,47 @@ document.addEventListener('alpine:init', () => {
                 window.onafterprint = null;
             };
         },
-        formatReceiptLine(leftText, rightText, is80mm = false) {
-            const lineLength = is80mm ? 48 : 32;
-            let left = leftText.toString();
-            let right = rightText.toString();
-            let spaceLength = lineLength - left.length - right.length;
-            if (spaceLength < 1) {
-                left = left.substring(0, lineLength - right.length - 2) + '..';
-                spaceLength = 0;
-            }
-            return left + ' '.repeat(spaceLength) + right;
-        },
-        handlePaymentMethodChange() {
-            const store = Alpine.store('pos');
-            try {
-                if (store.paymentMethod === 'qris') {
-                    const total = store.discountedTotal;
-                    store.paymentAmount = store.formatRupiah(total);
-                    store.paymentAmountRaw = total;
-                    store.changeAmount = 0;
-                } else {
-                    store.paymentAmount = '';
-                    store.paymentAmountRaw = 0;
-                    store.changeAmount = 0;
-                }
-            } catch (error) {
-                console.error('Error in handlePaymentMethodChange:', error);
-            }
-        }
-    }));
 
-    // ================================================================
-    // 7. HISTORY COMPONENT
-    // ================================================================
-    Alpine.data('historyComponent', () => ({
-        deleteTransaction(id) {
-            const store = Alpine.store('pos');
-            if (confirm('Delete transaction #' + id + '?')) {
-                store.transactionHistory = store.transactionHistory.filter(trx => trx.id !== id);
-                store.transactionHistory.forEach((trx, index) => trx.id = index + 1);
-                store.saveTransactionHistory();
-                store.showToast('🗑️ Deleted');
-            }
-        },
-        clearAllTransactions() {
-            const store = Alpine.store('pos');
-            if (confirm('⚠️ Clear ALL?')) {
-                store.transactionHistory = [];
-                store.saveTransactionHistory();
-                store.showToast('🗑️ All cleared');
-            }
-        },
-        printStrukMobile(transaction) {
-            const store = Alpine.store('pos');
-            if (!transaction || !transaction.items || transaction.items.length === 0) {
-                store.showToast('❌ No transaction data to print!');
-                return;
-            }
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                this.printStrukWebBluetoothiOS(transaction);
-            } else if (/android/i.test(userAgent)) {
-                this.printStrukRawBT(transaction);
-            } else {
-                this.printStrukBrowser(transaction);
-            }
-        },
-        // Reuse print methods from checkout component or call global
-        printStrukRawBT(transaction) {
-            // Reuse from checkout
-            const checkout = Alpine.data('checkoutComponent')();
-            checkout.printStrukRawBT(transaction);
-        },
-        printStrukWebBluetoothiOS(transaction) {
-            const checkout = Alpine.data('checkoutComponent')();
-            checkout.printStrukWebBluetoothiOS(transaction);
-        },
-        printStrukBrowser(transaction) {
-            const checkout = Alpine.data('checkoutComponent')();
-            checkout.printStrukBrowser(transaction);
-        }
-    }));
-
-    // ================================================================
-    // 8. CALCULATOR COMPONENT
-    // ================================================================
-    Alpine.data('calculatorComponent', () => ({
-        calcAppend(val) {
-            const store = Alpine.store('pos');
-            store.calcExpression += val;
-            this.updateCalcDisplay();
-        },
-        calcClear() {
-            const store = Alpine.store('pos');
-            store.calcExpression = '';
-            this.updateCalcDisplay();
-        },
-        calcBackspace() {
-            const store = Alpine.store('pos');
-            store.calcExpression = store.calcExpression.slice(0, -1);
-            this.updateCalcDisplay();
-        },
+        // ---- CALCULATOR ----
+        calcAppend(val) { this.calcExpression += val; this.updateCalcDisplay(); },
+        calcClear() { this.calcExpression = ''; this.updateCalcDisplay(); },
+        calcBackspace() { this.calcExpression = this.calcExpression.slice(0, -1); this.updateCalcDisplay(); },
         calcEvaluate() {
-            const store = Alpine.store('pos');
             try {
-                store.calcExpression = eval(store.calcExpression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')).toString();
+                this.calcExpression = eval(this.calcExpression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')).toString();
             } catch {
-                store.calcExpression = 'Error';
+                this.calcExpression = 'Error';
                 setTimeout(() => this.calcClear(), 800);
             }
             this.updateCalcDisplay();
         },
-        updateCalcDisplay() {
-            const store = Alpine.store('pos');
-            store.calcDisplay = store.calcExpression || '0';
-        }
-    }));
+        updateCalcDisplay() { this.calcDisplay = this.calcExpression || '0'; },
+
+        // ---- FILTER ----
+        setCategory(cat) { this.currentCategory = cat; },
+        filterMenu() { }
+    });
 
     // ================================================================
-    // 9. ADD/EDIT MENU COMPONENT
+    // 2. UI COMPONENTS (minimal – just for scoping if needed)
     // ================================================================
-    Alpine.data('addEditMenuComponent', () => ({
-        onCategoryChange() {
-            const store = Alpine.store('pos');
-            if (store.newItem.category === 'additional') {
-                store.newItem.status = 'available';
-                store.newItem.icon = '➕';
-            } else if (!store.newItem.icon || store.newItem.icon === '➕') {
-                store.newItem.icon = '🍽️';
-            }
-        },
-        openAddMenu(category = 'food') {
-            const store = Alpine.store('pos');
-            store.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️' };
-            setTimeout(() => {
-                $('#manualCategory').val(category).trigger('change.select2');
-                $('#manualStatus').val('available').trigger('change.select2');
-            }, 50);
-            new bootstrap.Modal(document.getElementById('addItemModal')).show();
-        },
-        saveNewItem() {
-            const store = Alpine.store('pos');
-            const item = {
-                id: store.nextId++,
-                name: store.newItem.name.trim(),
-                price: parseInt(store.newItem.price.replace(/\D/g, ''), 10) || 0,
-                category: store.newItem.category,
-                status: store.newItem.status,
-                icon: store.newItem.icon || '🍽️'
-            };
-            store.menuItems.push(item);
-            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
-            store.showToast('✅ Menu "' + item.name + '" added successfully!');
-        },
-        handleImageUpload(event) {
-            const store = Alpine.store('pos');
-            const file = event.target.files[0];
-            if (!file) {
-                store.newItem.imagePreview = null;
-                store.newItem.imageData = null;
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                store.newItem.imagePreview = e.target.result;
-                store.newItem.imageData = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        },
-        handleEditImageUpload(event) {
-            const store = Alpine.store('pos');
-            const file = event.target.files[0];
-            if (!file) {
-                store.editItem.imagePreview = null;
-                store.editItem.imageData = null;
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                store.editItem.imagePreview = e.target.result;
-                store.editItem.imageData = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }));
+    Alpine.data('navbarComponent', () => ({}));
+    Alpine.data('menuGridComponent', () => ({}));
+    Alpine.data('cartSidebarComponent', () => ({}));
+    Alpine.data('mobileCartComponent', () => ({}));
+    Alpine.data('checkoutComponent', () => ({}));
+    Alpine.data('historyComponent', () => ({}));
+    Alpine.data('calculatorComponent', () => ({}));
+    Alpine.data('addEditMenuComponent', () => ({}));
 
     // ================================================================
-    // 10. ROOT COMPONENT (initialize store)
+    // 3. ROOT COMPONENT
     // ================================================================
     Alpine.data('posApp', () => ({
         init() {
             Alpine.store('pos').init();
-            // Init select2 and bridge events
+            // Select2 init
             setTimeout(() => {
-                // Select2 init for all .select2-custom
                 $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
 
                 // Bridge jQuery -> Alpine for payment method
@@ -966,10 +873,9 @@ document.addEventListener('alpine:init', () => {
                 });
             }, 100);
 
-            // Watch window resize for mobile cart
             window.addEventListener('resize', () => {});
         }
     }));
 
-    console.log('✅ KitaPOS with Alpine.js (Refactored into components) ready!');
+    console.log('✅ KitaPOS with Alpine.js ready!');
 });
