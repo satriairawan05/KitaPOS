@@ -336,12 +336,12 @@
                                 <button class="btn btn-sm btn-outline-primary py-0 px-2"
                                     @click="$store.pos.setActiveSession(session.id)"><i
                                         class="bi bi-check2-circle"></i></button>
-                                <button class="btn btn-sm btn-success py-0 px-2"
-                                    @click="$store.pos.confirmSessionToCart(session.id)"><i
-                                        class="bi bi-arrow-right-circle"></i></button>
                                 <button class="btn btn-sm btn-outline-info py-0 px-2"
                                     @click="$store.pos.openSessionDetailModal(session.id)"><i
                                         class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-success py-0 px-2"
+                                    @click="$store.pos.confirmSessionToCart(session.id)"><i
+                                        class="bi bi-arrow-right-circle"></i></button>
                                 <button class="btn btn-sm btn-outline-danger py-0 px-2"
                                     @click="$store.pos.removeSession(session.id)"><i class="bi bi-trash"></i></button>
                             </div>
@@ -370,12 +370,12 @@
             </div>
         </div>
         <div class="cart-title">
-            <span><i class="bi bi-cart3 me-1"></i> Keranjang</span>
+            <span><i class="bi bi-cart3 me-1"></i> Cart</span>
             <span class="badge" x-text="$store.pos.cartCount">0</span>
         </div>
         <div id="mobileCartItems">
             <template x-if="$store.pos.cart.length === 0">
-                <div class="cart-empty"><i class="bi bi-basket"></i> Keranjang kosong</div>
+                <div class="cart-empty"><i class="bi bi-basket"></i> Empty Cart</div>
             </template>
             <template x-for="item in $store.pos.cart" :key="item.id">
                 <div class="cart-item">
@@ -533,7 +533,7 @@
                     <button type="button" class="btn btn-success"
                         @click="$store.pos.confirmSessionToCart($store.pos.selectedSession.id); bootstrap.Modal.getInstance(document.getElementById('sessionDetailModal')).hide();"
                         :disabled="!$store.pos.selectedSession || $store.pos.selectedSession.items.length === 0">
-                        <i class="bi bi-arrow-right me-1"></i> Lanjutkan ke Cart
+                        <i class="bi bi-arrow-right me-1"></i> Go To Cart
                     </button>
                 </div>
             </div>
