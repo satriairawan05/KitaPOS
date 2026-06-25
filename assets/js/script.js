@@ -1091,12 +1091,12 @@ document.addEventListener('alpine:init', () => {
             const currentHour = new Date().getHours();
             let cashierName = "May";
 
-            if (currentHour >= 7 && currentHour < 15) {
-                cashierName = "May";
-            } else if (currentHour >= 15 && currentHour <= 23) {
-                cashierName = "Lusiana";
+            if (currentHour >= 8 && currentHour < 16) {
+                cashierName = "Sintia";
+            } else if (currentHour >= 16 && currentHour <= 24) {
+                cashierName = "Aprilia";
             } else {
-                cashierName = "Guest";
+                cashierName = "Indah";
             }
 
             store.setCashier(cashierName, true);
