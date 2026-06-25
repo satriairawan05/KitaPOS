@@ -518,6 +518,10 @@ body {
     background: #ffffff !important;
     box-shadow: 0 2px 12px rgba(237,2,14,0.08) !important;
     overflow: hidden !important;
+    -webkit-border-radius: var(--pos-radius) !important;
+    -moz-border-radius: var(--pos-radius) !important;
+    -ms-border-radius: var(--pos-radius) !important;
+    -o-border-radius: var(--pos-radius) !important;
 }
 .draft-panel .card-header {
     background: var(--pos-draft-header) !important;

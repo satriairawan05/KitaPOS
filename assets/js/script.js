@@ -3,7 +3,10 @@
 // Multiple Draft Sessions (Dine In / Take Away)
 // ================================================================
 
+console.log('🚀 KitaPOS script.js loaded successfully!');
+
 document.addEventListener('alpine:init', () => {
+    console.log('⚡ Alpine.js initialized!');
 
     Alpine.store('pos', {
         // ---- STATE ----
