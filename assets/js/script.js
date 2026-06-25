@@ -296,10 +296,12 @@ document.addEventListener('alpine:init', () => {
             this.activeSessionId = session.id;
             bootstrap.Modal.getInstance(document.getElementById('newSessionModal')).hide();
             this.showToast('✅ Pesanan baru dibuat: ' + name);
+            console.log('📦 Session created:', session);
         },
         setActiveSession(id) {
             this.activeSessionId = id;
-            this.showToast('🔁 Session aktif: ' + this.sessions.find(s => s.id === id)?.name);
+            const session = this.sessions.find(s => s.id === id);
+            this.showToast('🔁 Session aktif: ' + (session ? session.name : 'unknown'));
         },
         removeSession(id) {
             if (confirm('Hapus session ini?')) {
@@ -308,19 +310,30 @@ document.addEventListener('alpine:init', () => {
                     this.activeSessionId = this.sessions.length > 0 ? this.sessions[0].id : null;
                 }
                 this.showToast('🗑️ Session dihapus');
+                console.log('🗑️ Session removed:', id);
             }
         },
 
         // ---- SESSION DETAIL MODAL ----
         openSessionDetailModal(sessionId) {
+            console.log('🔍 Opening detail for session:', sessionId);
             const session = this.sessions.find(s => s.id === sessionId);
             if (!session) {
                 this.showToast('❌ Session tidak ditemukan');
+                console.error('Session not found:', sessionId);
                 return;
             }
             this.selectedSession = session;
-            const modal = new bootstrap.Modal(document.getElementById('sessionDetailModal'));
-            modal.show();
+            console.log('📋 Selected session:', this.selectedSession);
+            // Use Bootstrap modal API
+            const modalElement = document.getElementById('sessionDetailModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error('Modal element #sessionDetailModal not found');
+                this.showToast('❌ Modal tidak ditemukan');
+            }
         },
 
         // ---- DRAFT (session) ITEMS ----
@@ -331,9 +344,15 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
             const session = this.sessions.find(s => s.id === this.activeSessionId);
-            if (!session) return;
+            if (!session) {
+                this.showToast('❌ Session tidak ditemukan');
+                return;
+            }
             const menuItem = this.menuItems.find(i => i.id === id);
-            if (!menuItem) return;
+            if (!menuItem) {
+                this.showToast('❌ Menu tidak ditemukan');
+                return;
+            }
             if (menuItem.status === 'out') {
                 this.showToast('❌ ' + menuItem.name + ' habis!');
                 return;
@@ -421,6 +440,7 @@ document.addEventListener('alpine:init', () => {
             const detailModal = bootstrap.Modal.getInstance(document.getElementById('sessionDetailModal'));
             if (detailModal) detailModal.hide();
             this.showToast('🛒 ' + session.name + ' dilanjutkan ke Keranjang!');
+            console.log('🛒 Session confirmed to cart:', session.name);
         },
 
         // ---- CART OPERATIONS ----
@@ -630,11 +650,9 @@ document.addEventListener('alpine:init', () => {
         updateChange() {
             try {
                 if (this.paymentMethod === 'cash') {
-                    // Format payment amount display
                     if (this.paymentAmount) {
                         const raw = this.parseRupiah(this.paymentAmount);
                         this.paymentAmountRaw = raw;
-                        // Re-format display with thousand separator
                         if (raw > 0) {
                             this.paymentAmount = this.formatRupiah(raw);
                         }
