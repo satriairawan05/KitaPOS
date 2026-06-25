@@ -24,6 +24,10 @@ document.addEventListener('alpine:init', () => {
         cashierName: 'Guest',
         isCashierOnline: false,
 
+        // Outlet
+        outletName: 'My Fried Chicken',
+        outletAddress: 'Pusat',
+
         // Calculator
         calcExpression: '',
         calcDisplay: '0',
@@ -47,7 +51,7 @@ document.addEventListener('alpine:init', () => {
 
         // Printer & Cashier
         defaultPrinterSize: '58mm',
-        cashierNamePrint: 'May',  // kept for receipt
+        cashierNamePrint: 'May', // Keep for receipt if needed
         strukData: { id: '', timestamp: '', items: [], total: 0, totalQty: 0, paid: 0, change: 0, method: 'Cash', discount: 0, subtotal: 0 },
 
         toast: null,
@@ -189,7 +193,7 @@ document.addEventListener('alpine:init', () => {
         // ---- INIT ----
         init() {
             try {
-                // Load cashier
+                // Load cashier from localStorage
                 this.loadCashier();
 
                 const storedOB = localStorage.getItem('openingBalance');
@@ -288,6 +292,7 @@ document.addEventListener('alpine:init', () => {
             this.currentCategory = 'all';
             this.searchQuery = '';
             document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // window.location.href = window.KitaPOS.routes.home;
             this.showToast('🏠 Returned to main menu');
         },
         openCalculator() {
@@ -658,6 +663,12 @@ document.addEventListener('alpine:init', () => {
             localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
             this.showToast('⚙️ Printer setting: ' + this.defaultPrinterSize);
         },
+        
+        // ---- Outlet ----
+        setOutle(name, address) {
+            this.outletName = name || 'My Fried Chicken';
+            this.outletAddress = address || 'Pusat';
+        },
 
         // ---- PRINT MODULE ----
         printStrukMobile(transaction) {
@@ -683,14 +694,14 @@ document.addEventListener('alpine:init', () => {
 
                 // ===== HEADER (dinamis) =====
                 receipt.align('center')
-                    .bold(true).text(this.companyName).newline().bold(false)
-                    .text(this.companyAddress).newline()
+                    .bold(true).text(this.outletName).newline().bold(false)
+                    .text(this.outletAddress).newline()
                     .line('-'.repeat(maxWidth));
 
                 // ===== INFO =====
                 receipt.align('left')
                     .text(`Kasir : ${this.cashierName}`).newline()
-                    .text(`Waktu : ${transaction.timestamp}`).newline()
+                    .text(`Waktu : ${this.formatTanggalIndonesia(transaction.timestamp)}`).newline()
                     .text(`No. Struk : #${transaction.id}`).newline()
                     .text(`Bayar : ${transaction.method === 'Cash' ? 'Tunai' : 'QRIS'}`).newline()
                     .line('-'.repeat(maxWidth));
@@ -753,7 +764,7 @@ document.addEventListener('alpine:init', () => {
                 this.showToast('⚠️ RawBT failed, switching to normal print');
                 this.printStrukBrowser(transaction);
             }
-        }
+        },
         async printStrukWebBluetoothiOS(transaction) {
             if (!navigator.bluetooth) {
                 alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser.");
@@ -897,7 +908,52 @@ document.addEventListener('alpine:init', () => {
     // 2. UI COMPONENTS (minimal – just for scoping if needed)
     // ================================================================
     Alpine.data('navbarComponent', () => ({}));
-    Alpine.data('menuGridComponent', () => ({}));
+    Alpine.data('menuGridComponent', () => ({
+        // Tidak perlu menyimpan items karena sudah ada di store.pos
+        init() {
+            // Ambil semua item dari store dan fetch gambarnya
+            this.$nextTick(() => {
+                const items = this.$store.pos.menuItems;
+                items.forEach(item => {
+                    if (item.category !== 'additional') {
+                        this.fetchPexelsImage(item);
+                    }
+                });
+            });
+        },
+        async fetchPexelsImage(item) {
+            if (item.image) return;
+
+            const apiKey = window._env.PEXELS_API_KEY;;
+            if (!apiKey) {
+                console.warn('Pexels API key not found, using fallback.');
+                return;
+            }
+
+            const query = encodeURIComponent(item.name);
+            const url = `https://api.pexels.com/v1/search?query=${query}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': apiKey
+                    }
+                });
+                const data = await response.json();
+
+                if (data.photos && data.photos.length > 0) {
+                    // Set image ke item (reaktif karena item adalah object)
+                    item.image = data.photos[0].src.medium;
+                } else {
+                    // Tidak ada hasil, biarkan null (fallback di src)
+                    item.image = null;
+                }
+            } catch (error) {
+                console.error('Pexels fetch error:', error);
+                item.image = null;
+            }
+        }
+    }));
     Alpine.data('cartSidebarComponent', () => ({}));
     Alpine.data('mobileCartComponent', () => ({}));
     Alpine.data('checkoutComponent', () => ({}));
@@ -910,7 +966,26 @@ document.addEventListener('alpine:init', () => {
     // ================================================================
     Alpine.data('posApp', () => ({
         init() {
-            Alpine.store('pos').init();
+            const store = Alpine.store('pos');
+
+            // Check Windows User
+            if (window.KitaPOS && window.KitaPOS.user) {
+                store.setCashier(
+                    window.KitaPOS.user.name,
+                    window.KitaPOS.user.isOnline
+                );
+            } else {
+                // fallback to storage
+                store.loadCashier();
+            }
+
+            if (window.KitaPOS && window.KitaPOS.outlet) {
+                this.setOutlet(window.KitaPOS.outlet.name, window.KitaPOS.outlet.address);
+            }
+
+            // to load data
+            store.init();
+
             // Select2 init
             setTimeout(() => {
                 $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
