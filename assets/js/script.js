@@ -1,18 +1,21 @@
 // ================================================================
 // assets/js/script.js - KitaPOS with Alpine.js (Refactored)
-// All logic in store, components are minimal
+// Multiple Draft Sessions (Dine In / Take Away)
 // ================================================================
 
 document.addEventListener('alpine:init', () => {
 
-    // ================================================================
-    // 1. ALPINE STORE - All state, computed, and methods
-    // ================================================================
     Alpine.store('pos', {
         // ---- STATE ----
         menuItems: [],
         nextId: 1,
         openingBalance: 0,
+
+        // multiple draft sessions
+        sessions: [],
+        activeSessionId: null,
+        selectedSession: null,   // for detail modal
+
         cart: [],
         transactionHistory: [],
         currentCategory: 'all',
@@ -20,7 +23,7 @@ document.addEventListener('alpine:init', () => {
         mobileCartOpen: false,
         toastMessage: 'Notification',
 
-        // ===== CASHIER STATE =====
+        // Cashier
         cashierName: 'Guest',
         isCashierOnline: false,
 
@@ -43,18 +46,19 @@ document.addEventListener('alpine:init', () => {
         paymentAmount: '',
         paymentAmountRaw: 0,
         changeAmount: 0,
-
-        // Discount
         discountType: 'rp',
         discountValue: 0,
         discountDisplay: '0',
 
-        // Printer & Cashier
+        // Printer
         defaultPrinterSize: '58mm',
-        cashierNamePrint: 'May', // Keep for receipt if needed
         strukData: { id: '', timestamp: '', items: [], total: 0, totalQty: 0, paid: 0, change: 0, method: 'Cash', discount: 0, subtotal: 0 },
 
         toast: null,
+
+        // New session modal
+        newSessionType: 'dinein',
+        newSessionTable: '',
 
         // ---- COMPUTED ----
         get filteredMenu() {
@@ -68,105 +72,30 @@ document.addEventListener('alpine:init', () => {
             }
             return items;
         },
-        get cartCount() {
-            return this.cart.reduce((sum, item) => sum + item.qty, 0);
-        },
-        get cartTotal() {
-            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        },
-        get totalTransactions() {
-            return this.transactionHistory.reduce((sum, trx) => sum + trx.total, 0);
-        },
-        get grandTotal() {
-            return this.openingBalance + this.totalTransactions;
-        },
-        get footerYear() {
-            const start = 2026;
-            const now = new Date().getFullYear();
-            return now === start ? start : start + ' - ' + now;
-        },
-        get discountAmount() {
-            const total = this.cartTotal;
-            if (this.discountType === 'rp') {
-                const val = this.discountValue || 0;
-                return Math.min(val, total);
-            } else if (this.discountType === 'percent') {
-                const pct = Math.min(this.discountValue || 0, 100);
-                return total * pct / 100;
-            }
-            return 0;
-        },
-        get discountedTotal() {
-            return Math.max(this.cartTotal - this.discountAmount, 0);
-        },
-        get quickPayOptions() {
-            const total = this.discountedTotal;
-            if (total <= 0) return [0];
 
-            let end = 100000;
-            if (total > 100000) {
-                end = Math.ceil(total / 100000) * 100000;
-                if (end <= total) end += 100000;
-            }
-
-            let down = Math.floor(total / 10000) * 10000;
-            if (down === total) down = Math.max(0, down - 10000);
-            if (total < 50000) down = 50000;
-            if (down <= 0) down = 10000;
-
-            let up = Math.ceil(total / 10000) * 10000;
-            if (up === total) up = up + 10000;
-            if (total < 50000) up = Math.max(down + 10000, 60000);
-            if (up <= down) up = down + 10000;
-            if (total <= 100000 && up >= end) up = Math.min(end - 10000, Math.ceil((total + end) / 2) / 10000 * 10000);
-            if (up <= down) up = down + 10000;
-
-            let others = [down, up, end].filter(v => v > 0 && v !== total);
-            others = [...new Set(others)].sort((a, b) => a - b);
-            let options = [total, ...others];
-            const endIndex = options.indexOf(end);
-            if (endIndex !== -1 && endIndex !== options.length - 1) {
-                options.splice(endIndex, 1);
-                options.push(end);
-            }
-            return options;
+        // ---- DRAFT (sessions) helpers ----
+        getTotalSessionsCount() {
+            return this.sessions.reduce((sum, s) => sum + s.items.reduce((acc, i) => acc + i.qty, 0), 0);
         },
-        get showMobileCart() {
-            return window.innerWidth < 992 && this.cartCount > 0;
+        getTotalSessionsTotal() {
+            return this.sessions.reduce((sum, s) => sum + this.getSessionTotal(s.id), 0);
+        },
+        getSessionTotal(sessionId) {
+            const session = this.sessions.find(s => s.id === sessionId);
+            if (!session) return 0;
+            return session.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        },
+        getDraftQty(id) {
+            const session = this.sessions.find(s => s.id === this.activeSessionId);
+            if (!session) return 0;
+            const item = session.items.find(i => i.id === id);
+            return item ? item.qty : 0;
+        },
+        getDisplayDraftQty(id) {
+            const qty = this.getDraftQty(id);
+            return qty > 0 ? qty : 1;
         },
 
-        // ---- HELPERS ----
-        formatRupiah(angka) {
-            if (!angka && angka !== 0) return '';
-            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        },
-        formatPriceInput(event) {
-            let value = event.target.value.replace(/\D/g, '');
-            if (value === '') { event.target.value = ''; return; }
-            let number = parseInt(value, 10);
-            if (isNaN(number)) { event.target.value = ''; return; }
-            event.target.value = this.formatRupiah(number);
-        },
-        parseRupiah(str) { return parseInt(str.replace(/\D/g, ''), 10) || 0; },
-        formatTanggalIndonesia(date) {
-            const month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-            const hour = String(date.getHours()).padStart(2, '0');
-            const minute = String(date.getMinutes()).padStart(2, '0');
-            return `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()} ${hour}:${minute}`;
-        },
-        formatReceiptLine(leftText, rightText, is80mm = false) {
-            const lineLength = is80mm ? 48 : 32;
-            let left = leftText.toString();
-            let right = rightText.toString();
-            let spaceLength = lineLength - left.length - right.length;
-            if (spaceLength < 1) {
-                left = left.substring(0, lineLength - right.length - 2) + '..';
-                spaceLength = 0;
-            }
-            return left + ' '.repeat(spaceLength) + right;
-        },
-
-        // ---- CART QTY HELPERS ----
         getCartQty(id) {
             const item = this.cart.find(c => c.id === id);
             return item ? item.qty : 0;
@@ -176,7 +105,7 @@ document.addEventListener('alpine:init', () => {
             return qty > 0 ? qty : 1;
         },
 
-        // ---- CASHIER MANAGEMENT ----
+        // ---- CASHIER ----
         setCashier(name, online = true) {
             this.cashierName = name || 'Guest';
             this.isCashierOnline = online;
@@ -193,9 +122,7 @@ document.addEventListener('alpine:init', () => {
         // ---- INIT ----
         init() {
             try {
-                // Load cashier from localStorage
                 this.loadCashier();
-
                 const storedOB = localStorage.getItem('openingBalance');
                 this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
                 localStorage.setItem('openingBalance', this.openingBalance.toString());
@@ -228,17 +155,11 @@ document.addEventListener('alpine:init', () => {
                 if (storedHistory) {
                     this.transactionHistory = JSON.parse(storedHistory);
                 }
-
                 const savedSize = localStorage.getItem('defaultPrinterSize');
-                if (savedSize) {
-                    this.defaultPrinterSize = savedSize;
-                } else {
-                    this.defaultPrinterSize = '58mm';
-                    localStorage.setItem('defaultPrinterSize', '58mm');
-                }
+                this.defaultPrinterSize = savedSize || '58mm';
+                localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
 
                 this.toast = new bootstrap.Toast(document.getElementById('liveToast'), { delay: 2500 });
-
                 console.log('✅ KitaPOS Store ready!');
                 console.log('👤 Cashier:', this.cashierName, '| Online:', this.isCashierOnline);
             } catch (error) {
@@ -283,16 +204,51 @@ document.addEventListener('alpine:init', () => {
             if (this.toast) this.toast.show();
         },
 
-        // ============================================================
-        // UI METHODS (called from templates via $store.pos.xxx)
-        // ============================================================
+        // ---- HELPERS ----
+        formatRupiah(angka) {
+            if (!angka && angka !== 0) return '';
+            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        },
+        formatPriceInput(event) {
+            let value = event.target.value.replace(/\D/g, '');
+            if (value === '') {
+                event.target.value = '';
+                return;
+            }
+            let number = parseInt(value, 10);
+            if (isNaN(number)) {
+                event.target.value = '';
+                return;
+            }
+            event.target.value = this.formatRupiah(number);
+        },
+        parseRupiah(str) {
+            if (!str) return 0;
+            return parseInt(str.replace(/\D/g, ''), 10) || 0;
+        },
+        formatTanggalIndonesia(date) {
+            const month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const hour = String(date.getHours()).padStart(2, '0');
+            const minute = String(date.getMinutes()).padStart(2, '0');
+            return `${date.getDate()} ${month[date.getMonth()]} ${date.getFullYear()} ${hour}:${minute}`;
+        },
+        formatReceiptLine(leftText, rightText, is80mm = false) {
+            const lineLength = is80mm ? 48 : 32;
+            let left = leftText.toString();
+            let right = rightText.toString();
+            let spaceLength = lineLength - left.length - right.length;
+            if (spaceLength < 1) {
+                left = left.substring(0, lineLength - right.length - 2) + '..';
+                spaceLength = 0;
+            }
+            return left + ' '.repeat(spaceLength) + right;
+        },
 
-        // ---- NAVIGATION ----
+        // ---- UI NAVIGATION ----
         goHome() {
             this.currentCategory = 'all';
             this.searchQuery = '';
             document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            // window.location.href = window.KitaPOS.routes.home;
             this.showToast('🏠 Returned to main menu');
         },
         openCalculator() {
@@ -306,6 +262,220 @@ document.addEventListener('alpine:init', () => {
         },
         closeMobileCart() {
             this.mobileCartOpen = false;
+        },
+
+        // ---- SESSION MANAGEMENT ----
+        openNewSessionModal() {
+            this.newSessionType = 'dinein';
+            this.newSessionTable = '';
+            new bootstrap.Modal(document.getElementById('newSessionModal')).show();
+        },
+        createNewSession() {
+            const type = this.newSessionType;
+            const table = this.newSessionTable ? parseInt(this.newSessionTable, 10) : null;
+            let name = '';
+            if (type === 'dinein') {
+                if (!table || table < 1) {
+                    this.showToast('❌ Masukkan nomor meja yang valid');
+                    return;
+                }
+                name = 'Meja ' + table;
+            } else {
+                name = 'Take Away';
+            }
+            const session = {
+                id: Date.now(),
+                name: name,
+                type: type,
+                table: table,
+                typeLabel: type === 'dinein' ? '🍽️ Dine In' : '🛍️ Take Away',
+                items: [],
+                createdAt: new Date().toISOString()
+            };
+            this.sessions.push(session);
+            this.activeSessionId = session.id;
+            bootstrap.Modal.getInstance(document.getElementById('newSessionModal')).hide();
+            this.showToast('✅ Pesanan baru dibuat: ' + name);
+        },
+        setActiveSession(id) {
+            this.activeSessionId = id;
+            this.showToast('🔁 Session aktif: ' + this.sessions.find(s => s.id === id)?.name);
+        },
+        removeSession(id) {
+            if (confirm('Hapus session ini?')) {
+                this.sessions = this.sessions.filter(s => s.id !== id);
+                if (this.activeSessionId === id) {
+                    this.activeSessionId = this.sessions.length > 0 ? this.sessions[0].id : null;
+                }
+                this.showToast('🗑️ Session dihapus');
+            }
+        },
+
+        // ---- SESSION DETAIL MODAL ----
+        openSessionDetailModal(sessionId) {
+            const session = this.sessions.find(s => s.id === sessionId);
+            if (!session) {
+                this.showToast('❌ Session tidak ditemukan');
+                return;
+            }
+            this.selectedSession = session;
+            const modal = new bootstrap.Modal(document.getElementById('sessionDetailModal'));
+            modal.show();
+        },
+
+        // ---- DRAFT (session) ITEMS ----
+        incrementDraftQty(id) {
+            if (!this.activeSessionId) {
+                this.showToast('❌ Buat pesanan baru terlebih dahulu!');
+                this.openNewSessionModal();
+                return;
+            }
+            const session = this.sessions.find(s => s.id === this.activeSessionId);
+            if (!session) return;
+            const menuItem = this.menuItems.find(i => i.id === id);
+            if (!menuItem) return;
+            if (menuItem.status === 'out') {
+                this.showToast('❌ ' + menuItem.name + ' habis!');
+                return;
+            }
+            const existing = session.items.find(i => i.id === id);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                session.items.push({ ...menuItem, qty: 1 });
+            }
+            this.showToast('📝 ' + menuItem.name + ' ditambahkan ke ' + session.name);
+        },
+        decrementDraftQty(id) {
+            const session = this.sessions.find(s => s.id === this.activeSessionId);
+            if (!session) return;
+            const idx = session.items.findIndex(i => i.id === id);
+            if (idx === -1) return;
+            if (session.items[idx].qty > 1) {
+                session.items[idx].qty -= 1;
+            } else {
+                session.items.splice(idx, 1);
+            }
+        },
+        updateDraftQtyFromInput(id, event) {
+            const val = parseInt(event.target.value, 10);
+            if (isNaN(val) || val < 0) {
+                event.target.value = this.getDisplayDraftQty(id);
+                return;
+            }
+            const session = this.sessions.find(s => s.id === this.activeSessionId);
+            if (!session) {
+                event.target.value = 1;
+                return;
+            }
+            const idx = session.items.findIndex(i => i.id === id);
+            if (idx === -1) {
+                if (val > 0) {
+                    const menuItem = this.menuItems.find(i => i.id === id);
+                    if (menuItem && menuItem.status !== 'out') {
+                        session.items.push({ ...menuItem, qty: val });
+                    } else {
+                        this.showToast('❌ Item tidak tersedia');
+                        event.target.value = this.getDisplayDraftQty(id);
+                    }
+                } else {
+                    event.target.value = this.getDisplayDraftQty(id);
+                }
+                return;
+            }
+            if (val === 0) {
+                session.items.splice(idx, 1);
+            } else {
+                const menuItem = this.menuItems.find(i => i.id === id);
+                if (menuItem && menuItem.status === 'out') {
+                    this.showToast('❌ ' + menuItem.name + ' habis!');
+                    event.target.value = this.getDisplayDraftQty(id);
+                    return;
+                }
+                session.items[idx].qty = val;
+            }
+        },
+
+        // ---- CONFIRM SESSION TO CART ----
+        confirmSessionToCart(sessionId) {
+            const session = this.sessions.find(s => s.id === sessionId);
+            if (!session || session.items.length === 0) {
+                this.showToast('❌ Session kosong!');
+                return;
+            }
+            // Merge items into cart
+            session.items.forEach(item => {
+                const existing = this.cart.find(c => c.id === item.id);
+                if (existing) {
+                    existing.qty += item.qty;
+                } else {
+                    this.cart.push({ ...item });
+                }
+            });
+            // Remove session
+            this.sessions = this.sessions.filter(s => s.id !== sessionId);
+            if (this.activeSessionId === sessionId) {
+                this.activeSessionId = this.sessions.length > 0 ? this.sessions[0].id : null;
+            }
+            // Close modal if open
+            const detailModal = bootstrap.Modal.getInstance(document.getElementById('sessionDetailModal'));
+            if (detailModal) detailModal.hide();
+            this.showToast('🛒 ' + session.name + ' dilanjutkan ke Keranjang!');
+        },
+
+        // ---- CART OPERATIONS ----
+        incrementQty(id) {
+            const existing = this.cart.find(c => c.id === id);
+            if (existing) {
+                const menuItem = this.menuItems.find(i => i.id === id);
+                if (menuItem && menuItem.status === 'out') {
+                    this.showToast('❌ ' + menuItem.name + ' habis!');
+                    return;
+                }
+                existing.qty += 1;
+            } else {
+                this.showToast('❌ Item tidak ada di keranjang.');
+            }
+        },
+        decrementQty(id) {
+            const idx = this.cart.findIndex(c => c.id === id);
+            if (idx === -1) return;
+            if (this.cart[idx].qty > 1) {
+                this.cart[idx].qty -= 1;
+            } else {
+                this.cart.splice(idx, 1);
+            }
+        },
+        updateQtyFromInput(id, event) {
+            const val = parseInt(event.target.value, 10);
+            if (isNaN(val) || val < 0) {
+                event.target.value = this.getDisplayQty(id);
+                return;
+            }
+            const idx = this.cart.findIndex(c => c.id === id);
+            if (idx === -1) {
+                event.target.value = this.getDisplayQty(id);
+                this.showToast('❌ Item tidak ada di keranjang.');
+                return;
+            }
+            if (val === 0) {
+                this.cart.splice(idx, 1);
+            } else {
+                const menuItem = this.menuItems.find(i => i.id === id);
+                if (menuItem && menuItem.status === 'out') {
+                    this.showToast('❌ ' + menuItem.name + ' habis!');
+                    event.target.value = this.getDisplayQty(id);
+                    return;
+                }
+                this.cart[idx].qty = val;
+            }
+        },
+        resetTo(id, targetQty) {
+            const item = this.cart.find(c => c.id === id);
+            if (item && item.qty > targetQty) {
+                item.qty = targetQty;
+                this.showToast('✅ Qty reset to ' + targetQty);
+            }
         },
 
         // ---- MENU MANAGEMENT ----
@@ -340,11 +510,7 @@ document.addEventListener('alpine:init', () => {
         },
         handleImageUpload(event) {
             const file = event.target.files[0];
-            if (!file) {
-                this.newItem.imagePreview = null;
-                this.newItem.imageData = null;
-                return;
-            }
+            if (!file) { this.newItem.imagePreview = null; this.newItem.imageData = null; return; }
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.newItem.imagePreview = e.target.result;
@@ -354,11 +520,7 @@ document.addEventListener('alpine:init', () => {
         },
         handleEditImageUpload(event) {
             const file = event.target.files[0];
-            if (!file) {
-                this.editItem.imagePreview = null;
-                this.editItem.imageData = null;
-                return;
-            }
+            if (!file) { this.editItem.imagePreview = null; this.editItem.imageData = null; return; }
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.editItem.imagePreview = e.target.result;
@@ -368,23 +530,13 @@ document.addEventListener('alpine:init', () => {
         },
         openEditMenu(id) {
             const item = this.menuItems.find(i => i.id === id);
-            if (!item) {
-                this.showToast('❌ Menu not found!');
-                return;
-            }
+            if (!item) { this.showToast('❌ Menu not found!'); return; }
             this.editItemId = id;
-            this.editItem = {
-                ...item,
-                price: this.formatRupiah(item.price),
-                imagePreview: item.image || null,
-                imageData: null
-            };
+            this.editItem = { ...item, price: this.formatRupiah(item.price), imagePreview: item.image || null, imageData: null };
             const fileInput = document.getElementById('editImage');
             if (fileInput) fileInput.value = '';
-
             const modal = new bootstrap.Modal(document.getElementById('editItemModal'));
             modal.show();
-
             setTimeout(() => {
                 $('#editCategory, #editStatus').select2('destroy');
                 $('#editCategory, #editStatus').select2({
@@ -395,39 +547,22 @@ document.addEventListener('alpine:init', () => {
                     placeholder: 'Select...',
                     allowClear: false
                 });
-
                 $('#editCategory').on('change', (e) => { this.editItem.category = e.target.value; });
                 $('#editStatus').on('change', (e) => { this.editItem.status = e.target.value; });
-
                 $('#editCategory').val(this.editItem.category).trigger('change.select2');
                 $('#editStatus').val(this.editItem.status).trigger('change.select2');
             }, 100);
         },
         saveEditItem() {
             const id = this.editItemId;
-            if (id === null || id === undefined) {
-                this.showToast('❌ No item selected to edit!');
-                return;
-            }
+            if (id === null || id === undefined) { this.showToast('❌ No item selected to edit!'); return; }
             const index = this.menuItems.findIndex(i => i.id === id);
-            if (index === -1) {
-                this.showToast('❌ Menu not found!');
-                return;
-            }
-
+            if (index === -1) { this.showToast('❌ Menu not found!'); return; }
             const name = this.editItem.name.trim();
             const rawPrice = this.editItem.price.replace(/\D/g, '');
             const price = parseInt(rawPrice, 10) || 0;
-
-            if (!name) {
-                this.showToast('❌ Menu name is required!');
-                return;
-            }
-            if (price <= 0) {
-                this.showToast('❌ Price must be a positive number!');
-                return;
-            }
-
+            if (!name) { this.showToast('❌ Menu name is required!'); return; }
+            if (price <= 0) { this.showToast('❌ Price must be a positive number!'); return; }
             this.menuItems[index] = {
                 ...this.menuItems[index],
                 name: name,
@@ -437,73 +572,27 @@ document.addEventListener('alpine:init', () => {
                 icon: this.editItem.icon || '🍽️',
                 image: this.editItem.imageData || this.menuItems[index].image
             };
-
-            this.cart.forEach(cartItem => {
-                if (cartItem.id === id) {
-                    cartItem.name = name;
-                    cartItem.price = price;
-                    cartItem.icon = this.editItem.icon || '🍽️';
+            // Update sessions & cart
+            this.sessions.forEach(session => {
+                session.items.forEach(item => {
+                    if (item.id === id) {
+                        item.name = name;
+                        item.price = price;
+                        item.icon = this.editItem.icon || '🍽️';
+                    }
+                });
+            });
+            this.cart.forEach(item => {
+                if (item.id === id) {
+                    item.name = name;
+                    item.price = price;
+                    item.icon = this.editItem.icon || '🍽️';
                 }
             });
-
             bootstrap.Modal.getInstance(document.getElementById('editItemModal')).hide();
-
             this.editItemId = null;
             this.editItem = { name: '', price: '', category: 'food', status: 'available', icon: '🍽️', imagePreview: null, imageData: null };
-
             this.showToast('✅ Menu "' + name + '" updated successfully!');
-        },
-
-        // ---- CART ----
-        incrementQty(id) {
-            const menuItem = this.menuItems.find(i => i.id === id);
-            if (!menuItem) return;
-            if (menuItem.status === 'out') {
-                this.showToast('❌ ' + menuItem.name + ' is out of stock!');
-                return;
-            }
-            const existing = this.cart.find(c => c.id === id);
-            if (existing) existing.qty += 1;
-            else {
-                this.cart.push({ ...menuItem, qty: 1 });
-            }
-        },
-        decrementQty(id) {
-            const idx = this.cart.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            if (this.cart[idx].qty > 1) this.cart[idx].qty -= 1;
-            else this.cart.splice(idx, 1);
-        },
-        updateQtyFromInput(id, event) {
-            const val = parseInt(event.target.value, 10);
-            if (isNaN(val) || val < 0) {
-                event.target.value = this.getDisplayQty(id);
-                return;
-            }
-            if (val === 0) {
-                const idx = this.cart.findIndex(c => c.id === id);
-                if (idx !== -1) this.cart.splice(idx, 1);
-            } else {
-                const existing = this.cart.find(c => c.id === id);
-                if (existing) existing.qty = val;
-                else {
-                    const menuItem = this.menuItems.find(i => i.id === id);
-                    if (menuItem) this.cart.push({ ...menuItem, qty: val });
-                }
-            }
-        },
-        removeFromCart(id) {
-            const idx = this.cart.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            if (this.cart[idx].qty > 1) this.cart[idx].qty -= 1;
-            else this.cart.splice(idx, 1);
-        },
-        resetTo(id, targetQty) {
-            const item = this.cart.find(c => c.id === id);
-            if (item && item.qty > targetQty) {
-                item.qty = targetQty;
-                this.showToast('✅ Qty reset to ' + targetQty);
-            }
         },
 
         // ---- OPENING BALANCE ----
@@ -527,14 +616,11 @@ document.addEventListener('alpine:init', () => {
             this.discountType = 'rp';
             this.discountValue = 0;
             this.discountDisplay = '0';
-
             setTimeout(() => {
                 $('#paymentMethod').val('cash').trigger('change.select2');
             }, 50);
-
             this.handlePaymentMethodChange();
-            const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-            modal.show();
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
         },
         setQuickPay(val) {
             this.paymentAmountRaw = val;
@@ -544,10 +630,17 @@ document.addEventListener('alpine:init', () => {
         updateChange() {
             try {
                 if (this.paymentMethod === 'cash') {
-                    const raw = this.parseRupiah(this.paymentAmount);
-                    this.paymentAmountRaw = raw;
+                    // Format payment amount display
+                    if (this.paymentAmount) {
+                        const raw = this.parseRupiah(this.paymentAmount);
+                        this.paymentAmountRaw = raw;
+                        // Re-format display with thousand separator
+                        if (raw > 0) {
+                            this.paymentAmount = this.formatRupiah(raw);
+                        }
+                    }
                     const total = this.discountedTotal;
-                    this.changeAmount = raw - total;
+                    this.changeAmount = this.paymentAmountRaw - total;
                 } else {
                     const total = this.discountedTotal;
                     this.paymentAmount = this.formatRupiah(total);
@@ -641,6 +734,56 @@ document.addEventListener('alpine:init', () => {
             this.updateChange();
         },
 
+        // ---- COMPUTED for cart/discount ----
+        get cartTotal() {
+            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        },
+        get cartCount() {
+            return this.cart.reduce((sum, item) => sum + item.qty, 0);
+        },
+        get discountAmount() {
+            const total = this.cartTotal;
+            if (this.discountType === 'rp') {
+                const val = this.discountValue || 0;
+                return Math.min(val, total);
+            } else if (this.discountType === 'percent') {
+                const pct = Math.min(this.discountValue || 0, 100);
+                return total * pct / 100;
+            }
+            return 0;
+        },
+        get discountedTotal() {
+            return Math.max(this.cartTotal - this.discountAmount, 0);
+        },
+        get quickPayOptions() {
+            const total = this.discountedTotal;
+            if (total <= 0) return [0];
+            let end = 100000;
+            if (total > 100000) {
+                end = Math.ceil(total / 100000) * 100000;
+                if (end <= total) end += 100000;
+            }
+            let down = Math.floor(total / 10000) * 10000;
+            if (down === total) down = Math.max(0, down - 10000);
+            if (total < 50000) down = 50000;
+            if (down <= 0) down = 10000;
+            let up = Math.ceil(total / 10000) * 10000;
+            if (up === total) up = up + 10000;
+            if (total < 50000) up = Math.max(down + 10000, 60000);
+            if (up <= down) up = down + 10000;
+            if (total <= 100000 && up >= end) up = Math.min(end - 10000, Math.ceil((total + end) / 2) / 10000 * 10000);
+            if (up <= down) up = down + 10000;
+            let others = [down, up, end].filter(v => v > 0 && v !== total);
+            others = [...new Set(others)].sort((a, b) => a - b);
+            let options = [total, ...others];
+            const endIndex = options.indexOf(end);
+            if (endIndex !== -1 && endIndex !== options.length - 1) {
+                options.splice(endIndex, 1);
+                options.push(end);
+            }
+            return options;
+        },
+
         // ---- HISTORY ----
         deleteTransaction(id) {
             if (confirm('Delete transaction #' + id + '?')) {
@@ -663,14 +806,12 @@ document.addEventListener('alpine:init', () => {
             localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
             this.showToast('⚙️ Printer setting: ' + this.defaultPrinterSize);
         },
-        
-        // ---- Outlet ----
         setOutle(name, address) {
             this.outletName = name || 'My Fried Chicken';
             this.outletAddress = address || 'Pusat';
         },
 
-        // ---- PRINT MODULE ----
+        // ---- PRINT ----
         printStrukMobile(transaction) {
             if (!transaction || !transaction.items || transaction.items.length === 0) {
                 this.showToast('❌ No transaction data to print!');
@@ -691,31 +832,22 @@ document.addEventListener('alpine:init', () => {
                 const maxWidth = is80mm ? 48 : 32;
                 const encoder = new EscPosEncoder();
                 let receipt = encoder.initialize();
-
-                // ===== HEADER (dinamis) =====
                 receipt.align('center')
                     .bold(true).text(this.outletName).newline().bold(false)
                     .text(this.outletAddress).newline()
                     .line('-'.repeat(maxWidth));
-
-                // ===== INFO =====
                 receipt.align('left')
                     .text(`Kasir : ${this.cashierName}`).newline()
                     .text(`Waktu : ${this.formatTanggalIndonesia(transaction.timestamp)}`).newline()
                     .text(`No. Struk : #${transaction.id}`).newline()
                     .text(`Bayar : ${transaction.method === 'Cash' ? 'Tunai' : 'QRIS'}`).newline()
                     .line('-'.repeat(maxWidth));
-
-                // ===== LUNAS =====
                 receipt.align('center')
                     .bold(true).text('LUNAS').newline().bold(false)
                     .line('-'.repeat(maxWidth));
-
-                // ===== ITEMS =====
                 receipt.align('left')
                     .text('Item'.padEnd(20) + 'Qty'.padStart(6) + 'Total'.padStart(14)).newline()
                     .line('-'.repeat(maxWidth));
-
                 transaction.items.forEach(item => {
                     const name = item.name.substring(0, 20);
                     const qtyStr = item.qty.toString();
@@ -723,39 +855,27 @@ document.addEventListener('alpine:init', () => {
                     const line = name.padEnd(20) + qtyStr.padStart(6) + subtotalStr.padStart(14);
                     receipt.text(line).newline();
                 });
-
                 receipt.line('-'.repeat(maxWidth));
-
-                // ===== SUBTOTAL =====
                 const subtotalStr = 'Rp' + this.formatRupiah(transaction.subtotal);
                 receipt.align('right')
                     .text(`Subtotal : ${subtotalStr}`).newline();
-
-                // ===== DISKON =====
                 if (transaction.discount && transaction.discount > 0) {
                     const diskonStr = '-Rp' + this.formatRupiah(transaction.discount);
                     receipt.text(`Diskon : ${diskonStr}`).newline();
                 }
-
-                // ===== TOTAL =====
                 const totalQty = transaction.items.reduce((sum, item) => sum + item.qty, 0);
                 const totalStr = 'Rp' + this.formatRupiah(transaction.total);
                 receipt.bold(true)
                     .text(`Total (${totalQty}) : ${totalStr}`).newline()
                     .bold(false)
                     .line('-'.repeat(maxWidth));
-
-                // ===== BAYAR & KEMBALI =====
                 receipt.text(`Bayar : Rp${this.formatRupiah(transaction.paid)}`).newline()
                     .text(`Kembali : Rp${this.formatRupiah(transaction.change)}`).newline()
                     .line('-'.repeat(maxWidth));
-
-                // ===== FOOTER =====
                 receipt.align('center')
                     .text('Powered by KitaPOS').newline()
                     .text('Terima kasih').newline()
                     .newline().newline().newline();
-
                 const resultData = receipt.encode();
                 let binary = '';
                 resultData.forEach(b => binary += String.fromCharCode(b));
@@ -780,30 +900,25 @@ document.addEventListener('alpine:init', () => {
                 const services = await server.getPrimaryServices();
                 const characteristics = await services[0].getCharacteristics();
                 const characteristic = characteristics.find(c => c.properties.write || c.properties.writeWithoutResponse);
-
                 const encoder = new EscPosEncoder();
                 let receipt = encoder.initialize()
                     .align('center')
                     .bold(true).text('KITA POS - PUSAT').newline().bold(false)
                     .line('-'.repeat(is80mm ? 48 : 32))
                     .align('left');
-
                 transaction.items.forEach(item => {
                     const leftStr = `  ${item.qty} x ${this.formatRupiah(item.price)}`;
                     const rightStr = this.formatRupiah(item.subtotal);
                     receipt.text(item.name).newline();
                     receipt.text(this.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
                 });
-
                 if (transaction.discount && transaction.discount > 0) {
                     receipt.line('-'.repeat(is80mm ? 48 : 32))
                         .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
                 }
-
                 receipt.line('-'.repeat(is80mm ? 48 : 32))
                     .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
                     .newline().newline().newline();
-
                 const resultData = receipt.encode();
                 for (let i = 0; i < resultData.length; i += 50) {
                     await characteristic.writeValue(resultData.slice(i, i + 50));
@@ -818,7 +933,6 @@ document.addEventListener('alpine:init', () => {
         },
         printStrukBrowser(transaction) {
             if (!transaction || !transaction.items || transaction.items.length === 0) return;
-
             let style = document.getElementById('printPageStyle');
             if (!style) {
                 style = document.createElement('style');
@@ -851,8 +965,7 @@ document.addEventListener('alpine:init', () => {
                         page-break-inside: avoid !important;
                         page-break-after: avoid !important;
                     }
-                    .struk-content.paper-58mm,
-                    .struk-content.paper-80mm {
+                    .struk-content.paper-58mm, .struk-content.paper-80mm {
                         width: ${paperSize} !important;
                         max-width: ${paperSize} !important;
                     }
@@ -860,7 +973,6 @@ document.addEventListener('alpine:init', () => {
                     body > *:not(#strukContainer) { display: none !important; }
                 }
             `;
-
             const totalQty = transaction.items.reduce((sum, item) => sum + item.qty, 0);
             this.strukData = {
                 id: transaction.id,
@@ -874,7 +986,6 @@ document.addEventListener('alpine:init', () => {
                 discount: transaction.discount || 0,
                 subtotal: transaction.subtotal || transaction.total + (transaction.discount || 0)
             };
-
             const container = document.getElementById('strukContainer');
             container.style.display = 'block';
             setTimeout(() => window.print(), 400);
@@ -904,17 +1015,12 @@ document.addEventListener('alpine:init', () => {
         filterMenu() { }
     });
 
-    // ================================================================
-    // 2. UI COMPONENTS (minimal – just for scoping if needed)
-    // ================================================================
+    // ===== UI COMPONENTS =====
     Alpine.data('navbarComponent', () => ({}));
     Alpine.data('menuGridComponent', () => ({
-        // Tidak perlu menyimpan items karena sudah ada di store.pos
         init() {
-            // Ambil semua item dari store dan fetch gambarnya
             this.$nextTick(() => {
-                const items = this.$store.pos.menuItems;
-                items.forEach(item => {
+                this.$store.pos.menuItems.forEach(item => {
                     if (item.category !== 'additional') {
                         this.fetchPexelsImage(item);
                     }
@@ -923,29 +1029,19 @@ document.addEventListener('alpine:init', () => {
         },
         async fetchPexelsImage(item) {
             if (item.image) return;
-
-            const apiKey = window._env.PEXELS_API_KEY;;
+            const apiKey = window._env?.PEXELS_API_KEY;
             if (!apiKey) {
                 console.warn('Pexels API key not found, using fallback.');
                 return;
             }
-
             const query = encodeURIComponent(item.name);
             const url = `https://api.pexels.com/v1/search?query=${query}`;
-
             try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': apiKey
-                    }
-                });
+                const response = await fetch(url, { headers: { 'Authorization': apiKey } });
                 const data = await response.json();
-
                 if (data.photos && data.photos.length > 0) {
-                    // Set image ke item (reaktif karena item adalah object)
                     item.image = data.photos[0].src.medium;
                 } else {
-                    // Tidak ada hasil, biarkan null (fallback di src)
                     item.image = null;
                 }
             } catch (error) {
@@ -954,6 +1050,10 @@ document.addEventListener('alpine:init', () => {
             }
         }
     }));
+    
+    // Draft Sessions Component
+    Alpine.data('draftSessionsComponent', () => ({}));
+    
     Alpine.data('cartSidebarComponent', () => ({}));
     Alpine.data('mobileCartComponent', () => ({}));
     Alpine.data('checkoutComponent', () => ({}));
@@ -961,57 +1061,55 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('calculatorComponent', () => ({}));
     Alpine.data('addEditMenuComponent', () => ({}));
 
-    // ================================================================
-    // 3. ROOT COMPONENT
-    // ================================================================
+    // ===== ROOT =====
     Alpine.data('posApp', () => ({
         init() {
             const store = Alpine.store('pos');
 
-            // Check Windows User
-            if (window.KitaPOS && window.KitaPOS.user) {
-                store.setCashier(
-                    window.KitaPOS.user.name,
-                    window.KitaPOS.user.isOnline
-                );
+            // ===== SET CASHIER BASED ON TIME =====
+            const currentHour = new Date().getHours();
+            let cashierName = "May";
+
+            if (currentHour >= 7 && currentHour < 15) {
+                cashierName = "May";
+            } else if (currentHour >= 15 && currentHour <= 23) {
+                cashierName = "Lusiana";
             } else {
-                // fallback to storage
+                cashierName = "Guest";
+            }
+
+            store.setCashier(cashierName, true);
+
+            if (window.KitaPOS?.user) {
+                store.setCashier(window.KitaPOS.user.name, window.KitaPOS.user.isOnline);
+            } else {
                 store.loadCashier();
             }
 
-            if (window.KitaPOS && window.KitaPOS.outlet) {
-                this.setOutlet(window.KitaPOS.outlet.name, window.KitaPOS.outlet.address);
+            if (window.KitaPOS?.outlet) {
+                store.setOutle(window.KitaPOS.outlet.name, window.KitaPOS.outlet.address);
             }
-
-            // to load data
             store.init();
 
-            // Select2 init
             setTimeout(() => {
                 $('.select2-custom').select2({ theme: 'default', width: '100%', dropdownAutoWidth: true });
-
-                // Bridge jQuery -> Alpine for payment method
                 $('#paymentMethod').on('change', (e) => {
-                    const store = Alpine.store('pos');
-                    store.paymentMethod = e.target.value;
-                    store.handlePaymentMethodChange();
+                    const s = Alpine.store('pos');
+                    s.paymentMethod = e.target.value;
+                    s.handlePaymentMethodChange();
                 });
-
                 $('#manualCategory').on('change', (e) => {
-                    const store = Alpine.store('pos');
-                    store.newItem.category = e.target.value;
-                    store.onCategoryChange();
+                    const s = Alpine.store('pos');
+                    s.newItem.category = e.target.value;
+                    s.onCategoryChange();
                 });
-
                 $('#manualStatus').on('change', (e) => {
-                    const store = Alpine.store('pos');
-                    store.newItem.status = e.target.value;
+                    const s = Alpine.store('pos');
+                    s.newItem.status = e.target.value;
                 });
             }, 100);
-
-            window.addEventListener('resize', () => { });
         }
     }));
 
-    console.log('✅ KitaPOS with Alpine.js ready!');
+    console.log('✅ KitaPOS with Alpine.js ready! (Multi-session draft)');
 });
