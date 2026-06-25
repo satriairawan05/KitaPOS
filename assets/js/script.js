@@ -677,33 +677,72 @@ document.addEventListener('alpine:init', () => {
         printStrukRawBT(transaction) {
             try {
                 const is80mm = this.defaultPrinterSize === '80mm';
+                const maxWidth = is80mm ? 48 : 32;
                 const encoder = new EscPosEncoder();
                 let receipt = encoder.initialize();
+
+                // ===== HEADER (dinamis) =====
                 receipt.align('center')
-                    .bold(true).text('KITA POS - PUSAT').newline().bold(false)
-                    .text('Jl. Raya Sukses No. 123').newline()
-                    .line('-'.repeat(is80mm ? 48 : 32))
-                    .align('left')
+                    .bold(true).text(this.companyName).newline().bold(false)
+                    .text(this.companyAddress).newline()
+                    .line('-'.repeat(maxWidth));
+
+                // ===== INFO =====
+                receipt.align('left')
                     .text(`Kasir : ${this.cashierName}`).newline()
-                    .text(`No    : #${transaction.id}`).newline()
-                    .line('-'.repeat(is80mm ? 48 : 32));
+                    .text(`Waktu : ${transaction.timestamp}`).newline()
+                    .text(`No. Struk : #${transaction.id}`).newline()
+                    .text(`Bayar : ${transaction.method === 'Cash' ? 'Tunai' : 'QRIS'}`).newline()
+                    .line('-'.repeat(maxWidth));
+
+                // ===== LUNAS =====
+                receipt.align('center')
+                    .bold(true).text('LUNAS').newline().bold(false)
+                    .line('-'.repeat(maxWidth));
+
+                // ===== ITEMS =====
+                receipt.align('left')
+                    .text('Item'.padEnd(20) + 'Qty'.padStart(6) + 'Total'.padStart(14)).newline()
+                    .line('-'.repeat(maxWidth));
 
                 transaction.items.forEach(item => {
-                    const leftStr = `  ${item.qty} x ${this.formatRupiah(item.price)}`;
-                    const rightStr = this.formatRupiah(item.subtotal);
-                    receipt.text(item.name).newline();
-                    receipt.text(this.formatReceiptLine(leftStr, rightStr, is80mm)).newline();
+                    const name = item.name.substring(0, 20);
+                    const qtyStr = item.qty.toString();
+                    const subtotalStr = 'Rp' + this.formatRupiah(item.subtotal);
+                    const line = name.padEnd(20) + qtyStr.padStart(6) + subtotalStr.padStart(14);
+                    receipt.text(line).newline();
                 });
 
+                receipt.line('-'.repeat(maxWidth));
+
+                // ===== SUBTOTAL =====
+                const subtotalStr = 'Rp' + this.formatRupiah(transaction.subtotal);
+                receipt.align('right')
+                    .text(`Subtotal : ${subtotalStr}`).newline();
+
+                // ===== DISKON =====
                 if (transaction.discount && transaction.discount > 0) {
-                    receipt.line('-'.repeat(is80mm ? 48 : 32))
-                        .text(this.formatReceiptLine('Diskon', '-Rp ' + this.formatRupiah(transaction.discount), is80mm)).newline();
+                    const diskonStr = '-Rp' + this.formatRupiah(transaction.discount);
+                    receipt.text(`Diskon : ${diskonStr}`).newline();
                 }
 
-                receipt.line('-'.repeat(is80mm ? 48 : 32))
-                    .text(this.formatReceiptLine('TOTAL', 'Rp ' + this.formatRupiah(transaction.total), is80mm)).newline()
-                    .line('-'.repeat(is80mm ? 48 : 32))
-                    .align('center').text('Terima kasih').newline()
+                // ===== TOTAL =====
+                const totalQty = transaction.items.reduce((sum, item) => sum + item.qty, 0);
+                const totalStr = 'Rp' + this.formatRupiah(transaction.total);
+                receipt.bold(true)
+                    .text(`Total (${totalQty}) : ${totalStr}`).newline()
+                    .bold(false)
+                    .line('-'.repeat(maxWidth));
+
+                // ===== BAYAR & KEMBALI =====
+                receipt.text(`Bayar : Rp${this.formatRupiah(transaction.paid)}`).newline()
+                    .text(`Kembali : Rp${this.formatRupiah(transaction.change)}`).newline()
+                    .line('-'.repeat(maxWidth));
+
+                // ===== FOOTER =====
+                receipt.align('center')
+                    .text('Powered by KitaPOS').newline()
+                    .text('Terima kasih').newline()
                     .newline().newline().newline();
 
                 const resultData = receipt.encode();
@@ -714,7 +753,7 @@ document.addEventListener('alpine:init', () => {
                 this.showToast('⚠️ RawBT failed, switching to normal print');
                 this.printStrukBrowser(transaction);
             }
-        },
+        }
         async printStrukWebBluetoothiOS(transaction) {
             if (!navigator.bluetooth) {
                 alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser.");
@@ -895,7 +934,7 @@ document.addEventListener('alpine:init', () => {
                 });
             }, 100);
 
-            window.addEventListener('resize', () => {});
+            window.addEventListener('resize', () => { });
         }
     }));
 
