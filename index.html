@@ -236,12 +236,12 @@
                         </div>
                     </div>
                     <div class="cart-title">
-                        <span><i class="bi bi-cart3 me-1"></i> Keranjang</span>
+                        <span><i class="bi bi-cart3 me-1"></i> Cart</span>
                         <span class="badge" x-text="$store.pos.cartCount">0</span>
                     </div>
                     <div id="cartItems">
                         <template x-if="$store.pos.cart.length === 0">
-                            <div class="cart-empty"><i class="bi bi-basket"></i> Keranjang kosong</div>
+                            <div class="cart-empty"><i class="bi bi-basket"></i> Empty Cart</div>
                         </template>
                         <template x-for="item in $store.pos.cart" :key="item.id">
                             <div class="cart-item">
@@ -290,7 +290,7 @@
                     <span class="badge bg-danger text-white" x-show="$store.pos.getTotalSessionsCount() > 0"
                         x-text="'Draft: ' + $store.pos.getTotalSessionsCount()"></span>
                     <span class="badge bg-primary text-white" x-show="$store.pos.cartCount > 0"
-                        x-text="'Keranjang: ' + $store.pos.cartCount"></span>
+                        x-text="'Cart: ' + $store.pos.cartCount"></span>
                 </div>
                 <div class="fw-bold text-dark" style="font-size: 16px;"
                     x-text="'Total: Rp ' + $store.pos.formatRupiah($store.pos.cartTotal + $store.pos.getTotalSessionsTotal())">
@@ -318,7 +318,7 @@
                 </div>
                 <div class="card-body p-2">
                     <template x-if="!$store.pos.sessions || $store.pos.sessions.length === 0">
-                        <div class="text-center text-muted py-2" style="font-size: 13px;">Belum ada draft.</div>
+                        <div class="text-center text-muted py-2" style="font-size: 13px;">Draft Not Found.</div>
                     </template>
                     <template x-for="session in $store.pos.sessions" :key="session.id">
                         <div class="session-item border-bottom pb-2 mb-2"
