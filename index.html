@@ -318,7 +318,7 @@
                 </div>
                 <div class="card-body p-2">
                     <template x-if="!$store.pos.sessions || $store.pos.sessions.length === 0">
-                        <div class="text-center text-muted py-2" style="font-size: 13px;">Draft Not Found.</div>
+                        <div class="text-center text-muted py-2" style="font-size: 13px;">There is no draft yet.</div>
                     </template>
                     <template x-for="session in $store.pos.sessions" :key="session.id">
                         <div class="session-item border-bottom pb-2 mb-2"
