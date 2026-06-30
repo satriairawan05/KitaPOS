@@ -6,7 +6,7 @@
 
 console.log('🚀 KitaPOS script.js loaded successfully!');
 
-document.addEventListener('alpine:init', function() {
+document.addEventListener('alpine:init', function () {
     console.log('⚡ Alpine.js initialized!');
 
     Alpine.store('pos', {
@@ -68,53 +68,53 @@ document.addEventListener('alpine:init', function() {
         get filteredMenu() {
             var items = this.menuItems;
             if (this.currentCategory !== 'all') {
-                items = items.filter(function(item) { return item.category === this.currentCategory; }.bind(this));
+                items = items.filter(function (item) { return item.category === this.currentCategory; }.bind(this));
             }
             if (this.searchQuery.trim()) {
                 var q = this.searchQuery.trim().toLowerCase();
-                items = items.filter(function(item) { return item.name.toLowerCase().indexOf(q) !== -1; });
+                items = items.filter(function (item) { return item.name.toLowerCase().indexOf(q) !== -1; });
             }
             return items;
         },
 
         // ---- DRAFT (sessions) helpers ----
-        getTotalSessionsCount: function() {
-            return this.sessions.reduce(function(sum, s) {
-                return sum + s.items.reduce(function(acc, i) { return acc + i.qty; }, 0);
+        getTotalSessionsCount: function () {
+            return this.sessions.reduce(function (sum, s) {
+                return sum + s.items.reduce(function (acc, i) { return acc + i.qty; }, 0);
             }, 0);
         },
-        getTotalSessionsTotal: function() {
-            return this.sessions.reduce(function(sum, s) {
+        getTotalSessionsTotal: function () {
+            return this.sessions.reduce(function (sum, s) {
                 return sum + this.getSessionTotal(s.id);
             }.bind(this), 0);
         },
-        getSessionTotal: function(sessionId) {
-            var session = this.sessions.find(function(s) { return s.id === sessionId; });
+        getSessionTotal: function (sessionId) {
+            var session = this.sessions.find(function (s) { return s.id === sessionId; });
             if (!session) return 0;
-            return session.items.reduce(function(sum, item) { return sum + (item.price * item.qty); }, 0);
+            return session.items.reduce(function (sum, item) { return sum + (item.price * item.qty); }, 0);
         },
-        getDraftQty: function(id) {
-            var session = this.sessions.find(function(s) { return s.id === this.activeSessionId; }.bind(this));
+        getDraftQty: function (id) {
+            var session = this.sessions.find(function (s) { return s.id === this.activeSessionId; }.bind(this));
             if (!session) return 0;
-            var item = session.items.find(function(i) { return i.id === id; });
+            var item = session.items.find(function (i) { return i.id === id; });
             return item ? item.qty : 0;
         },
-        getDisplayDraftQty: function(id) {
+        getDisplayDraftQty: function (id) {
             var qty = this.getDraftQty(id);
             return qty > 0 ? qty : 1;
         },
 
-        getCartQty: function(id) {
-            var item = this.cart.find(function(c) { return c.id === id; });
+        getCartQty: function (id) {
+            var item = this.cart.find(function (c) { return c.id === id; });
             return item ? item.qty : 0;
         },
-        getDisplayQty: function(id) {
+        getDisplayQty: function (id) {
             var qty = this.getCartQty(id);
             return qty > 0 ? qty : 1;
         },
 
         // ---- CASHIER ----
-        setCashier: function(name, online) {
+        setCashier: function (name, online) {
             if (online === undefined) online = true;
             this.cashierName = name || 'Guest';
             this.isCashierOnline = online;
@@ -125,7 +125,7 @@ document.addEventListener('alpine:init', function() {
                 // localStorage not available
             }
         },
-        loadCashier: function() {
+        loadCashier: function () {
             try {
                 var name = localStorage.getItem('cashierName');
                 var online = localStorage.getItem('isCashierOnline');
@@ -137,17 +137,17 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- INIT ----
-        init: function() {
+        init: function () {
             try {
                 this.loadCashier();
                 var storedOB = null;
                 try {
                     storedOB = localStorage.getItem('openingBalance');
-                } catch (e) {}
+                } catch (e) { }
                 this.openingBalance = storedOB !== null ? parseInt(storedOB, 10) || 0 : 150000;
                 try {
                     localStorage.setItem('openingBalance', this.openingBalance.toString());
-                } catch (e) {}
+                } catch (e) { }
 
                 this.menuItems = [
                     { id: 1, name: 'Ayam Geprek', price: 12000, category: 'food', status: 'available', icon: '🍗', image: null },
@@ -178,13 +178,13 @@ document.addEventListener('alpine:init', function() {
                     if (storedHistory) {
                         this.transactionHistory = JSON.parse(storedHistory);
                     }
-                } catch (e) {}
-                
+                } catch (e) { }
+
                 try {
                     var savedSize = localStorage.getItem('defaultPrinterSize');
                     this.defaultPrinterSize = savedSize || '58mm';
                     localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
-                } catch (e) {}
+                } catch (e) { }
 
                 var toastEl = document.getElementById('liveToast');
                 if (toastEl && typeof bootstrap !== 'undefined' && bootstrap.Toast) {
@@ -202,18 +202,18 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- SAVE/LOAD ----
-        saveOpeningBalance: function(value) {
+        saveOpeningBalance: function (value) {
             this.openingBalance = value;
             try {
                 localStorage.setItem('openingBalance', value.toString());
-            } catch (e) {}
+            } catch (e) { }
         },
-        saveTransactionHistory: function() {
+        saveTransactionHistory: function () {
             try {
                 localStorage.setItem('transactionHistory', JSON.stringify(this.transactionHistory));
-            } catch (e) {}
+            } catch (e) { }
         },
-        saveTransaction: function(method, total, paid, change, items, discountAmt, discountType, discountValue, subtotal) {
+        saveTransaction: function (method, total, paid, change, items, discountAmt, discountType, discountValue, subtotal) {
             var now = new Date();
             var timestamp = this.formatTanggalIndonesia(now);
             var transaction = {
@@ -233,21 +233,21 @@ document.addEventListener('alpine:init', function() {
             this.saveTransactionHistory();
             return transaction;
         },
-        showToast: function(msg) {
+        showToast: function (msg) {
             this.toastMessage = msg;
             if (this.toast) {
                 try {
                     this.toast.show();
-                } catch (e) {}
+                } catch (e) { }
             }
         },
 
         // ---- HELPERS ----
-        formatRupiah: function(angka) {
+        formatRupiah: function (angka) {
             if (!angka && angka !== 0) return '';
             return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         },
-        formatPriceInput: function(event) {
+        formatPriceInput: function (event) {
             var value = event.target.value.replace(/\D/g, '');
             if (value === '') {
                 event.target.value = '';
@@ -260,17 +260,17 @@ document.addEventListener('alpine:init', function() {
             }
             event.target.value = this.formatRupiah(number);
         },
-        parseRupiah: function(str) {
+        parseRupiah: function (str) {
             if (!str) return 0;
             return parseInt(str.replace(/\D/g, ''), 10) || 0;
         },
-        formatTanggalIndonesia: function(date) {
+        formatTanggalIndonesia: function (date) {
             var month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
             var hour = String(date.getHours()).padStart(2, '0');
             var minute = String(date.getMinutes()).padStart(2, '0');
             return date.getDate() + ' ' + month[date.getMonth()] + ' ' + date.getFullYear() + ' ' + hour + ':' + minute;
         },
-        formatReceiptLine: function(leftText, rightText, is80mm) {
+        formatReceiptLine: function (leftText, rightText, is80mm) {
             if (is80mm === undefined) is80mm = false;
             var lineLength = is80mm ? 48 : 32;
             var left = leftText.toString();
@@ -284,7 +284,7 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- UI NAVIGATION ----
-        goHome: function() {
+        goHome: function () {
             this.currentCategory = 'all';
             this.searchQuery = '';
             var el = document.getElementById('mainContent');
@@ -293,27 +293,27 @@ document.addEventListener('alpine:init', function() {
             }
             this.showToast('🏠 Returned to main menu');
         },
-        openCalculator: function() {
+        openCalculator: function () {
             var el = document.getElementById('calcModal');
             if (el && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                 new bootstrap.Modal(el).show();
             }
         },
-        openHistory: function() {
+        openHistory: function () {
             var el = document.getElementById('historyModal');
             if (el && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                 new bootstrap.Modal(el).show();
             }
         },
-        toggleMobileCart: function() {
+        toggleMobileCart: function () {
             this.mobileCartOpen = !this.mobileCartOpen;
         },
-        closeMobileCart: function() {
+        closeMobileCart: function () {
             this.mobileCartOpen = false;
         },
 
         // ---- SESSION MANAGEMENT ----
-        openNewSessionModal: function() {
+        openNewSessionModal: function () {
             this.newSessionType = 'dinein';
             this.newSessionTable = '';
             var el = document.getElementById('newSessionModal');
@@ -321,7 +321,7 @@ document.addEventListener('alpine:init', function() {
                 new bootstrap.Modal(el).show();
             }
         },
-        createNewSession: function() {
+        createNewSession: function () {
             var type = this.newSessionType;
             var table = this.newSessionTable ? parseInt(this.newSessionTable, 10) : null;
             var name = '';
@@ -353,14 +353,14 @@ document.addEventListener('alpine:init', function() {
             this.showToast('✅ Pesanan baru dibuat: ' + name);
             console.log('📦 Session created:', session);
         },
-        setActiveSession: function(id) {
+        setActiveSession: function (id) {
             this.activeSessionId = id;
-            var session = this.sessions.find(function(s) { return s.id === id; });
+            var session = this.sessions.find(function (s) { return s.id === id; });
             this.showToast('🔁 Session aktif: ' + (session ? session.name : 'unknown'));
         },
-        removeSession: function(id) {
+        removeSession: function (id) {
             if (confirm('Hapus session ini?')) {
-                this.sessions = this.sessions.filter(function(s) { return s.id !== id; });
+                this.sessions = this.sessions.filter(function (s) { return s.id !== id; });
                 if (this.activeSessionId === id) {
                     this.activeSessionId = this.sessions.length > 0 ? this.sessions[0].id : null;
                 }
@@ -370,9 +370,9 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- SESSION DETAIL MODAL ----
-        openSessionDetailModal: function(sessionId) {
+        openSessionDetailModal: function (sessionId) {
             console.log('🔍 Opening detail for session:', sessionId);
-            var session = this.sessions.find(function(s) { return s.id === sessionId; });
+            var session = this.sessions.find(function (s) { return s.id === sessionId; });
             if (!session) {
                 this.showToast('❌ Session tidak ditemukan');
                 console.error('Session not found:', sessionId);
@@ -390,18 +390,18 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- DRAFT (session) ITEMS ----
-        incrementDraftQty: function(id) {
+        incrementDraftQty: function (id) {
             if (!this.activeSessionId) {
                 this.showToast('❌ Buat pesanan baru terlebih dahulu!');
                 this.openNewSessionModal();
                 return;
             }
-            var session = this.sessions.find(function(s) { return s.id === this.activeSessionId; }.bind(this));
+            var session = this.sessions.find(function (s) { return s.id === this.activeSessionId; }.bind(this));
             if (!session) {
                 this.showToast('❌ Session tidak ditemukan');
                 return;
             }
-            var menuItem = this.menuItems.find(function(i) { return i.id === id; });
+            var menuItem = this.menuItems.find(function (i) { return i.id === id; });
             if (!menuItem) {
                 this.showToast('❌ Menu tidak ditemukan');
                 return;
@@ -410,7 +410,7 @@ document.addEventListener('alpine:init', function() {
                 this.showToast('❌ ' + menuItem.name + ' habis!');
                 return;
             }
-            var existing = session.items.find(function(i) { return i.id === id; });
+            var existing = session.items.find(function (i) { return i.id === id; });
             if (existing) {
                 existing.qty += 1;
             } else {
@@ -418,8 +418,8 @@ document.addEventListener('alpine:init', function() {
             }
             this.showToast('📝 ' + menuItem.name + ' ditambahkan ke ' + session.name);
         },
-        decrementDraftQty: function(id) {
-            var session = this.sessions.find(function(s) { return s.id === this.activeSessionId; }.bind(this));
+        decrementDraftQty: function (id) {
+            var session = this.sessions.find(function (s) { return s.id === this.activeSessionId; }.bind(this));
             if (!session) return;
             var idx = -1;
             for (var i = 0; i < session.items.length; i++) {
@@ -432,13 +432,13 @@ document.addEventListener('alpine:init', function() {
                 session.items.splice(idx, 1);
             }
         },
-        updateDraftQtyFromInput: function(id, event) {
+        updateDraftQtyFromInput: function (id, event) {
             var val = parseInt(event.target.value, 10);
             if (isNaN(val) || val < 0) {
                 event.target.value = this.getDisplayDraftQty(id);
                 return;
             }
-            var session = this.sessions.find(function(s) { return s.id === this.activeSessionId; }.bind(this));
+            var session = this.sessions.find(function (s) { return s.id === this.activeSessionId; }.bind(this));
             if (!session) {
                 event.target.value = 1;
                 return;
@@ -449,7 +449,7 @@ document.addEventListener('alpine:init', function() {
             }
             if (idx === -1) {
                 if (val > 0) {
-                    var menuItem = this.menuItems.find(function(i) { return i.id === id; });
+                    var menuItem = this.menuItems.find(function (i) { return i.id === id; });
                     if (menuItem && menuItem.status !== 'out') {
                         session.items.push({ id: menuItem.id, name: menuItem.name, price: menuItem.price, qty: val, icon: menuItem.icon });
                     } else {
@@ -464,7 +464,7 @@ document.addEventListener('alpine:init', function() {
             if (val === 0) {
                 session.items.splice(idx, 1);
             } else {
-                var menuItem = this.menuItems.find(function(i) { return i.id === id; });
+                var menuItem = this.menuItems.find(function (i) { return i.id === id; });
                 if (menuItem && menuItem.status === 'out') {
                     this.showToast('❌ ' + menuItem.name + ' habis!');
                     event.target.value = this.getDisplayDraftQty(id);
@@ -475,15 +475,15 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- CONFIRM SESSION TO CART ----
-        confirmSessionToCart: function(sessionId) {
-            var session = this.sessions.find(function(s) { return s.id === sessionId; });
+        confirmSessionToCart: function (sessionId) {
+            var session = this.sessions.find(function (s) { return s.id === sessionId; });
             if (!session || session.items.length === 0) {
                 this.showToast('❌ Session kosong!');
                 return;
             }
             // Merge items into cart
-            session.items.forEach(function(item) {
-                var existing = this.cart.find(function(c) { return c.id === item.id; });
+            session.items.forEach(function (item) {
+                var existing = this.cart.find(function (c) { return c.id === item.id; });
                 if (existing) {
                     existing.qty += item.qty;
                 } else {
@@ -491,7 +491,7 @@ document.addEventListener('alpine:init', function() {
                 }
             }.bind(this));
             // Remove session
-            this.sessions = this.sessions.filter(function(s) { return s.id !== sessionId; });
+            this.sessions = this.sessions.filter(function (s) { return s.id !== sessionId; });
             if (this.activeSessionId === sessionId) {
                 this.activeSessionId = this.sessions.length > 0 ? this.sessions[0].id : null;
             }
@@ -506,10 +506,10 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- CART OPERATIONS ----
-        incrementQty: function(id) {
-            var existing = this.cart.find(function(c) { return c.id === id; });
+        incrementQty: function (id) {
+            var existing = this.cart.find(function (c) { return c.id === id; });
             if (existing) {
-                var menuItem = this.menuItems.find(function(i) { return i.id === id; });
+                var menuItem = this.menuItems.find(function (i) { return i.id === id; });
                 if (menuItem && menuItem.status === 'out') {
                     this.showToast('❌ ' + menuItem.name + ' habis!');
                     return;
@@ -519,7 +519,7 @@ document.addEventListener('alpine:init', function() {
                 this.showToast('❌ Item tidak ada di keranjang.');
             }
         },
-        decrementQty: function(id) {
+        decrementQty: function (id) {
             var idx = -1;
             for (var i = 0; i < this.cart.length; i++) {
                 if (this.cart[i].id === id) { idx = i; break; }
@@ -531,7 +531,7 @@ document.addEventListener('alpine:init', function() {
                 this.cart.splice(idx, 1);
             }
         },
-        updateQtyFromInput: function(id, event) {
+        updateQtyFromInput: function (id, event) {
             var val = parseInt(event.target.value, 10);
             if (isNaN(val) || val < 0) {
                 event.target.value = this.getDisplayQty(id);
@@ -549,7 +549,7 @@ document.addEventListener('alpine:init', function() {
             if (val === 0) {
                 this.cart.splice(idx, 1);
             } else {
-                var menuItem = this.menuItems.find(function(i) { return i.id === id; });
+                var menuItem = this.menuItems.find(function (i) { return i.id === id; });
                 if (menuItem && menuItem.status === 'out') {
                     this.showToast('❌ ' + menuItem.name + ' habis!');
                     event.target.value = this.getDisplayQty(id);
@@ -558,8 +558,8 @@ document.addEventListener('alpine:init', function() {
                 this.cart[idx].qty = val;
             }
         },
-        resetTo: function(id, targetQty) {
-            var item = this.cart.find(function(c) { return c.id === id; });
+        resetTo: function (id, targetQty) {
+            var item = this.cart.find(function (c) { return c.id === id; });
             if (item && item.qty > targetQty) {
                 item.qty = targetQty;
                 this.showToast('✅ Qty reset to ' + targetQty);
@@ -567,10 +567,10 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- MENU MANAGEMENT ----
-        openAddMenu: function(category) {
+        openAddMenu: function (category) {
             if (category === undefined) category = 'food';
             this.newItem = { name: '', price: '', category: category, status: 'available', icon: category === 'additional' ? '➕' : '🍽️', imagePreview: null, imageData: null };
-            setTimeout(function() {
+            setTimeout(function () {
                 if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
                     $('#manualCategory').val(category).trigger('change.select2');
                     $('#manualStatus').val('available').trigger('change.select2');
@@ -581,7 +581,7 @@ document.addEventListener('alpine:init', function() {
                 new bootstrap.Modal(el).show();
             }
         },
-        onCategoryChange: function() {
+        onCategoryChange: function () {
             if (this.newItem.category === 'additional') {
                 this.newItem.status = 'available';
                 this.newItem.icon = '➕';
@@ -589,7 +589,7 @@ document.addEventListener('alpine:init', function() {
                 this.newItem.icon = '🍽️';
             }
         },
-        saveNewItem: function() {
+        saveNewItem: function () {
             var item = {
                 id: this.nextId++,
                 name: this.newItem.name.trim(),
@@ -606,39 +606,39 @@ document.addEventListener('alpine:init', function() {
             }
             this.showToast('✅ Menu "' + item.name + '" added successfully!');
         },
-        handleImageUpload: function(event) {
+        handleImageUpload: function (event) {
             var file = event.target.files[0];
             if (!file) { this.newItem.imagePreview = null; this.newItem.imageData = null; return; }
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 this.newItem.imagePreview = e.target.result;
                 this.newItem.imageData = e.target.result;
             }.bind(this);
             reader.readAsDataURL(file);
         },
-        handleEditImageUpload: function(event) {
+        handleEditImageUpload: function (event) {
             var file = event.target.files[0];
             if (!file) { this.editItem.imagePreview = null; this.editItem.imageData = null; return; }
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 this.editItem.imagePreview = e.target.result;
                 this.editItem.imageData = e.target.result;
             }.bind(this);
             reader.readAsDataURL(file);
         },
-        openEditMenu: function(id) {
-            var item = this.menuItems.find(function(i) { return i.id === id; });
+        openEditMenu: function (id) {
+            var item = this.menuItems.find(function (i) { return i.id === id; });
             if (!item) { this.showToast('❌ Menu not found!'); return; }
             this.editItemId = id;
-            this.editItem = { 
-                id: item.id, 
-                name: item.name, 
-                price: item.price, 
-                category: item.category, 
-                status: item.status, 
+            this.editItem = {
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                category: item.category,
+                status: item.status,
                 icon: item.icon || '🍽️',
-                imagePreview: item.image || null, 
-                imageData: null 
+                imagePreview: item.image || null,
+                imageData: null
             };
             var fileInput = document.getElementById('editImage');
             if (fileInput) fileInput.value = '';
@@ -647,7 +647,7 @@ document.addEventListener('alpine:init', function() {
                 var modal = new bootstrap.Modal(el);
                 modal.show();
             }
-            setTimeout(function() {
+            setTimeout(function () {
                 if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
                     $('#editCategory, #editStatus').select2('destroy');
                     $('#editCategory, #editStatus').select2({
@@ -658,14 +658,14 @@ document.addEventListener('alpine:init', function() {
                         placeholder: 'Select...',
                         allowClear: false
                     });
-                    $('#editCategory').on('change', function(e) { this.editItem.category = e.target.value; }.bind(this));
-                    $('#editStatus').on('change', function(e) { this.editItem.status = e.target.value; }.bind(this));
+                    $('#editCategory').on('change', function (e) { this.editItem.category = e.target.value; }.bind(this));
+                    $('#editStatus').on('change', function (e) { this.editItem.status = e.target.value; }.bind(this));
                     $('#editCategory').val(this.editItem.category).trigger('change.select2');
                     $('#editStatus').val(this.editItem.status).trigger('change.select2');
                 }
             }.bind(this), 100);
         },
-        saveEditItem: function() {
+        saveEditItem: function () {
             var id = this.editItemId;
             if (id === null || id === undefined) { this.showToast('❌ No item selected to edit!'); return; }
             var index = -1;
@@ -688,8 +688,8 @@ document.addEventListener('alpine:init', function() {
                 image: this.editItem.imageData || this.menuItems[index].image
             };
             // Update sessions & cart
-            this.sessions.forEach(function(session) {
-                session.items.forEach(function(item) {
+            this.sessions.forEach(function (session) {
+                session.items.forEach(function (item) {
                     if (item.id === id) {
                         item.name = name;
                         item.price = price;
@@ -697,7 +697,7 @@ document.addEventListener('alpine:init', function() {
                     }
                 }.bind(this));
             }.bind(this));
-            this.cart.forEach(function(item) {
+            this.cart.forEach(function (item) {
                 if (item.id === id) {
                     item.name = name;
                     item.price = price;
@@ -715,14 +715,14 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- OPENING BALANCE ----
-        openEditOpeningBalance: function() {
+        openEditOpeningBalance: function () {
             this.editOpeningBalance = this.formatRupiah(this.openingBalance);
             var el = document.getElementById('editOpeningBalanceModal');
             if (el && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                 new bootstrap.Modal(el).show();
             }
         },
-        saveOpeningBalance: function() {
+        saveOpeningBalance: function () {
             this.openingBalance = parseInt(this.editOpeningBalance.replace(/\D/g, ''), 10) || 0;
             this.saveOpeningBalance(this.openingBalance);
             var el = document.getElementById('editOpeningBalanceModal');
@@ -733,7 +733,7 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- CHECKOUT ----
-        openCheckout: function() {
+        openCheckout: function () {
             if (this.cart.length === 0) return;
             this.paymentMethod = 'cash';
             this.paymentAmount = '';
@@ -742,7 +742,7 @@ document.addEventListener('alpine:init', function() {
             this.discountType = 'rp';
             this.discountValue = 0;
             this.discountDisplay = '0';
-            setTimeout(function() {
+            setTimeout(function () {
                 if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
                     $('#paymentMethod').val('cash').trigger('change.select2');
                 }
@@ -753,12 +753,12 @@ document.addEventListener('alpine:init', function() {
                 new bootstrap.Modal(el).show();
             }
         },
-        setQuickPay: function(val) {
+        setQuickPay: function (val) {
             this.paymentAmountRaw = val;
             this.paymentAmount = this.formatRupiah(val);
             this.updateChange();
         },
-        updateChange: function() {
+        updateChange: function () {
             try {
                 if (this.paymentMethod === 'cash') {
                     if (this.paymentAmount) {
@@ -780,7 +780,7 @@ document.addEventListener('alpine:init', function() {
                 console.error('Error in updateChange:', error);
             }
         },
-        handlePaymentMethodChange: function() {
+        handlePaymentMethodChange: function () {
             try {
                 if (this.paymentMethod === 'qris') {
                     var total = this.discountedTotal;
@@ -796,7 +796,7 @@ document.addEventListener('alpine:init', function() {
                 console.error('Error in handlePaymentMethodChange:', error);
             }
         },
-        confirmCheckout: function() {
+        confirmCheckout: function () {
             try {
                 var total = this.discountedTotal;
                 var method = this.paymentMethod;
@@ -807,7 +807,7 @@ document.addEventListener('alpine:init', function() {
                         return;
                     }
                     var change = paid - total;
-                    var items = this.cart.map(function(item) {
+                    var items = this.cart.map(function (item) {
                         return { name: item.name, qty: item.qty, price: item.price, subtotal: item.price * item.qty };
                     });
                     var transaction = this.saveTransaction('Cash', total, paid, change, items, this.discountAmount, this.discountType, this.discountValue, this.cartTotal);
@@ -817,7 +817,7 @@ document.addEventListener('alpine:init', function() {
                     paid = total;
                     this.paymentAmount = this.formatRupiah(paid);
                     this.paymentAmountRaw = paid;
-                    var items = this.cart.map(function(item) {
+                    var items = this.cart.map(function (item) {
                         return { name: item.name, qty: item.qty, price: item.price, subtotal: item.price * item.qty };
                     });
                     var transaction = this.saveTransaction('QRIS', total, paid, 0, items, this.discountAmount, this.discountType, this.discountValue, this.cartTotal);
@@ -836,7 +836,7 @@ document.addEventListener('alpine:init', function() {
                 this.showToast('❌ Checkout failed!');
             }
         },
-        updateDiscount: function(event) {
+        updateDiscount: function (event) {
             var raw = event.target.value.replace(/\D/g, '');
             if (this.discountType === 'rp') {
                 var val = parseInt(raw, 10) || 0;
@@ -852,7 +852,7 @@ document.addEventListener('alpine:init', function() {
             }
             this.updateChange();
         },
-        reformatDiscountDisplay: function() {
+        reformatDiscountDisplay: function () {
             if (this.discountType === 'rp') {
                 this.discountDisplay = this.formatRupiah(this.discountValue);
             } else {
@@ -863,10 +863,10 @@ document.addEventListener('alpine:init', function() {
 
         // ---- COMPUTED for cart/discount ----
         get cartTotal() {
-            return this.cart.reduce(function(sum, item) { return sum + (item.price * item.qty); }, 0);
+            return this.cart.reduce(function (sum, item) { return sum + (item.price * item.qty); }, 0);
         },
         get cartCount() {
-            return this.cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+            return this.cart.reduce(function (sum, item) { return sum + item.qty; }, 0);
         },
         get discountAmount() {
             var total = this.cartTotal;
@@ -885,42 +885,67 @@ document.addEventListener('alpine:init', function() {
         get quickPayOptions() {
             var total = this.discountedTotal;
             if (total <= 0) return [0];
-            var end = 100000;
-            if (total > 100000) {
-                end = Math.ceil(total / 100000) * 100000;
-                if (end <= total) end += 100000;
+
+            var options = [];
+
+            // Case 1: total below 50.000
+            if (total < 50000) {
+                options = [
+                    total,
+                    total + 1000,
+                    total + 2000,
+                    total + 5000,
+                    50000,
+                    100000
+                ];
             }
-            var down = Math.floor(total / 10000) * 10000;
-            if (down === total) down = Math.max(0, down - 10000);
-            if (total < 50000) down = 50000;
-            if (down <= 0) down = 10000;
-            var up = Math.ceil(total / 10000) * 10000;
-            if (up === total) up = up + 10000;
-            if (total < 50000) up = Math.max(down + 10000, 60000);
-            if (up <= down) up = down + 10000;
-            if (total <= 100000 && up >= end) up = Math.min(end - 10000, Math.ceil((total + end) / 2) / 10000 * 10000);
-            if (up <= down) up = down + 10000;
-            var others = [down, up, end].filter(function(v) { return v > 0 && v !== total; });
-            others = Array.from(new Set(others)).sort(function(a, b) { return a - b; });
-            var options = [total].concat(others);
-            var endIndex = options.indexOf(end);
-            if (endIndex !== -1 && endIndex !== options.length - 1) {
-                options.splice(endIndex, 1);
-                options.push(end);
+            // Case 2: total between 50.000 and 100.000
+            else if (total < 100000) {
+                options = [
+                    50000,
+                    total,
+                    total + 1000,
+                    total + 2000,
+                    total + 5000,
+                    100000
+                ];
             }
+            // Case 3: total >= 100.000
+            else {
+                var round10k = Math.ceil(total / 10000) * 10000;
+                var round50k = Math.ceil(total / 50000) * 50000;
+                var next50k = round50k + 50000;
+
+                options = [
+                    total,
+                    total + 2000,
+                    round10k,
+                    round50k,
+                    next50k
+                ];
+            }
+
+            // Filter: remove duplicates, values <= 0, sort ascending, and limit to 6 options (optional)
+            options = Array.from(new Set(options))
+                .filter(function (v) { return v > 0; })
+                .sort(function (a, b) { return a - b; });
+
+            // Optionally, limit to 5 or 6 options for cleaner UI
+            // if (options.length > 6) options = options.slice(0, 6);
+
             return options;
         },
 
         // ---- HISTORY ----
-        deleteTransaction: function(id) {
+        deleteTransaction: function (id) {
             if (confirm('Delete transaction #' + id + '?')) {
-                this.transactionHistory = this.transactionHistory.filter(function(trx) { return trx.id !== id; });
-                this.transactionHistory.forEach(function(trx, index) { trx.id = index + 1; });
+                this.transactionHistory = this.transactionHistory.filter(function (trx) { return trx.id !== id; });
+                this.transactionHistory.forEach(function (trx, index) { trx.id = index + 1; });
                 this.saveTransactionHistory();
                 this.showToast('🗑️ Deleted');
             }
         },
-        clearAllTransactions: function() {
+        clearAllTransactions: function () {
             if (confirm('⚠️ Clear ALL?')) {
                 this.transactionHistory = [];
                 this.saveTransactionHistory();
@@ -929,19 +954,19 @@ document.addEventListener('alpine:init', function() {
         },
 
         // ---- PRINTER ----
-        applyPrinterSize: function() {
+        applyPrinterSize: function () {
             try {
                 localStorage.setItem('defaultPrinterSize', this.defaultPrinterSize);
-            } catch (e) {}
+            } catch (e) { }
             this.showToast('⚙️ Printer setting: ' + this.defaultPrinterSize);
         },
-        setOutle: function(name, address) {
+        setOutle: function (name, address) {
             this.outletName = name || 'My Fried Chicken';
             this.outletAddress = address || 'Pusat';
         },
 
         // ---- PRINT ----
-        printStrukMobile: function(transaction) {
+        printStrukMobile: function (transaction) {
             if (!transaction || !transaction.items || transaction.items.length === 0) {
                 this.showToast('❌ No transaction data to print!');
                 return;
@@ -955,7 +980,7 @@ document.addEventListener('alpine:init', function() {
                 this.printStrukBrowser(transaction);
             }
         },
-        printStrukRawBT: function(transaction) {
+        printStrukRawBT: function (transaction) {
             try {
                 var is80mm = this.defaultPrinterSize === '80mm';
                 var maxWidth = is80mm ? 48 : 32;
@@ -977,7 +1002,7 @@ document.addEventListener('alpine:init', function() {
                 receipt.align('left')
                     .text('Item'.padEnd(20) + 'Qty'.padStart(6) + 'Total'.padStart(14)).newline()
                     .line('-'.repeat(maxWidth));
-                transaction.items.forEach(function(item) {
+                transaction.items.forEach(function (item) {
                     var name = item.name.substring(0, 20);
                     var qtyStr = item.qty.toString();
                     var subtotalStr = 'Rp' + this.formatRupiah(item.subtotal);
@@ -992,7 +1017,7 @@ document.addEventListener('alpine:init', function() {
                     var diskonStr = '-Rp' + this.formatRupiah(transaction.discount);
                     receipt.text('Diskon : ' + diskonStr).newline();
                 }
-                var totalQty = transaction.items.reduce(function(sum, item) { return sum + item.qty; }, 0);
+                var totalQty = transaction.items.reduce(function (sum, item) { return sum + item.qty; }, 0);
                 var totalStr = 'Rp' + this.formatRupiah(transaction.total);
                 receipt.bold(true)
                     .text('Total (' + totalQty + ') : ' + totalStr).newline()
@@ -1007,14 +1032,14 @@ document.addEventListener('alpine:init', function() {
                     .newline().newline().newline();
                 var resultData = receipt.encode();
                 var binary = '';
-                resultData.forEach(function(b) { binary += String.fromCharCode(b); });
+                resultData.forEach(function (b) { binary += String.fromCharCode(b); });
                 window.location.href = 'rawbt:base64,' + btoa(binary);
             } catch (error) {
                 this.showToast('⚠️ RawBT failed, switching to normal print');
                 this.printStrukBrowser(transaction);
             }
         },
-        printStrukWebBluetoothiOS: function(transaction) {
+        printStrukWebBluetoothiOS: function (transaction) {
             if (!navigator.bluetooth) {
                 alert("⚠️ iOS BLOCKED!\nOpen KitaPOS using 'Bluefy' browser.");
                 return;
@@ -1024,14 +1049,14 @@ document.addEventListener('alpine:init', function() {
                 navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '49535343-fe7d-4ae5-8fa9-9fafd205e455']
-                }).then(function(device) {
+                }).then(function (device) {
                     return device.gatt.connect();
-                }).then(function(server) {
+                }).then(function (server) {
                     return server.getPrimaryServices();
-                }).then(function(services) {
+                }).then(function (services) {
                     return services[0].getCharacteristics();
-                }).then(function(characteristics) {
-                    var characteristic = characteristics.find(function(c) {
+                }).then(function (characteristics) {
+                    var characteristic = characteristics.find(function (c) {
                         return c.properties.write || c.properties.writeWithoutResponse;
                     });
                     var encoder = new EscPosEncoder();
@@ -1040,7 +1065,7 @@ document.addEventListener('alpine:init', function() {
                         .bold(true).text('KITA POS - PUSAT').newline().bold(false)
                         .line('-'.repeat(is80mm ? 48 : 32))
                         .align('left');
-                    transaction.items.forEach(function(item) {
+                    transaction.items.forEach(function (item) {
                         var leftStr = '  ' + item.qty + ' x ' + this.formatRupiah(item.price);
                         var rightStr = this.formatRupiah(item.subtotal);
                         receipt.text(item.name).newline();
@@ -1058,17 +1083,17 @@ document.addEventListener('alpine:init', function() {
                     var promises = [];
                     for (var i = 0; i < resultData.length; i += chunkSize) {
                         var chunk = resultData.slice(i, i + chunkSize);
-                        promises.push(characteristic.writeValue(chunk).then(function() {
-                            return new Promise(function(resolve) {
+                        promises.push(characteristic.writeValue(chunk).then(function () {
+                            return new Promise(function (resolve) {
                                 setTimeout(resolve, 20);
                             });
                         }));
                     }
-                    return Promise.all(promises).then(function() {
+                    return Promise.all(promises).then(function () {
                         device.gatt.disconnect();
                         this.showToast('🖨️ Printed from iPhone!');
                     }.bind(this));
-                }.bind(this)).catch(function(error) {
+                }.bind(this)).catch(function (error) {
                     this.showToast('⚠️ Bluetooth failed. Switching to normal print...');
                     this.printStrukBrowser(transaction);
                 }.bind(this));
@@ -1077,7 +1102,7 @@ document.addEventListener('alpine:init', function() {
                 this.printStrukBrowser(transaction);
             }
         },
-        printStrukBrowser: function(transaction) {
+        printStrukBrowser: function (transaction) {
             if (!transaction || !transaction.items || transaction.items.length === 0) return;
             var style = document.getElementById('printPageStyle');
             if (!style) {
@@ -1087,7 +1112,7 @@ document.addEventListener('alpine:init', function() {
             }
             var paperSize = this.defaultPrinterSize;
             style.innerHTML = '\n                @media print {\n                    @page { size: ' + paperSize + ' auto; margin: 0; }\n                    * { box-sizing: border-box; }\n                    body { margin: 0 !important; padding: 0 !important; background: #fff !important; }\n                    #strukContainer {\n                        display: block !important;\n                        width: ' + paperSize + ' !important;\n                        max-width: ' + paperSize + ' !important;\n                        margin: 0 auto !important;\n                        padding: 0 !important;\n                        background: #fff !important;\n                        overflow: hidden !important;\n                    }\n                    .struk-content {\n                        width: ' + paperSize + ' !important;\n                        max-width: ' + paperSize + ' !important;\n                        margin: 0 auto !important;\n                        padding: 2mm 2mm !important;\n                        background: #fff !important;\n                        font-size: ' + (paperSize === '58mm' ? '8px' : '12px') + ' !important;\n                        box-sizing: border-box !important;\n                        page-break-inside: avoid !important;\n                        page-break-after: avoid !important;\n                    }\n                    .struk-content.paper-58mm, .struk-content.paper-80mm {\n                        width: ' + paperSize + ' !important;\n                        max-width: ' + paperSize + ' !important;\n                    }\n                    html, body { margin: 0 !important; padding: 0 !important; }\n                    body > *:not(#strukContainer) { display: none !important; }\n                }\n            ';
-            var totalQty = transaction.items.reduce(function(sum, item) { return sum + item.qty; }, 0);
+            var totalQty = transaction.items.reduce(function (sum, item) { return sum + item.qty; }, 0);
             this.strukData = {
                 id: transaction.id,
                 timestamp: transaction.timestamp,
@@ -1102,50 +1127,50 @@ document.addEventListener('alpine:init', function() {
             };
             var container = document.getElementById('strukContainer');
             container.style.display = 'block';
-            setTimeout(function() {
+            setTimeout(function () {
                 window.print();
             }, 400);
-            window.onafterprint = function() {
+            window.onafterprint = function () {
                 container.style.display = 'none';
                 window.onafterprint = null;
             };
         },
 
         // ---- CALCULATOR ----
-        calcAppend: function(val) { this.calcExpression += val; this.updateCalcDisplay(); },
-        calcClear: function() { this.calcExpression = ''; this.updateCalcDisplay(); },
-        calcBackspace: function() { this.calcExpression = this.calcExpression.slice(0, -1); this.updateCalcDisplay(); },
-        calcEvaluate: function() {
+        calcAppend: function (val) { this.calcExpression += val; this.updateCalcDisplay(); },
+        calcClear: function () { this.calcExpression = ''; this.updateCalcDisplay(); },
+        calcBackspace: function () { this.calcExpression = this.calcExpression.slice(0, -1); this.updateCalcDisplay(); },
+        calcEvaluate: function () {
             try {
                 this.calcExpression = eval(this.calcExpression.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-')).toString();
             } catch (e) {
                 this.calcExpression = 'Error';
-                setTimeout(function() { this.calcClear(); }.bind(this), 800);
+                setTimeout(function () { this.calcClear(); }.bind(this), 800);
             }
             this.updateCalcDisplay();
         },
-        updateCalcDisplay: function() { this.calcDisplay = this.calcExpression || '0'; },
+        updateCalcDisplay: function () { this.calcDisplay = this.calcExpression || '0'; },
 
         // ---- FILTER ----
-        setCategory: function(cat) { this.currentCategory = cat; },
-        filterMenu: function() { }
+        setCategory: function (cat) { this.currentCategory = cat; },
+        filterMenu: function () { }
     });
 
     // ===== UI COMPONENTS =====
-    Alpine.data('navbarComponent', function() { return {}; });
-    Alpine.data('menuGridComponent', function() {
+    Alpine.data('navbarComponent', function () { return {}; });
+    Alpine.data('menuGridComponent', function () {
         return {
-            init: function() {
-                this.$nextTick(function() {
+            init: function () {
+                this.$nextTick(function () {
                     var items = this.$store.pos.menuItems;
-                    items.forEach(function(item) {
+                    items.forEach(function (item) {
                         if (item.category !== 'additional') {
                             this.fetchPexelsImage(item);
                         }
                     }.bind(this));
                 }.bind(this));
             },
-            fetchPexelsImage: function(item) {
+            fetchPexelsImage: function (item) {
                 if (item.image) return;
                 var apiKey = window._env && window._env.PEXELS_API_KEY ? window._env.PEXELS_API_KEY : null;
                 if (!apiKey) {
@@ -1155,36 +1180,36 @@ document.addEventListener('alpine:init', function() {
                 var query = encodeURIComponent(item.name);
                 var url = 'https://api.pexels.com/v1/search?query=' + query;
                 fetch(url, { headers: { 'Authorization': apiKey } })
-                    .then(function(response) { return response.json(); })
-                    .then(function(data) {
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
                         if (data.photos && data.photos.length > 0) {
                             item.image = data.photos[0].src.medium;
                         } else {
                             item.image = null;
                         }
                     })
-                    .catch(function(error) {
+                    .catch(function (error) {
                         console.error('Pexels fetch error:', error);
                         item.image = null;
                     });
             }
         };
     });
-    
+
     // Draft Sessions Component
-    Alpine.data('draftSessionsComponent', function() { return {}; });
-    
-    Alpine.data('cartSidebarComponent', function() { return {}; });
-    Alpine.data('mobileCartComponent', function() { return {}; });
-    Alpine.data('checkoutComponent', function() { return {}; });
-    Alpine.data('historyComponent', function() { return {}; });
-    Alpine.data('calculatorComponent', function() { return {}; });
-    Alpine.data('addEditMenuComponent', function() { return {}; });
+    Alpine.data('draftSessionsComponent', function () { return {}; });
+
+    Alpine.data('cartSidebarComponent', function () { return {}; });
+    Alpine.data('mobileCartComponent', function () { return {}; });
+    Alpine.data('checkoutComponent', function () { return {}; });
+    Alpine.data('historyComponent', function () { return {}; });
+    Alpine.data('calculatorComponent', function () { return {}; });
+    Alpine.data('addEditMenuComponent', function () { return {}; });
 
     // ===== ROOT =====
-    Alpine.data('posApp', function() {
+    Alpine.data('posApp', function () {
         return {
-            init: function() {
+            init: function () {
                 var store = Alpine.store('pos');
 
                 // ===== SET CASHIER BASED ON TIME =====
@@ -1212,21 +1237,21 @@ document.addEventListener('alpine:init', function() {
                 }
                 store.init();
 
-                setTimeout(function() {
+                setTimeout(function () {
                     if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
                         $('.select2-custom').select2({ theme: 'bootstrap-5', width: '100%', dropdownAutoWidth: true });
-                        
-                        $('#paymentMethod').on('change', function(e) {
+
+                        $('#paymentMethod').on('change', function (e) {
                             var s = Alpine.store('pos');
                             s.paymentMethod = e.target.value;
                             s.handlePaymentMethodChange();
                         });
-                        $('#manualCategory').on('change', function(e) {
+                        $('#manualCategory').on('change', function (e) {
                             var s = Alpine.store('pos');
                             s.newItem.category = e.target.value;
                             s.onCategoryChange();
                         });
-                        $('#manualStatus').on('change', function(e) {
+                        $('#manualStatus').on('change', function (e) {
                             var s = Alpine.store('pos');
                             s.newItem.status = e.target.value;
                         });
